@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
+type UserRole = "organizer" | "umpire" | "spectator"
+
 export default async function AuthCallbackPage() {
   const supabase = await createClient()
 
@@ -18,10 +20,13 @@ export default async function AuthCallbackPage() {
     .eq("id", session.user.id)
     .single()
 
+  // Type assertion for role
+  const role = profile?.role as UserRole | null
+
   // Redirect based on role
-  if (profile?.role === "organizer") {
+  if (role === "organizer") {
     redirect("/organizer/dashboard")
-  } else if (profile?.role === "umpire") {
+  } else if (role === "umpire") {
     redirect("/umpire/matches")
   } else {
     redirect("/spectator/dashboard")
