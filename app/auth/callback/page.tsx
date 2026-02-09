@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
-type UserRole = "organizer" | "umpire" | "spectator"
+type ProfileRole = {
+  role: "organizer" | "umpire" | "spectator"
+}
 
 export default async function AuthCallbackPage() {
   const supabase = await createClient()
@@ -13,20 +15,23 @@ export default async function AuthCallbackPage() {
     redirect("/auth/login")
   }
 
-  // Fetch user profile
-  const { data: profile } = await supabase
+  // Fetch user profile with explicit type
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", session.user.id)
-    .single()
+    .single<ProfileRole>()
 
-  // Type assertion for role
-  const role = profile?.role as UserRole | null
+  // Handle error or missing profile
+  if (error || !profile) {
+    console.error("Error fetching profile:", error)
+    redirect("/spectator/dashboard")
+  }
 
   // Redirect based on role
-  if (role === "organizer") {
+  if (profile.role === "organizer") {
     redirect("/organizer/dashboard")
-  } else if (role === "umpire") {
+  } else if (profile.role === "umpire") {
     redirect("/umpire/matches")
   } else {
     redirect("/spectator/dashboard")
