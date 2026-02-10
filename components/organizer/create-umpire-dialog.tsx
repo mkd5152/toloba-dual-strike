@@ -35,42 +35,33 @@ export function CreateUmpireDialog() {
     setError("")
     setSuccess(null)
 
-    // CRITICAL: Save current organizer session before ANY operations
-    let currentSession: any = null
-
     try {
+      // Get current session for authorization
       const { data: { session } } = await supabase.auth.getSession()
-      currentSession = session
 
-      if (!currentSession) {
+      if (!session) {
         throw new Error("You must be logged in to create umpires")
       }
 
-      // Create user account (this will auto-login as the new umpire)
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: umpireEmail,
-        password: umpirePassword,
-        options: {
-          data: {
-            role: 'umpire',
-            full_name: fullName,
-          },
+      // Call server API to create umpire using admin client
+      // This won't affect the current user's session
+      const response = await fetch('/api/admin/create-umpire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          email: umpireEmail,
+          password: umpirePassword,
+          fullName,
+        }),
       })
 
-      if (signUpError) throw signUpError
+      const result = await response.json()
 
-      // Create profile
-      if (data.user) {
-        // @ts-ignore - Supabase browser client type inference limitation
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: data.user.id,
-          email: umpireEmail,
-          role: 'umpire',
-          full_name: fullName,
-        })
-
-        if (profileError) throw profileError
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create umpire')
       }
 
       setSuccess({ email: umpireEmail, password: umpirePassword })
@@ -80,23 +71,6 @@ export function CreateUmpireDialog() {
       console.error('Error creating umpire:', err)
       setError(err.message || "Failed to create umpire account")
     } finally {
-      // CRITICAL: ALWAYS restore organizer session, even if errors occurred
-      if (currentSession) {
-        try {
-          const { error: restoreError } = await supabase.auth.setSession({
-            access_token: currentSession.access_token,
-            refresh_token: currentSession.refresh_token,
-          })
-
-          if (restoreError) {
-            console.error("Failed to restore session:", restoreError)
-            alert("Session restore failed. Please refresh the page and login again.")
-          }
-        } catch (restoreErr) {
-          console.error("Error restoring session:", restoreErr)
-          alert("Critical error: Please refresh the page and login again.")
-        }
-      }
       setLoading(false)
     }
   }
