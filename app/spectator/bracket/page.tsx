@@ -11,15 +11,14 @@ import {
 import Link from "next/link"
 
 export default function TournamentBracketPage() {
-  const { tournament, teams, matches, initializeDummyData } = useTournamentStore()
-  const { standings, calculateStandings } = useStandingsStore()
+  const { tournament, teams, matches, loadTeams, loadMatches } = useTournamentStore()
+  const { standings, loadStandings } = useStandingsStore()
 
   useEffect(() => {
-    if (teams.length === 0) {
-      initializeDummyData()
-    }
-    calculateStandings()
-  }, [teams.length, initializeDummyData, calculateStandings])
+    loadTeams()
+    loadMatches()
+    loadStandings()
+  }, [loadTeams, loadMatches, loadStandings])
 
   // Group matches by round/stage (simplified for demo)
   const totalMatches = matches.length
