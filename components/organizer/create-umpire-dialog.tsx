@@ -19,15 +19,31 @@ export function CreateUmpireDialog() {
   const [success, setSuccess] = useState<{ email: string; password: string } | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const generateEmail = () => {
-    const timestamp = Date.now().toString().slice(-6)
-    return `umpire${timestamp}@tdst.local`
+  const generateEmailFromName = (fullName: string) => {
+    // Convert "John Doe" to "johndoe@tdst.com"
+    const sanitized = fullName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove special chars
+      .replace(/\s+/g, '') // Remove spaces
+    return `${sanitized}@tdst.com`
+  }
+
+  const handleNameChange = (newName: string) => {
+    setName(newName)
+    // Auto-generate email from name
+    if (newName.trim()) {
+      setEmail(generateEmailFromName(newName))
+    }
   }
 
   const handleQuickCreate = async () => {
-    const autoEmail = generateEmail()
+    if (!name.trim()) {
+      setError("Umpire name is required")
+      return
+    }
+    const autoEmail = email || generateEmailFromName(name)
     setEmail(autoEmail)
-    await createUmpire(name || "Umpire", autoEmail, password)
+    await createUmpire(name, autoEmail, password)
   }
 
   const createUmpire = async (fullName: string, umpireEmail: string, umpirePassword: string) => {
@@ -77,7 +93,12 @@ export function CreateUmpireDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await createUmpire(name || "Umpire", email, password)
+    if (!name.trim()) {
+      setError("Umpire name is required")
+      return
+    }
+    const finalEmail = email || generateEmailFromName(name)
+    await createUmpire(name, finalEmail, password)
   }
 
   const copyCredentials = () => {
@@ -116,28 +137,33 @@ export function CreateUmpireDialog() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="name" className="text-[#0d3944] font-bold">
-                Umpire Name (Optional)
+                Umpire Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="e.g., John Doe"
                 className="border-2 border-[#0d3944]/20"
+                required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Email will be auto-generated: {name.trim() ? generateEmailFromName(name) : 'name@tdst.com'}
+              </p>
             </div>
 
             <div>
               <Label htmlFor="email" className="text-[#0d3944] font-bold">
-                Email (Optional - auto-generated if empty)
+                Email (Auto-generated)
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Will auto-generate"
-                className="border-2 border-[#0d3944]/20"
+                placeholder="Auto-filled from name"
+                className="border-2 border-[#0d3944]/20 bg-gray-50"
+                readOnly
               />
             </div>
 
