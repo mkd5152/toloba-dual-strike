@@ -50,7 +50,6 @@ export function AddTeamDialog({ trigger }: AddTeamDialogProps) {
       const team = await addTeam({
         name: name || "New Team",
         color,
-        players: [], // Will be added separately
       });
 
       // Create players for the team

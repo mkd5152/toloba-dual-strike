@@ -80,11 +80,7 @@ export async function createPlayer(player: Omit<Player, "id" | "createdAt" | "up
     }
 
     // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase
-      .from("players")
-      .insert(playerData)
-      .select()
-      .single()
+    const { data, error } = await supabase.from("players").insert(playerData).select().single()
 
     if (error) throw error
     if (!data) throw new Error("No data returned from insert")
@@ -112,10 +108,7 @@ export async function createPlayers(players: Omit<Player, "id" | "createdAt" | "
     }))
 
     // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase
-      .from("players")
-      .insert(playersData)
-      .select()
+    const { data, error } = await supabase.from("players").insert(playersData).select()
 
     if (error) throw error
     if (!data) throw new Error("No data returned from insert")
@@ -139,12 +132,7 @@ export async function updatePlayer(playerId: string, updates: Partial<Omit<Playe
     }
 
     // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase
-      .from("players")
-      .update(playerData)
-      .eq("id", playerId)
-      .select()
-      .single()
+    const { data, error } = await supabase.from("players").update(playerData).eq("id", playerId).select().single()
 
     if (error) throw error
     if (!data) throw new Error("No data returned from update")
