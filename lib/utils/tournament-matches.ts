@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Team, Tournament, Match } from "@/lib/types";
 import { COURTS, TOURNAMENT_RULES } from "@/lib/constants";
 

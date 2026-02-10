@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { LiveMatchCard } from "@/components/spectator/live-match-card";
 import { Card } from "@/components/ui/card";
@@ -21,11 +21,19 @@ interface LiveEvent {
 export default function SpectatorLivePage() {
   const { matches, teams, loadTeams, loadMatches, loading, getTeam } = useTournamentStore();
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    loadTeams();
-    loadMatches();
-  }, [loadTeams, loadMatches]);
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      const loadData = async () => {
+        await loadTeams();
+        await loadMatches();
+      };
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   useEffect(() => {
     // Generate simulated live events for demonstration

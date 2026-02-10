@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useTournamentStore } from "@/lib/stores/tournament-store"
 import { useStandingsStore } from "@/lib/stores/standings-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,12 +15,20 @@ import Link from "next/link"
 export default function SpectatorDashboardPage() {
   const { tournament, teams, matches, loadTeams, loadMatches, loading } = useTournamentStore()
   const { standings, loadStandings } = useStandingsStore()
+  const hasLoaded = useRef(false)
 
   useEffect(() => {
-    loadTeams()
-    loadMatches()
-    loadStandings()
-  }, [loadTeams, loadMatches, loadStandings])
+    if (!hasLoaded.current) {
+      hasLoaded.current = true
+      const loadData = async () => {
+        await loadTeams()
+        await loadMatches()
+        await loadStandings()
+      }
+      loadData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
   // Calculate statistics
   const totalMatches = matches.length

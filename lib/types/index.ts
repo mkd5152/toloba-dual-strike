@@ -71,11 +71,10 @@ export interface Match {
 
 export interface Innings {
   id: string;
-  teamId: string;
+  teamId: string; // Team that is batting
   battingPair: [string, string]; // Player IDs
-  bowlingTeamId: string;
   state: InningsState;
-  overs: Over[];
+  overs: Over[]; // Each over has its own bowlingTeamId
   powerplayOver: number | null; // 1, 2, or 3
   totalRuns: number;
   totalWickets: number;
@@ -85,6 +84,7 @@ export interface Innings {
 
 export interface Over {
   overNumber: number; // 1-3
+  bowlingTeamId: string; // Team that bowls this over
   bowlerId: string;
   keeperId: string;
   balls: Ball[];
@@ -107,8 +107,8 @@ export interface Ball {
 
 export interface MatchRanking {
   teamId: string;
-  rank: 1 | 2 | 3 | 4;
-  points: 5 | 3 | 1 | 0;
+  rank: number; // Can be 1-4, but allows ties (e.g., two teams at rank 2)
+  points: number; // Can be fractional for tied positions (e.g., 2.0 for shared 2nd/3rd)
   totalRuns: number;
 }
 

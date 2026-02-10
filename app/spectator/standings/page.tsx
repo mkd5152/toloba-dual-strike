@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { useStandingsStore } from "@/lib/stores/standings-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
@@ -9,12 +9,20 @@ import { StandingsTable } from "@/components/spectator/standings-table";
 export default function StandingsPage() {
   const { standings, loadStandings, loading } = useStandingsStore();
   const { loadTeams, loadMatches } = useTournamentStore();
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    loadTeams();
-    loadMatches();
-    loadStandings();
-  }, [loadTeams, loadMatches, loadStandings]);
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      const loadData = async () => {
+        await loadTeams();
+        await loadMatches();
+        await loadStandings();
+      };
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   return (
     <div className="p-4 md:p-8">

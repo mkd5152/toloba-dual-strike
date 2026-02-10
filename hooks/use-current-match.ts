@@ -17,7 +17,7 @@ export function useCurrentMatch(matchId: string | null) {
     const loadMatch = async () => {
       try {
         // First try to get from store
-        let match = getMatch(matchId);
+        let match: Awaited<ReturnType<typeof matchesAPI.fetchMatch>> | undefined = getMatch(matchId);
 
         // If not in store, fetch from database
         if (!match) {

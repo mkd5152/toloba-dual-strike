@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { TeamCard } from "@/components/organizer/team-card";
 import { AddTeamDialog } from "@/components/organizer/add-team-dialog";
 
 export default function TeamsPage() {
   const { teams, loadTeams, removeTeam, loading } = useTournamentStore();
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    // Load teams from database on mount
-    loadTeams();
-  }, [loadTeams]);
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      loadTeams();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   return (
     <div className="p-4 md:p-8">

@@ -151,7 +151,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           console.error('Auth store: Error fetching profile:', profileError)
         }
 
-        console.log('Auth store: Profile fetched:', (profile as any)?.role, profile)
 
         set({
           user: data.user,

@@ -93,19 +93,19 @@ export function ScoringPanel() {
     (currentInnings?.overs?.some((o) => o.balls.length > 0) ?? false);
 
   return (
-    <Card className="p-6">
-      <div className="space-y-6">
+    <Card className="p-3 sm:p-4 md:p-6">
+      <div className="space-y-4 sm:space-y-5 md:space-y-6">
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">
+          <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
             Score Runs
           </h3>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
             {([0, 1, 2, 3, 4, 6] as const).map((runs) => (
               <Button
                 key={runs}
                 size="lg"
                 variant="outline"
-                className="h-16 text-2xl font-bold"
+                className="h-14 sm:h-16 md:h-20 text-xl sm:text-2xl md:text-3xl font-bold touch-manipulation active:scale-95 transition-transform"
                 onClick={() => handleRunScore(runs)}
               >
                 {runs}
@@ -115,24 +115,32 @@ export function ScoringPanel() {
         </div>
 
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Events</h3>
-          <div className="grid grid-cols-2 gap-2">
+          <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Events</h3>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Button
               variant="destructive"
-              className="h-12"
+              className="h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
               onClick={handleWicket}
             >
               Wicket
             </Button>
-            <Button variant="outline" className="h-12" onClick={handleNoball}>
+            <Button
+              variant="outline"
+              className="h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
+              onClick={handleNoball}
+            >
               No Ball
             </Button>
-            <Button variant="outline" className="h-12" onClick={handleWide}>
+            <Button
+              variant="outline"
+              className="h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
+              onClick={handleWide}
+            >
               Wide
             </Button>
             <Button
               variant="outline"
-              className="h-12"
+              className="h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
               onClick={handleMisconduct}
             >
               Misconduct
@@ -142,15 +150,15 @@ export function ScoringPanel() {
 
         {powerplayNotSet && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
+            <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
               Powerplay (Select Once)
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[1, 2, 3].map((over) => (
                 <Button
                   key={over}
                   variant="outline"
-                  className="h-12"
+                  className="h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
                   onClick={() => selectPowerplay(over)}
                 >
                   Over {over}
@@ -160,7 +168,11 @@ export function ScoringPanel() {
           </div>
         )}
 
-        <Button variant="secondary" onClick={undoLastBall} className="w-full">
+        <Button
+          variant="secondary"
+          onClick={undoLastBall}
+          className="w-full h-11 sm:h-12 md:h-14 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
+        >
           Undo last ball
         </Button>
       </div>
