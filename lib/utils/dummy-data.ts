@@ -127,6 +127,7 @@ export function generateDummyMatches(teams: Team[]): Match[] {
 
       matches.push({
         id: `match-${matchNumber}`,
+        tournamentId: "tdst-season-1",
         matchNumber,
         court: COURTS[(matchNumber - 1) % COURTS.length],
         startTime: matchStartTime,

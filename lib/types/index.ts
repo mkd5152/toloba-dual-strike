@@ -52,6 +52,7 @@ export interface Player {
 
 export interface Match {
   id: string;
+  tournamentId: string;
   matchNumber: number;
   court: string;
   startTime: Date;
