@@ -30,16 +30,24 @@ export interface Tournament {
 
 export interface Team {
   id: string;
+  tournamentId: string;
   name: string;
   color: string; // Hex color for UI
   players: Player[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
+
+export type PlayerRole = "batsman" | "bowler" | "all_rounder" | "wicket_keeper" | "none";
 
 export interface Player {
   id: string;
   name: string;
   teamId: string;
-  isLateArrival: boolean;
+  role: PlayerRole;
+  isLateArrival?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Match {
