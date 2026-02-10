@@ -3,6 +3,19 @@
 -- ============================================================================
 
 -- ============================================================================
+-- PROFILES POLICIES - ALLOW ORGANIZERS TO CREATE UMPIRES
+-- ============================================================================
+DROP POLICY IF EXISTS "Organizers can create umpire profiles" ON public.profiles;
+CREATE POLICY "Organizers can create umpire profiles"
+  ON public.profiles FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'organizer'
+    )
+  );
+
+-- ============================================================================
 -- MATCHES POLICIES - ALLOW ORGANIZERS TO CREATE/MANAGE MATCHES
 -- ============================================================================
 DROP POLICY IF EXISTS "Organizers can create matches" ON public.matches;
