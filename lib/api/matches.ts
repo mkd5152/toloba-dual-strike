@@ -79,11 +79,11 @@ export async function fetchUmpireMatches(umpireId: string): Promise<Match[]> {
 /**
  * Create a new match
  */
-export async function createMatch(match: Omit<Match, "id" | "innings" | "lockedAt">): Promise<Match> {
+export async function createMatch(match: Omit<Match, "id" | "innings" | "lockedAt" | "createdAt" | "updatedAt"> & { tournamentId: string }): Promise<Match> {
   try {
     const matchData: MatchInsert = {
       id: crypto.randomUUID(),
-      tournament_id: match.matchNumber.toString(), // Will be replaced with actual tournament ID
+      tournament_id: match.tournamentId,
       match_number: match.matchNumber,
       court: match.court,
       start_time: match.startTime.toISOString(),
@@ -108,6 +108,45 @@ export async function createMatch(match: Omit<Match, "id" | "innings" | "lockedA
   } catch (err) {
     console.error("Error creating match:", err)
     throw new Error(`Failed to create match: ${err instanceof Error ? err.message : "Unknown error"}`)
+  }
+}
+
+/**
+ * Bulk create matches
+ */
+export async function bulkCreateMatches(matches: Omit<Match, "id" | "createdAt" | "updatedAt">[]): Promise<Match[]> {
+  try {
+    if (matches.length === 0) {
+      return []
+    }
+
+    const matchesData: MatchInsert[] = matches.map(match => ({
+      id: crypto.randomUUID(),
+      tournament_id: match.tournamentId,
+      match_number: match.matchNumber,
+      court: match.court,
+      start_time: match.startTime.toISOString(),
+      umpire_id: match.umpireId,
+      umpire_name: match.umpireName,
+      team_ids: match.teamIds,
+      state: match.state,
+      batting_order: match.battingOrder,
+      rankings: match.rankings as any,
+      locked_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }))
+
+    // @ts-ignore - Supabase browser client type inference limitation
+    const { data, error } = await supabase.from("matches").insert(matchesData).select()
+
+    if (error) throw error
+    if (!data) throw new Error("No data returned from bulk insert")
+
+    return data.map(transformMatchRow)
+  } catch (err) {
+    console.error("Error bulk creating matches:", err)
+    throw new Error(`Failed to bulk create matches: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
 }
 
@@ -194,6 +233,7 @@ export async function deleteMatch(matchId: string): Promise<void> {
 function transformMatchRow(row: any): Match {
   return {
     id: row.id,
+    tournamentId: row.tournament_id,
     matchNumber: row.match_number,
     court: row.court,
     startTime: new Date(row.start_time),

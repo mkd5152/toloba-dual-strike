@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { MatchScheduleTable } from "@/components/organizer/match-schedule-table";
+import { GenerateMatchesDialog } from "@/components/organizer/generate-matches-dialog";
 
 export default function SchedulePage() {
   const { matches, loadTeams, loadMatches, loading } = useTournamentStore();
@@ -15,11 +16,14 @@ export default function SchedulePage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <div className="inline-block px-3 py-1 mb-2 rounded-full bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] text-xs font-bold uppercase tracking-wide">
-          Tournament Calendar
+      <div className="mb-8 flex items-end justify-between">
+        <div>
+          <div className="inline-block px-3 py-1 mb-2 rounded-full bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] text-xs font-bold uppercase tracking-wide">
+            Tournament Calendar
+          </div>
+          <h1 className="text-4xl font-black text-white drop-shadow-lg">Match Schedule</h1>
         </div>
-        <h1 className="text-4xl font-black text-white drop-shadow-lg">Match Schedule</h1>
+        <GenerateMatchesDialog />
       </div>
 
       {loading && matches.length === 0 ? (
