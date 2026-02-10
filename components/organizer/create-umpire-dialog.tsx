@@ -52,6 +52,7 @@ export function CreateUmpireDialog() {
 
       // Create profile
       if (data.user) {
+        // @ts-ignore - Supabase browser client type inference limitation
         const { error: profileError } = await supabase.from('profiles').insert({
           id: data.user.id,
           email: umpireEmail,

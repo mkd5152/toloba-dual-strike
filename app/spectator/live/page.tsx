@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Flame, TrendingUp, Activity } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 interface LiveEvent {
   id: string;
   matchNumber: number;
@@ -212,23 +214,23 @@ export default function SpectatorLivePage() {
 }
 
 // Add custom CSS for fade-in animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in-up {
-    animation: fade-in-up 0.5s ease-out forwards;
-  }
-`;
 if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fade-in-up 0.5s ease-out forwards;
+    }
+  `;
   document.head.appendChild(style);
 }
