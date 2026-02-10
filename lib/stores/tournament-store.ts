@@ -17,7 +17,7 @@ interface TournamentStore {
   initializeDummyData: () => void;
   loadTeams: () => Promise<void>;
   loadMatches: () => Promise<void>;
-  addTeam: (team: Omit<Team, "id" | "createdAt" | "updatedAt" | "players">) => Promise<Team>;
+  addTeam: (team: Omit<Team, "id" | "createdAt" | "updatedAt" | "players" | "tournamentId">) => Promise<Team>;
   removeTeam: (teamId: string) => Promise<void>;
   updateMatch: (matchId: string, updates: Partial<Match>) => Promise<void>;
   getMatch: (matchId: string) => Match | undefined;
