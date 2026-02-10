@@ -16,6 +16,7 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
 }> {
   try {
     // Fetch all completed league matches
+    // @ts-ignore - Supabase browser client type inference limitation
     const { data: matchesData, error: matchesError } = await supabase
       .from("matches")
       .select("*")
@@ -26,12 +27,15 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
     if (matchesError) throw matchesError
 
     // Fetch all teams with their groups
+    // @ts-ignore - Supabase browser client type inference limitation
     const { data: teamsData, error: teamsError } = await supabase
       .from("teams")
       .select("id, name, group")
       .eq("tournament_id", tournamentId)
 
     if (teamsError) throw teamsError
+
+    console.log('Teams data:', teamsData?.map(t => ({ id: t.id, name: t.name, group: t.group })))
 
     // Calculate standings per group
     const standingsByGroup: Record<number, Map<string, StandingsEntry>> = {
@@ -44,7 +48,12 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
     // Initialize standings for all teams
     teamsData?.forEach((team: any) => {
       const group = team.group as number
-      if (!standingsByGroup[group]) return
+
+      // Skip teams without a group assigned
+      if (!group || !standingsByGroup[group]) {
+        console.warn(`Team ${team.id} (${team.name}) has no valid group assigned: ${team.group}`)
+        return
+      }
 
       standingsByGroup[group].set(team.id, {
         teamId: team.id,
@@ -98,8 +107,17 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
       group4: getTopTwo(standingsByGroup[4]),
     }
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
+      return {
+        group1: [],
+        group2: [],
+        group3: [],
+        group4: [],
+      }
+    }
     console.error("Error calculating qualified teams:", err)
-    throw new Error(`Failed to get qualified teams: ${err instanceof Error ? err.message : "Unknown error"}`)
+    throw new Error(`Failed to get qualified teams: ${err instanceof Error ? err.message : String(err)}`)
   }
 }
 
