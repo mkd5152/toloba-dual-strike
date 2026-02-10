@@ -99,27 +99,73 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       i === currentOverIndex ? updatedOver : o
     );
 
-    // If over complete (6 balls), move to next over or next innings
-    if (updatedOver.balls.length >= 6) {
-      if (currentOverIndex < innings.overs.length - 1) {
-        nextOverIndex = currentOverIndex + 1;
-      } else {
-        // Innings over
-        nextOverIndex = 0;
-        nextInningsIndex = currentInningsIndex + 1;
-        if (nextInningsIndex < currentMatch.innings.length) {
-          updatedOvers = currentMatch.innings[nextInningsIndex].overs;
-        }
-      }
-    }
-
-    const updatedInnings: Innings = recalcInningsFromBalls({
+    // Calculate innings with updated balls
+    let updatedInnings: Innings = recalcInningsFromBalls({
       ...innings,
       overs: innings.overs.map((o, i) =>
         i === currentOverIndex ? updatedOver : o
       ),
       state: "IN_PROGRESS",
     });
+
+    // If over complete (6 balls), move to next over or next innings
+    if (updatedOver.balls.length >= 6) {
+      if (currentOverIndex < innings.overs.length - 1) {
+        nextOverIndex = currentOverIndex + 1;
+      } else {
+        // Innings over - mark as completed
+        updatedInnings = {
+          ...updatedInnings,
+          state: "COMPLETED",
+        };
+
+        nextOverIndex = 0;
+        nextInningsIndex = currentInningsIndex + 1;
+
+        // Check if this was the last innings (4th innings complete)
+        if (nextInningsIndex >= currentMatch.innings.length) {
+          // Match complete! Calculate rankings and update state
+
+          const completedInnings = currentMatch.innings.map((inn, i) =>
+            i === currentInningsIndex ? updatedInnings : inn
+          );
+
+          const rankings = rankTeamsInMatch(completedInnings).map((r) => ({
+            teamId: r.teamId,
+            rank: r.rank,
+            points: r.points, // Use calculated points (handles ties)
+            totalRuns: completedInnings.find((i) => i.teamId === r.teamId)?.totalRuns ?? 0,
+          }));
+
+          const completedMatch: Match = {
+            ...currentMatch,
+            innings: completedInnings,
+            state: "COMPLETED",
+            rankings,
+            lockedAt: new Date(),
+          };
+
+          set({
+            currentMatch: completedMatch,
+            currentInningsIndex: nextInningsIndex,
+            currentOverIndex: 0,
+          });
+
+          useTournamentStore.getState().updateMatch(currentMatch.id, {
+            state: "COMPLETED",
+            innings: completedMatch.innings,
+            rankings,
+            lockedAt: completedMatch.lockedAt,
+          });
+
+          return; // Exit early, match is complete
+        }
+
+        if (nextInningsIndex < currentMatch.innings.length) {
+          updatedOvers = currentMatch.innings[nextInningsIndex].overs;
+        }
+      }
+    }
 
     const updatedMatch: Match = {
       ...currentMatch,

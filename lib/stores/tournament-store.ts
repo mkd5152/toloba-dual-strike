@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import type { Team, Match, Tournament } from "@/lib/types";
-import { generateDummyTeams, generateDummyMatches } from "@/lib/utils/dummy-data";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import * as teamsAPI from "@/lib/api/teams";
 import * as playersAPI from "@/lib/api/players";
@@ -14,7 +13,6 @@ interface TournamentStore {
   error: string | null;
 
   // Actions
-  initializeDummyData: () => void;
   loadTeams: () => Promise<void>;
   loadMatches: () => Promise<void>;
   addTeam: (team: Omit<Team, "id" | "createdAt" | "updatedAt" | "players" | "tournamentId">) => Promise<Team>;
@@ -46,13 +44,6 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
   matches: [],
   loading: false,
   error: null,
-
-  // Initialize with dummy data (for development/demo)
-  initializeDummyData: () => {
-    const teams = generateDummyTeams(20);
-    const matches = generateDummyMatches(teams);
-    set({ teams, matches });
-  },
 
   // Load teams from database
   loadTeams: async () => {

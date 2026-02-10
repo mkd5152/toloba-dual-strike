@@ -40,19 +40,25 @@ export function BallLog() {
   logs.reverse();
 
   return (
-    <Card className="p-6">
-      <h3 className="font-semibold mb-4">Ball-by-Ball</h3>
-      <div className="space-y-2 max-h-60 overflow-y-auto">
+    <Card className="p-3 sm:p-4 md:p-6">
+      <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-3 sm:mb-4">Ball-by-Ball</h3>
+      <div className="space-y-2 max-h-64 sm:max-h-72 md:max-h-80 overflow-y-auto">
         {logs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No balls recorded yet.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">No balls recorded yet.</p>
         ) : (
           logs.map((log, i) => (
             <div
               key={i}
-              className={`p-2 rounded ${log.isPowerplay ? "bg-orange-50 dark:bg-orange-950/30" : "bg-muted/50"}`}
+              className={`p-2 sm:p-3 rounded ${log.isPowerplay ? "bg-orange-50 dark:bg-orange-950/30" : "bg-muted/50"}`}
             >
-              <span className="font-mono font-medium">{log.over}.{log.ball}</span>
-              <span className="ml-3 text-muted-foreground">{log.text}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span className="font-mono font-medium text-sm sm:text-base text-[#0d3944]">
+                  {log.over}.{log.ball}
+                </span>
+                <span className="text-xs sm:text-sm text-muted-foreground break-words">
+                  {log.text}
+                </span>
+              </div>
             </div>
           ))
         )}

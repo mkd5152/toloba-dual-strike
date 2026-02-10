@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { CreateUmpireDialog } from "@/components/organizer/create-umpire-dialog";
@@ -8,12 +8,19 @@ import { Users, Calendar, Trophy, CheckCircle } from "lucide-react";
 
 export default function OrganizerDashboard() {
   const { tournament, teams, matches, loadTeams, loadMatches, loading } = useTournamentStore();
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    // Load data from database
-    loadTeams();
-    loadMatches();
-  }, [loadTeams, loadMatches]);
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      const loadData = async () => {
+        await loadTeams();
+        await loadMatches();
+      };
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const completedMatches = matches.filter(
     (m) => m.state === "COMPLETED" || m.state === "LOCKED"
@@ -154,7 +161,7 @@ export default function OrganizerDashboard() {
                         </div>
                       </div>
                     ))}
-                  {matches.filter((m) => m.state === "SCHEDULED" || m.state === "NOT_STARTED")
+                  {matches.filter((m) => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS")
                     .length === 0 && (
                     <p className="text-gray-500 text-center py-4">
                       No upcoming matches

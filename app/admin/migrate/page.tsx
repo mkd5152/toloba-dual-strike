@@ -42,7 +42,8 @@ export default function MigratePage() {
     }
   }
 
-  const sqlToRun = `-- Add group column to teams
+  const sqlToRun = `-- Migration 1: Add group and stage columns
+-- Add group column to teams
 ALTER TABLE teams ADD COLUMN IF NOT EXISTS "group" INTEGER;
 
 -- Add stage column to matches
@@ -57,7 +58,25 @@ UPDATE teams SET "group" = 4 WHERE id IN ('team-p', 'team-q', 'team-r', 'team-s'
 -- Assign stages to matches
 UPDATE matches SET stage = 'LEAGUE' WHERE match_number BETWEEN 1 AND 25;
 UPDATE matches SET stage = 'SEMI' WHERE match_number IN (26, 27);
-UPDATE matches SET stage = 'FINAL' WHERE match_number = 28;`
+UPDATE matches SET stage = 'FINAL' WHERE match_number = 28;
+
+-- Migration 2: Bowling team rotation (IMPORTANT for correct game format)
+-- Add bowling_team_id to overs table (each over has its own bowling team)
+ALTER TABLE overs ADD COLUMN IF NOT EXISTS bowling_team_id TEXT;
+
+-- Add foreign key constraint
+ALTER TABLE overs DROP CONSTRAINT IF EXISTS overs_bowling_team_fkey;
+ALTER TABLE overs
+ADD CONSTRAINT overs_bowling_team_fkey
+FOREIGN KEY (bowling_team_id)
+REFERENCES teams(id)
+ON DELETE CASCADE;
+
+-- Remove bowling_team_id from innings (no longer needed, each over has its own)
+ALTER TABLE innings DROP COLUMN IF EXISTS bowling_team_id;
+
+-- Create index for faster lookups
+CREATE INDEX IF NOT EXISTS idx_overs_bowling_team ON overs(bowling_team_id);`
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sqlToRun)
@@ -69,13 +88,15 @@ UPDATE matches SET stage = 'FINAL' WHERE match_number = 28;`
     <div className="min-h-screen tournament-bg-pattern p-4 md:p-8">
       <Card className="max-w-4xl mx-auto border-2 border-[#ff9800]">
         <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
-          <CardTitle className="text-2xl font-black">Database Migration: Groups & Stages</CardTitle>
+          <CardTitle className="text-2xl font-black">Database Migration: Game Format & Playoffs</CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           <Alert className="bg-blue-50 border-blue-200">
             <AlertCircle className="w-5 h-5 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Migration Required:</strong> This adds group and stage columns to enable the playoff system.
+              <strong>Migration Required:</strong> This adds:
+              <br />1. Group and stage columns for playoff system
+              <br />2. Bowling rotation support (each over has its own bowling team)
             </AlertDescription>
           </Alert>
 

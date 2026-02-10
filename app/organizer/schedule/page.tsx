@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { MatchScheduleTable } from "@/components/organizer/match-schedule-table";
@@ -8,11 +8,19 @@ import { GenerateMatchesDialog } from "@/components/organizer/generate-matches-d
 
 export default function SchedulePage() {
   const { matches, loadTeams, loadMatches, loading } = useTournamentStore();
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    loadTeams();
-    loadMatches();
-  }, [loadTeams, loadMatches]);
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      const loadData = async () => {
+        await loadTeams();
+        await loadMatches();
+      };
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   return (
     <div className="p-4 md:p-8">

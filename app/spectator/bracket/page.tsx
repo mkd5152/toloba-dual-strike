@@ -225,7 +225,7 @@ export default function TournamentBracketPage() {
                                       {teamRanking.totalRuns} runs
                                     </p>
                                     <p className="text-xs font-bold opacity-70">
-                                      {teamRanking.points} pts
+                                      {teamRanking.points % 1 === 0 ? teamRanking.points : teamRanking.points.toFixed(1)} pts
                                     </p>
                                   </div>
                                 )}

@@ -60,7 +60,7 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
   }
 
   const updateScore = (teamId: string, field: "runs" | "wickets" | "points", value: string) => {
-    const numValue = parseInt(value) || 0
+    const numValue = field === "points" ? (parseFloat(value) || 0) : (parseInt(value) || 0)
     setScores((prev) =>
       prev.map((score) =>
         score.teamId === teamId ? { ...score, [field]: numValue } : score
@@ -78,14 +78,14 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
         .map((score) => ({
           teamId: score.teamId,
           totalRuns: score.runs,
-          points: score.points as 5 | 3 | 1 | 0,
-          rank: 0 as 1 | 2 | 3 | 4, // Will be recalculated
+          points: score.points,
+          rank: 0, // Will be recalculated
         }))
         .sort((a, b) => {
           if (b.points !== a.points) return b.points - a.points
           return b.totalRuns - a.totalRuns
         })
-        .map((ranking, index) => ({ ...ranking, rank: (index + 1) as 1 | 2 | 3 | 4 }))
+        .map((ranking, index) => ({ ...ranking, rank: index + 1 }))
 
       // Update the match in the tournament store
       const { updateMatch } = useTournamentStore.getState()
@@ -196,6 +196,7 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
                         id={`points-${score.teamId}`}
                         type="number"
                         min="0"
+                        step="0.5"
                         value={score.points}
                         onChange={(e) => updateScore(score.teamId, "points", e.target.value)}
                         className="border-2 border-gray-300"

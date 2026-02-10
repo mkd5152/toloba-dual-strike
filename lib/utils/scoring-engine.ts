@@ -68,15 +68,47 @@ export function rankTeamsInMatch(
     .sort((a, b) => b.score - a.score);
 
   const pointsMap = [
-    POINTS_SYSTEM.FIRST,
-    POINTS_SYSTEM.SECOND,
-    POINTS_SYSTEM.THIRD,
-    POINTS_SYSTEM.FOURTH,
+    POINTS_SYSTEM.FIRST,   // 5
+    POINTS_SYSTEM.SECOND,  // 3
+    POINTS_SYSTEM.THIRD,   // 1
+    POINTS_SYSTEM.FOURTH,  // 0
   ];
 
-  return sorted.map((team, index) => ({
-    teamId: team.teamId,
-    rank: index + 1,
-    points: pointsMap[index],
-  }));
+  const results: { teamId: string; rank: number; points: number }[] = [];
+  let i = 0;
+
+  while (i < sorted.length) {
+    // Find all teams tied with current team
+    const currentScore = sorted[i].score;
+    const tiedTeams: typeof sorted = [];
+    let j = i;
+
+    while (j < sorted.length && sorted[j].score === currentScore) {
+      tiedTeams.push(sorted[j]);
+      j++;
+    }
+
+    // Calculate average points for tied teams
+    // If 2 teams tie for 2nd place, they get average of positions 2 and 3: (3+1)/2 = 2
+    let totalPoints = 0;
+    for (let k = 0; k < tiedTeams.length; k++) {
+      totalPoints += pointsMap[i + k];
+    }
+    const avgPoints = totalPoints / tiedTeams.length;
+
+    // Assign same rank and points to all tied teams
+    const rank = i + 1;
+    for (const team of tiedTeams) {
+      results.push({
+        teamId: team.teamId,
+        rank: rank,
+        points: avgPoints,
+      });
+    }
+
+    // Move to next group of teams
+    i = j;
+  }
+
+  return results;
 }
