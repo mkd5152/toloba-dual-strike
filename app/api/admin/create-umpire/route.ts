@@ -43,14 +43,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
     }
 
-    // Create profile record
+    // Create profile record (use upsert to handle trigger conflicts)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .insert({
+      .upsert({
         id: userData.user.id,
         email,
         role: 'umpire',
         full_name: fullName,
+      }, {
+        onConflict: 'id'
       })
 
     if (profileError) {
