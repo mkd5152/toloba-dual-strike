@@ -71,10 +71,8 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
     setError("")
 
     try {
-      const { error: updateError } = await supabase
-        .from("matches")
-        .update({ umpire_id: selectedUmpireId })
-        .eq("id", match.id)
+      // @ts-ignore - Supabase browser client type inference limitation
+      const { error: updateError } = await supabase.from("matches").update({ umpire_id: selectedUmpireId }).eq("id", match.id)
 
       if (updateError) throw updateError
 

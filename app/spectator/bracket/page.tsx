@@ -223,7 +223,7 @@ export default function TournamentBracketPage() {
                                 {teamRanking && (
                                   <div className="text-right">
                                     <p className="font-black text-lg">
-                                      {teamRanking.runs}/{teamRanking.wickets}
+                                      {teamRanking.totalRuns} runs
                                     </p>
                                     <p className="text-xs font-bold opacity-70">
                                       {teamRanking.points} pts

@@ -51,8 +51,8 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
       return {
         teamId: ranking.teamId,
         teamName: team?.name || "Unknown Team",
-        runs: ranking.runs,
-        wickets: ranking.wickets,
+        runs: ranking.totalRuns,
+        wickets: 0, // Wickets not stored in MatchRanking
         points: ranking.points,
       }
     })
@@ -77,17 +77,15 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
       const updatedRankings = scores
         .map((score) => ({
           teamId: score.teamId,
-          runs: score.runs,
-          wickets: score.wickets,
-          points: score.points,
-          rank: 0, // Will be recalculated
+          totalRuns: score.runs,
+          points: score.points as 5 | 3 | 1 | 0,
+          rank: 0 as 1 | 2 | 3 | 4, // Will be recalculated
         }))
         .sort((a, b) => {
           if (b.points !== a.points) return b.points - a.points
-          if (b.runs !== a.runs) return b.runs - a.runs
-          return a.wickets - b.wickets
+          return b.totalRuns - a.totalRuns
         })
-        .map((ranking, index) => ({ ...ranking, rank: index + 1 }))
+        .map((ranking, index) => ({ ...ranking, rank: (index + 1) as 1 | 2 | 3 | 4 }))
 
       // Update the match in the tournament store
       const { updateMatch } = useTournamentStore.getState()

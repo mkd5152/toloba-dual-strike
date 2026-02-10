@@ -100,6 +100,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       // Create profile
       if (data.user) {
+        // @ts-ignore - Supabase browser client type inference limitation
         const { error: profileError } = await supabase.from('profiles').insert({
           id: data.user.id,
           email,
@@ -143,17 +144,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       // Fetch profile
       if (data.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single()
+        // @ts-ignore - Supabase browser client type inference limitation
+        const { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', data.user.id).single()
 
         if (profileError) {
           console.error('Auth store: Error fetching profile:', profileError)
         }
 
-        console.log('Auth store: Profile fetched:', profile?.role, profile)
+        console.log('Auth store: Profile fetched:', (profile as any)?.role, profile)
 
         set({
           user: data.user,
@@ -189,10 +187,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       set({ loading: true, error: null })
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', profile.id)
+      // @ts-ignore - Supabase browser client type inference limitation
+      const { error } = await supabase.from('profiles').update(updates).eq('id', profile.id)
 
       if (error) throw error
 

@@ -33,7 +33,7 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
     tagline: TOURNAMENT_INFO.TAGLINE,
     youtubeLink: TOURNAMENT_INFO.YOUTUBE_LINK,
     registrationLink: TOURNAMENT_INFO.REGISTRATION_LINK,
-    contacts: TOURNAMENT_INFO.CONTACTS,
+    contacts: [...TOURNAMENT_INFO.CONTACTS],
   },
   teams: [],
   matches: [],
