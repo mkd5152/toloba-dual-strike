@@ -36,7 +36,14 @@ export function CreateUmpireDialog() {
     setSuccess(null)
 
     try {
-      // Create user account
+      // CRITICAL: Save current organizer session before creating umpire
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+
+      if (!currentSession) {
+        throw new Error("You must be logged in to create umpires")
+      }
+
+      // Create user account (this will auto-login as the new umpire)
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: umpireEmail,
         password: umpirePassword,
@@ -61,6 +68,19 @@ export function CreateUmpireDialog() {
         })
 
         if (profileError) throw profileError
+      }
+
+      // CRITICAL: Restore organizer session immediately
+      const { error: restoreError } = await supabase.auth.setSession({
+        access_token: currentSession.access_token,
+        refresh_token: currentSession.refresh_token,
+      })
+
+      if (restoreError) {
+        console.error("Failed to restore session:", restoreError)
+        // Force reload to get back to login page
+        window.location.href = "/auth/login"
+        return
       }
 
       setSuccess({ email: umpireEmail, password: umpirePassword })
