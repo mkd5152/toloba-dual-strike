@@ -59,6 +59,14 @@ export function CreateUmpireDialog() {
         throw new Error("You must be logged in to create umpires")
       }
 
+      // Check if umpire with same email already exists
+      // @ts-ignore - Supabase browser client type inference limitation
+      const { data: existingUmpire, error: checkError } = await supabase.from('profiles').select('email, full_name').eq('email', umpireEmail).maybeSingle()
+
+      if (existingUmpire && !checkError) {
+        throw new Error(`Umpire "${(existingUmpire as any).full_name || umpireEmail}" already exists with this name`)
+      }
+
       // Call server API to create umpire using admin client
       // This won't affect the current user's session
       const response = await fetch('/api/admin/create-umpire', {
