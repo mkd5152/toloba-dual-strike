@@ -19,14 +19,13 @@ interface LiveEvent {
 }
 
 export default function SpectatorLivePage() {
-  const { matches, teams, initializeDummyData, getTeam } = useTournamentStore();
+  const { matches, teams, loadTeams, loadMatches, loading, getTeam } = useTournamentStore();
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
 
   useEffect(() => {
-    if (teams.length === 0) {
-      initializeDummyData();
-    }
-  }, [teams.length, initializeDummyData]);
+    loadTeams();
+    loadMatches();
+  }, [loadTeams, loadMatches]);
 
   useEffect(() => {
     // Generate simulated live events for demonstration

@@ -13,15 +13,14 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Link from "next/link"
 
 export default function SpectatorDashboardPage() {
-  const { tournament, teams, matches, initializeDummyData } = useTournamentStore()
-  const { standings, calculateStandings } = useStandingsStore()
+  const { tournament, teams, matches, loadTeams, loadMatches, loading } = useTournamentStore()
+  const { standings, loadStandings } = useStandingsStore()
 
   useEffect(() => {
-    if (teams.length === 0) {
-      initializeDummyData()
-    }
-    calculateStandings()
-  }, [teams.length, initializeDummyData, calculateStandings])
+    loadTeams()
+    loadMatches()
+    loadStandings()
+  }, [loadTeams, loadMatches, loadStandings])
 
   // Calculate statistics
   const totalMatches = matches.length

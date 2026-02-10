@@ -7,15 +7,14 @@ import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { StandingsTable } from "@/components/spectator/standings-table";
 
 export default function StandingsPage() {
-  const { standings, calculateStandings } = useStandingsStore();
-  const { teams, initializeDummyData } = useTournamentStore();
+  const { standings, loadStandings, loading } = useStandingsStore();
+  const { loadTeams, loadMatches } = useTournamentStore();
 
   useEffect(() => {
-    if (teams.length === 0) {
-      initializeDummyData();
-    }
-    calculateStandings();
-  }, [teams.length, initializeDummyData, calculateStandings]);
+    loadTeams();
+    loadMatches();
+    loadStandings();
+  }, [loadTeams, loadMatches, loadStandings]);
 
   return (
     <div className="p-4 md:p-8">
@@ -26,9 +25,17 @@ export default function StandingsPage() {
         <h1 className="text-4xl font-black text-white drop-shadow-lg">Tournament Standings</h1>
       </div>
 
-      <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
-        <StandingsTable standings={standings} />
-      </Card>
+      {loading ? (
+        <div className="text-center text-white/70 py-12">Loading standings...</div>
+      ) : standings.length === 0 ? (
+        <div className="text-center text-white/70 py-12">
+          No standings yet. Matches need to be completed first!
+        </div>
+      ) : (
+        <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
+          <StandingsTable standings={standings} />
+        </Card>
+      )}
     </div>
   );
 }
