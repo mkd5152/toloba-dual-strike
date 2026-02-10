@@ -100,9 +100,19 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
             ? umpires.get(dbMatch.umpire_id)
             : null;
 
+          const stageBadgeColor =
+            match.stage === "LEAGUE" ? "bg-blue-100 text-blue-800" :
+            match.stage === "SEMI" ? "bg-purple-100 text-purple-800" :
+            "bg-yellow-100 text-yellow-800"
+
           return (
             <TableRow key={match.id}>
               <TableCell className="font-medium">{match.matchNumber}</TableCell>
+              <TableCell>
+                <Badge className={`text-xs font-bold ${stageBadgeColor}`}>
+                  {match.stage}
+                </Badge>
+              </TableCell>
               <TableCell>{match.court}</TableCell>
               <TableCell>{format(match.startTime, "MMM d, HH:mm")}</TableCell>
               <TableCell>

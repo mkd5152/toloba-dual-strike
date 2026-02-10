@@ -15,8 +15,8 @@ export default function SpectatorLayout({
   const navItems = [
     { href: "/spectator/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/spectator/live", label: "Live", icon: Radio },
-    { href: "/spectator/bracket", label: "Bracket", icon: GitBranch },
-    { href: "/spectator/standings", label: "Standings", icon: Trophy },
+    { href: "/spectator/groups", label: "Groups", icon: Trophy },
+    { href: "/spectator/standings", label: "Standings", icon: BarChart3 },
   ];
 
   return (
