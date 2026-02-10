@@ -35,9 +35,12 @@ export function CreateUmpireDialog() {
     setError("")
     setSuccess(null)
 
+    // CRITICAL: Save current organizer session before ANY operations
+    let currentSession: any = null
+
     try {
-      // CRITICAL: Save current organizer session before creating umpire
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession()
+      currentSession = session
 
       if (!currentSession) {
         throw new Error("You must be logged in to create umpires")
@@ -70,19 +73,6 @@ export function CreateUmpireDialog() {
         if (profileError) throw profileError
       }
 
-      // CRITICAL: Restore organizer session immediately
-      const { error: restoreError } = await supabase.auth.setSession({
-        access_token: currentSession.access_token,
-        refresh_token: currentSession.refresh_token,
-      })
-
-      if (restoreError) {
-        console.error("Failed to restore session:", restoreError)
-        // Force reload to get back to login page
-        window.location.href = "/auth/login"
-        return
-      }
-
       setSuccess({ email: umpireEmail, password: umpirePassword })
       setName("")
       setEmail("")
@@ -90,6 +80,23 @@ export function CreateUmpireDialog() {
       console.error('Error creating umpire:', err)
       setError(err.message || "Failed to create umpire account")
     } finally {
+      // CRITICAL: ALWAYS restore organizer session, even if errors occurred
+      if (currentSession) {
+        try {
+          const { error: restoreError } = await supabase.auth.setSession({
+            access_token: currentSession.access_token,
+            refresh_token: currentSession.refresh_token,
+          })
+
+          if (restoreError) {
+            console.error("Failed to restore session:", restoreError)
+            alert("Session restore failed. Please refresh the page and login again.")
+          }
+        } catch (restoreErr) {
+          console.error("Error restoring session:", restoreErr)
+          alert("Critical error: Please refresh the page and login again.")
+        }
+      }
       setLoading(false)
     }
   }
