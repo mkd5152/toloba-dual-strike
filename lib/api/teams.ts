@@ -27,6 +27,14 @@ export async function fetchTeams(tournamentId: string): Promise<Team[]> {
     // Transform database rows to Team type
     return (data || []).map(transformTeamRow)
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && err.name === 'AbortError') {
+      return []
+    }
+    // Silently ignore errors with "aborted" message
+    if (err instanceof Error && err.message.toLowerCase().includes('abort')) {
+      return []
+    }
     console.error("Error fetching teams:", err)
     throw new Error(`Failed to fetch teams: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -51,6 +59,10 @@ export async function fetchTeam(teamId: string): Promise<Team | null> {
 
     return data ? transformTeamRow(data) : null
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      return null
+    }
     console.error("Error fetching team:", err)
     throw new Error(`Failed to fetch team: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -134,6 +146,7 @@ function transformTeamRow(row: any): Team {
     tournamentId: row.tournament_id,
     name: row.name,
     color: row.color,
+    group: row.group || undefined,
     players: [], // Players will be loaded separately
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),

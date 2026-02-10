@@ -9,7 +9,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { supabase } from "@/lib/supabase/client";
 import { format } from "date-fns";
 import Link from "next/link";
-import { AlertCircle, Calendar } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import type { Database } from "@/lib/types/database";
 
 type DbMatch = Database["public"]["Tables"]["matches"]["Row"];
@@ -44,14 +44,6 @@ export default function UmpireMatchesPage() {
     }
   };
 
-  const inProgress = matches.filter((m) => m.state === "IN_PROGRESS");
-  const upcoming = matches.filter(
-    (m) => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS"
-  );
-  const completed = matches.filter(
-    (m) => m.state === "COMPLETED" || m.state === "LOCKED"
-  );
-
   if (loading) {
     return (
       <div className="p-4 md:p-8">
@@ -75,7 +67,7 @@ export default function UmpireMatchesPage() {
         </p>
       </div>
 
-      {matches.length === 0 && (
+      {matches.length === 0 ? (
         <Alert className="bg-blue-50 border-blue-200">
           <AlertCircle className="w-5 h-5 text-blue-600" />
           <AlertDescription className="text-blue-800">
@@ -84,66 +76,17 @@ export default function UmpireMatchesPage() {
             Contact the tournament organizer to get matches assigned to you.
           </AlertDescription>
         </Alert>
-      )}
-
-      {inProgress.length > 0 && (
-        <Card className="mb-8 border-2 border-[#b71c1c] shadow-lg overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-[#b71c1c] to-[#c62828] text-white">
-            <CardTitle className="text-xl font-black flex items-center gap-2">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              Live / In Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              {inProgress.map((match) => (
-                <div
-                  key={match.id}
-                  className="flex items-center justify-between p-4 border-2 border-[#b71c1c]/20 rounded-lg bg-[#b71c1c]/5 hover:border-[#b71c1c] transition-colors"
-                >
-                  <div>
-                    <span className="font-bold text-[#0d3944]">
-                      Match {match.match_number}
-                    </span>
-                    <span className="text-gray-600 ml-2 font-medium">
-                      {match.court} • {format(new Date(match.start_time), "HH:mm")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-[#b71c1c] text-white font-bold">
-                      LIVE
-                    </Badge>
-                    <Button
-                      asChild
-                      size="sm"
-                      className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold hover:opacity-90"
-                    >
-                      <Link href={`/umpire/scoring/${match.id}`}>
-                        Open Scoring
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {upcoming.length > 0 && (
-        <Card className="mb-8 border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
+      ) : (
+        <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
-            <CardTitle className="text-xl font-black flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#ffb300]" />
-              Upcoming Matches
-            </CardTitle>
+            <CardTitle className="text-xl font-black">All Matches</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-3">
-              {upcoming.map((match) => (
+              {matches.map((match) => (
                 <div
                   key={match.id}
-                  className="flex items-center justify-between p-3 border-2 border-gray-200 rounded-lg hover:border-[#ff9800] transition-colors"
+                  className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-[#ff9800] transition-colors"
                 >
                   <div>
                     <span className="font-bold text-[#0d3944]">
@@ -153,42 +96,23 @@ export default function UmpireMatchesPage() {
                       {match.court} • {format(new Date(match.start_time), "MMM d, HH:mm")}
                     </span>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className="bg-gray-100 text-gray-700 font-bold uppercase"
-                  >
-                    {match.state}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {completed.length > 0 && (
-        <Card className="border-2 border-green-200 shadow-lg overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white">
-            <CardTitle className="text-xl font-black">Completed Matches</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-2">
-              {completed.map((match) => (
-                <div
-                  key={match.id}
-                  className="flex items-center justify-between p-3 border-2 border-green-100 rounded-lg bg-green-50"
-                >
-                  <div>
-                    <span className="font-bold text-[#0d3944]">
-                      Match {match.match_number}
-                    </span>
-                    <span className="text-gray-600 ml-2 font-medium">
-                      {match.court}
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={match.state === "IN_PROGRESS" ? "default" : "secondary"}
+                      className={match.state === "IN_PROGRESS" ? "bg-[#b71c1c] text-white font-bold" : "bg-gray-100 text-gray-700 font-bold"}
+                    >
+                      {match.state}
+                    </Badge>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold hover:opacity-90"
+                    >
+                      <Link href={`/umpire/scoring/${match.id}`}>
+                        Start Scoring
+                      </Link>
+                    </Button>
                   </div>
-                  <Badge className="bg-green-600 text-white font-bold">
-                    COMPLETED
-                  </Badge>
                 </div>
               ))}
             </div>

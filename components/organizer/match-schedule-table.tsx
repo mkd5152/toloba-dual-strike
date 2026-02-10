@@ -162,11 +162,13 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
                       onAssigned={fetchMatchesAndUmpires}
                     />
                   )}
-                  {match.state === "IN_PROGRESS" && (
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={`/umpire/scoring/${match.id}`}>Score</Link>
-                    </Button>
-                  )}
+                  <Button
+                    asChild
+                    size="sm"
+                    className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold hover:opacity-90"
+                  >
+                    <Link href={`/umpire/scoring/${match.id}`}>Start Scoring</Link>
+                  </Button>
                   {(match.state === "COMPLETED" || match.state === "LOCKED") && (
                     <ScoreOverrideDialog match={match} />
                   )}

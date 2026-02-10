@@ -9,15 +9,13 @@ export function ScoringPanel() {
   const { currentMatch, recordBall, selectPowerplay, undoLastBall } =
     useMatchStore();
 
-  if (!currentMatch || currentMatch.innings.length === 0) return null;
-
-  const innings = currentMatch.innings[0];
-  const currentInnings = currentMatch.innings.find(
+  const innings = currentMatch?.innings?.[0];
+  const currentInnings = currentMatch?.innings?.find(
     (i) => i.state === "IN_PROGRESS"
   ) ?? innings;
   const currentOver =
-    currentInnings?.overs.find((o) => o.balls.length < 6) ??
-    currentInnings?.overs[0];
+    currentInnings?.overs?.find((o) => o.balls.length < 6) ??
+    currentInnings?.overs?.[0];
   const ballNumber = currentOver ? currentOver.balls.length + 1 : 1;
 
   const handleRunScore = (runs: 0 | 1 | 2 | 3 | 4 | 6) => {
@@ -92,7 +90,7 @@ export function ScoringPanel() {
 
   const powerplayNotSet =
     currentInnings?.powerplayOver == null &&
-    currentInnings?.overs.some((o) => o.balls.length > 0);
+    (currentInnings?.overs?.some((o) => o.balls.length > 0) ?? false);
 
   return (
     <Card className="p-6">
