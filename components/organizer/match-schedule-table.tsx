@@ -83,7 +83,8 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-20">Match</TableHead>
+          <TableHead className="w-16">#</TableHead>
+          <TableHead className="w-20">Stage</TableHead>
           <TableHead>Court</TableHead>
           <TableHead>Time</TableHead>
           <TableHead>Teams</TableHead>
