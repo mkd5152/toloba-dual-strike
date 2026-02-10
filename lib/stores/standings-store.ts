@@ -70,6 +70,11 @@ export const useStandingsStore = create<StandingsStore>((set) => ({
       const standings = await standingsAPI.calculateStandings(tournament.id);
       set({ standings, loading: false });
     } catch (err) {
+      // Silently ignore abort errors (React Strict Mode unmounting)
+      if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+        set({ loading: false });
+        return;
+      }
       console.error("Error loading standings:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load standings",

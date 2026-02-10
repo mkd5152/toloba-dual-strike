@@ -4,7 +4,7 @@
 
 import { supabase } from "@/lib/supabase/client"
 import type { Database } from "@/lib/types/database"
-import type { Match, MatchState, MatchRanking } from "@/lib/types"
+import type { Match, MatchState, MatchStage, MatchRanking } from "@/lib/types"
 
 type MatchRow = Database["public"]["Tables"]["matches"]["Row"]
 type MatchInsert = Database["public"]["Tables"]["matches"]["Insert"]
@@ -26,6 +26,14 @@ export async function fetchMatches(tournamentId: string): Promise<Match[]> {
 
     return (data || []).map(transformMatchRow)
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && err.name === 'AbortError') {
+      return []
+    }
+    // Silently ignore errors with "aborted" message
+    if (err instanceof Error && err.message.toLowerCase().includes('abort')) {
+      return []
+    }
     console.error("Error fetching matches:", err)
     throw new Error(`Failed to fetch matches: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -50,6 +58,10 @@ export async function fetchMatch(matchId: string): Promise<Match | null> {
 
     return data ? transformMatchRow(data) : null
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      return null
+    }
     console.error("Error fetching match:", err)
     throw new Error(`Failed to fetch match: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -71,6 +83,10 @@ export async function fetchUmpireMatches(umpireId: string): Promise<Match[]> {
 
     return (data || []).map(transformMatchRow)
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      return []
+    }
     console.error("Error fetching umpire matches:", err)
     throw new Error(`Failed to fetch umpire matches: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -241,6 +257,7 @@ function transformMatchRow(row: any): Match {
     umpireName: row.umpire_name,
     teamIds: row.team_ids as [string, string, string, string],
     state: row.state as MatchState,
+    stage: (row.stage as MatchStage) || "LEAGUE",
     battingOrder: row.batting_order || [],
     innings: [], // Innings will be loaded separately
     rankings: (row.rankings as any) || [],

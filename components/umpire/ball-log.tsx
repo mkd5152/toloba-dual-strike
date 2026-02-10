@@ -6,16 +6,13 @@ import { useMatchStore } from "@/lib/stores/match-store";
 export function BallLog() {
   const { currentMatch } = useMatchStore();
 
-  if (!currentMatch) return null;
-
-  const currentInnings = currentMatch.innings.find(
+  const currentInnings = currentMatch?.innings?.find(
     (i) => i.state === "IN_PROGRESS"
   );
-  const innings = currentInnings ?? currentMatch.innings[0];
-  if (!innings) return null;
+  const innings = currentInnings ?? currentMatch?.innings?.[0];
 
   const logs: { over: number; ball: number; text: string; isPowerplay: boolean }[] = [];
-  for (const over of innings.overs) {
+  for (const over of innings?.overs ?? []) {
     for (const ball of over.balls) {
       const overBall = `${over.overNumber}.${ball.ballNumber}`;
       let event = "";

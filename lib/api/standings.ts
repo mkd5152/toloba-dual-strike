@@ -74,6 +74,10 @@ export async function calculateStandings(tournamentId: string): Promise<Standing
 
     return standings
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      return []
+    }
     console.error("Error calculating standings:", err)
     throw new Error(`Failed to calculate standings: ${err instanceof Error ? err.message : "Unknown error"}`)
   }

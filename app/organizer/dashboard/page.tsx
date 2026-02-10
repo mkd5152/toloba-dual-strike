@@ -117,6 +117,96 @@ export default function OrganizerDashboard() {
               </CardContent>
             </Card>
           )}
+
+          {/* Recent Activity */}
+          {matches.length > 0 && (
+            <div className="grid md:grid-cols-2 gap-6 mt-8">
+              {/* Upcoming Matches */}
+              <Card className="border-2 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-[#0d3944]">Upcoming Matches</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {matches
+                    .filter((m) => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS")
+                    .slice(0, 5)
+                    .map((match) => (
+                      <div
+                        key={match.id}
+                        className="flex items-center justify-between py-3 border-b last:border-b-0"
+                      >
+                        <div>
+                          <p className="font-bold text-[#0d3944]">
+                            Match {match.matchNumber}
+                          </p>
+                          <p className="text-sm text-gray-600">{match.court}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">
+                            {match.startTime.toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {match.startTime.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  {matches.filter((m) => m.state === "SCHEDULED" || m.state === "NOT_STARTED")
+                    .length === 0 && (
+                    <p className="text-gray-500 text-center py-4">
+                      No upcoming matches
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Completed Matches */}
+              <Card className="border-2 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-[#0d3944]">Recent Completed</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {matches
+                    .filter((m) => m.state === "COMPLETED" || m.state === "LOCKED")
+                    .slice(-5)
+                    .reverse()
+                    .map((match) => {
+                      const winner = match.rankings[0];
+                      const winnerTeam = teams.find((t) => t.id === winner?.teamId);
+                      return (
+                        <div
+                          key={match.id}
+                          className="flex items-center justify-between py-3 border-b last:border-b-0"
+                        >
+                          <div>
+                            <p className="font-bold text-[#0d3944]">
+                              Match {match.matchNumber}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {winnerTeam?.name || "TBD"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold">
+                              {winner?.totalRuns} runs
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {matches.filter((m) => m.state === "COMPLETED" || m.state === "LOCKED")
+                    .length === 0 && (
+                    <p className="text-gray-500 text-center py-4">
+                      No completed matches yet
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </>
       )}
     </div>

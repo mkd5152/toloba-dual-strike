@@ -72,7 +72,7 @@ export default function UmpireLayout({
               <Button
                 onClick={async () => {
                   await signOut();
-                  router.push("/spectator/dashboard");
+                  window.location.href = "/spectator/dashboard";
                 }}
                 variant="ghost"
                 className="text-white/70 hover:text-white hover:bg-white/10"

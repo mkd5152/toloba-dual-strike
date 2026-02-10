@@ -6,6 +6,7 @@ export type MatchState =
   | "IN_PROGRESS"
   | "COMPLETED"
   | "LOCKED";
+export type MatchStage = "LEAGUE" | "SEMI" | "FINAL";
 export type InningsState = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
 export type WicketType = "NORMAL" | "BOWLING_ONLY" | null;
 
@@ -33,6 +34,7 @@ export interface Team {
   tournamentId: string;
   name: string;
   color: string; // Hex color for UI
+  group?: number; // Group number (1-4) for playoff qualification
   players: Player[];
   createdAt?: Date;
   updatedAt?: Date;
@@ -60,6 +62,7 @@ export interface Match {
   umpireName: string | null;
   teamIds: [string, string, string, string];
   state: MatchState;
+  stage: MatchStage; // Tournament stage: LEAGUE, SEMI, or FINAL
   battingOrder: string[]; // Team IDs in batting order (set at toss)
   innings: Innings[];
   rankings: MatchRanking[];

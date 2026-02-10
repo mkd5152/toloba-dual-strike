@@ -170,7 +170,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   signOut: async () => {
     try {
       set({ loading: true, error: null })
-      const { error } = await supabase.auth.signOut()
+      // Use scope: 'global' to sign out from all sessions
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
       if (error) throw error
       set({ user: null, session: null, profile: null, loading: false })
     } catch (error: any) {

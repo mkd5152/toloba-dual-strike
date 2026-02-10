@@ -94,7 +94,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    if (isUmpireRoute && profile.role !== 'umpire') {
+    // Organizers can access umpire routes (they're admins)
+    if (isUmpireRoute && profile.role !== 'umpire' && profile.role !== 'organizer') {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/spectator/dashboard'
       return NextResponse.redirect(redirectUrl)

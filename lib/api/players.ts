@@ -26,6 +26,10 @@ export async function fetchPlayersByTeam(teamId: string): Promise<Player[]> {
 
     return (data || []).map(transformPlayerRow)
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      return []
+    }
     console.error("Error fetching players:", err)
     throw new Error(`Failed to fetch players: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -59,6 +63,10 @@ export async function fetchPlayersByTeams(teamIds: string[]): Promise<Record<str
 
     return playersByTeam
   } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      return {}
+    }
     console.error("Error fetching players by teams:", err)
     throw new Error(`Failed to fetch players: ${err instanceof Error ? err.message : "Unknown error"}`)
   }

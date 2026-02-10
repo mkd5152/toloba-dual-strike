@@ -76,6 +76,11 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
 
       set({ teams, loading: false });
     } catch (err) {
+      // Silently ignore abort errors (React Strict Mode unmounting)
+      if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+        set({ loading: false });
+        return;
+      }
       console.error("Error loading teams:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load teams",
@@ -93,6 +98,11 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
       const matches = await matchesAPI.fetchMatches(tournament.id);
       set({ matches, loading: false });
     } catch (err) {
+      // Silently ignore abort errors (React Strict Mode unmounting)
+      if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+        set({ loading: false });
+        return;
+      }
       console.error("Error loading matches:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load matches",
