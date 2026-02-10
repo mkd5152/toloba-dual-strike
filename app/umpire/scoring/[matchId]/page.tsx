@@ -12,8 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import type { Match } from "@/lib/types";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -21,7 +19,7 @@ export default function ScoringPage() {
   const matchId = params.matchId as string;
 
   const { setCurrentMatch, currentMatch } = useMatchStore();
-  const { matches, loadMatches, getMatch } = useTournamentStore();
+  const { matches, loadMatches } = useTournamentStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
