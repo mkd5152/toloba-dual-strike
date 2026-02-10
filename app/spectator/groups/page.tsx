@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { GroupStandings } from "@/components/spectator/group-standings"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Trophy, Users } from "lucide-react"
+import { Trophy, Users, AlertCircle } from "lucide-react"
 import { getQualifiedTeamsForSemis } from "@/lib/api/qualification"
 import type { StandingsEntry } from "@/lib/types"
 
@@ -16,17 +16,24 @@ export default function GroupStandingsPage() {
     group4: StandingsEntry[]
   } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const hasLoaded = useRef(false)
 
   useEffect(() => {
-    loadGroupStandings()
+    if (!hasLoaded.current) {
+      hasLoaded.current = true
+      loadGroupStandings()
+    }
   }, [])
 
   const loadGroupStandings = async () => {
     try {
+      setError(null)
       const standings = await getQualifiedTeamsForSemis("tdst-season-1")
       setGroupStandings(standings)
     } catch (err) {
       console.error("Error loading group standings:", err)
+      setError(err instanceof Error ? err.message : "Failed to load group standings")
     } finally {
       setLoading(false)
     }
@@ -39,6 +46,26 @@ export default function GroupStandingsPage() {
           <div className="animate-spin w-12 h-12 border-4 border-[#ff9800] border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-white font-bold">Loading group standings...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 md:p-8">
+        <Alert className="mb-6 bg-red-50 border-red-200">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Error:</strong> {error}
+            <br />
+            <button
+              onClick={loadGroupStandings}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Try again
+            </button>
+          </AlertDescription>
+        </Alert>
       </div>
     )
   }
