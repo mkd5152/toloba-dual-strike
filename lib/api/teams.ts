@@ -59,7 +59,7 @@ export async function fetchTeam(teamId: string): Promise<Team | null> {
 /**
  * Create a new team
  */
-export async function createTeam(team: Omit<Team, "id" | "createdAt" | "updatedAt">): Promise<Team> {
+export async function createTeam(team: Omit<Team, "id" | "createdAt" | "updatedAt" | "players">): Promise<Team> {
   try {
     const teamData: TeamInsert = {
       id: crypto.randomUUID(),
@@ -71,11 +71,7 @@ export async function createTeam(team: Omit<Team, "id" | "createdAt" | "updatedA
     }
 
     // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase
-      .from("teams")
-      .insert(teamData)
-      .select()
-      .single()
+    const { data, error } = await supabase.from("teams").insert(teamData).select().single()
 
     if (error) throw error
     if (!data) throw new Error("No data returned from insert")
@@ -99,12 +95,7 @@ export async function updateTeam(teamId: string, updates: Partial<Omit<Team, "id
     }
 
     // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase
-      .from("teams")
-      .update(teamData)
-      .eq("id", teamId)
-      .select()
-      .single()
+    const { data, error } = await supabase.from("teams").update(teamData).eq("id", teamId).select().single()
 
     if (error) throw error
     if (!data) throw new Error("No data returned from update")

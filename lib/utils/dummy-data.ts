@@ -45,6 +45,7 @@ export function generateDummyTeams(count: number = 20): Team[] {
 
   return Array.from({ length: count }, (_, i) => ({
     id: `team-${i + 1}`,
+    tournamentId: "tdst-season-1",
     name: teamNames[i],
     color: TEAM_COLORS[i],
     players: [
@@ -52,12 +53,14 @@ export function generateDummyTeams(count: number = 20): Team[] {
         id: `player-${i * 2 + 1}`,
         name: `Player ${i * 2 + 1}A`,
         teamId: `team-${i + 1}`,
+        role: "none" as const,
         isLateArrival: false,
       },
       {
         id: `player-${i * 2 + 2}`,
         name: `Player ${i * 2 + 1}B`,
         teamId: `team-${i + 1}`,
+        role: "none" as const,
         isLateArrival: false,
       },
     ],
