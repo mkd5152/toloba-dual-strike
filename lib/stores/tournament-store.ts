@@ -2,17 +2,24 @@ import { create } from "zustand";
 import type { Team, Match, Tournament } from "@/lib/types";
 import { generateDummyTeams, generateDummyMatches } from "@/lib/utils/dummy-data";
 import { TOURNAMENT_INFO } from "@/lib/constants";
+import * as teamsAPI from "@/lib/api/teams";
+import * as playersAPI from "@/lib/api/players";
+import * as matchesAPI from "@/lib/api/matches";
 
 interface TournamentStore {
   tournament: Tournament;
   teams: Team[];
   matches: Match[];
+  loading: boolean;
+  error: string | null;
 
   // Actions
   initializeDummyData: () => void;
-  addTeam: (team: Team) => void;
-  removeTeam: (teamId: string) => void;
-  updateMatch: (matchId: string, updates: Partial<Match>) => void;
+  loadTeams: () => Promise<void>;
+  loadMatches: () => Promise<void>;
+  addTeam: (team: Omit<Team, "id" | "createdAt" | "updatedAt" | "players">) => Promise<Team>;
+  removeTeam: (teamId: string) => Promise<void>;
+  updateMatch: (matchId: string, updates: Partial<Match>) => Promise<void>;
   getMatch: (matchId: string) => Match | undefined;
   getTeam: (teamId: string) => Team | undefined;
 }
@@ -37,27 +44,142 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
   },
   teams: [],
   matches: [],
+  loading: false,
+  error: null,
 
+  // Initialize with dummy data (for development/demo)
   initializeDummyData: () => {
     const teams = generateDummyTeams(20);
     const matches = generateDummyMatches(teams);
     set({ teams, matches });
   },
 
-  addTeam: (team) =>
-    set((state) => ({ teams: [...state.teams, team] })),
+  // Load teams from database
+  loadTeams: async () => {
+    try {
+      set({ loading: true, error: null });
+      const { tournament } = get();
 
-  removeTeam: (teamId) =>
-    set((state) => ({
-      teams: state.teams.filter((t) => t.id !== teamId),
-    })),
+      // Fetch teams
+      const teams = await teamsAPI.fetchTeams(tournament.id);
 
-  updateMatch: (matchId, updates) =>
-    set((state) => ({
-      matches: state.matches.map((m) =>
-        m.id === matchId ? { ...m, ...updates } : m
-      ),
-    })),
+      // Fetch players for all teams
+      const teamIds = teams.map(t => t.id);
+      if (teamIds.length > 0) {
+        const playersByTeam = await playersAPI.fetchPlayersByTeams(teamIds);
+
+        // Attach players to teams
+        teams.forEach(team => {
+          team.players = playersByTeam[team.id] || [];
+        });
+      }
+
+      set({ teams, loading: false });
+    } catch (err) {
+      console.error("Error loading teams:", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to load teams",
+        loading: false
+      });
+    }
+  },
+
+  // Load matches from database
+  loadMatches: async () => {
+    try {
+      set({ loading: true, error: null });
+      const { tournament } = get();
+
+      const matches = await matchesAPI.fetchMatches(tournament.id);
+      set({ matches, loading: false });
+    } catch (err) {
+      console.error("Error loading matches:", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to load matches",
+        loading: false
+      });
+    }
+  },
+
+  // Add team to database
+  addTeam: async (teamData) => {
+    try {
+      set({ loading: true, error: null });
+      const { tournament } = get();
+
+      // Create team in database
+      const team = await teamsAPI.createTeam({
+        ...teamData,
+        tournamentId: tournament.id,
+      });
+
+      // Update local state
+      set((state) => ({
+        teams: [...state.teams, team],
+        loading: false
+      }));
+
+      return team;
+    } catch (err) {
+      console.error("Error adding team:", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to add team",
+        loading: false
+      });
+      throw err;
+    }
+  },
+
+  // Remove team from database
+  removeTeam: async (teamId) => {
+    try {
+      set({ loading: true, error: null });
+
+      // Delete team's players first
+      await playersAPI.deletePlayersByTeam(teamId);
+
+      // Delete team
+      await teamsAPI.deleteTeam(teamId);
+
+      // Update local state
+      set((state) => ({
+        teams: state.teams.filter((t) => t.id !== teamId),
+        loading: false
+      }));
+    } catch (err) {
+      console.error("Error removing team:", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to remove team",
+        loading: false
+      });
+      throw err;
+    }
+  },
+
+  // Update match in database
+  updateMatch: async (matchId, updates) => {
+    try {
+      set({ loading: true, error: null });
+
+      // Update match in database
+      const updatedMatch = await matchesAPI.updateMatch(matchId, updates);
+
+      // Update local state
+      set((state) => ({
+        matches: state.matches.map((m) =>
+          m.id === matchId ? updatedMatch : m
+        ),
+        loading: false
+      }));
+    } catch (err) {
+      console.error("Error updating match:", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to update match",
+        loading: false
+      });
+      throw err;
+    }
+  },
 
   getMatch: (matchId) => get().matches.find((m) => m.id === matchId),
 

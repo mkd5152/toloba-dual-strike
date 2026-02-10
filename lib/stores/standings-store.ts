@@ -1,15 +1,23 @@
 import { create } from "zustand";
 import type { StandingsEntry } from "@/lib/types";
 import { useTournamentStore } from "./tournament-store";
+import * as standingsAPI from "@/lib/api/standings";
 
 interface StandingsStore {
   standings: StandingsEntry[];
+  loading: boolean;
+  error: string | null;
+
   calculateStandings: () => void;
+  loadStandings: () => Promise<void>;
 }
 
 export const useStandingsStore = create<StandingsStore>((set) => ({
   standings: [],
+  loading: false,
+  error: null,
 
+  // Calculate standings from local tournament store data
   calculateStandings: () => {
     const { teams, matches } = useTournamentStore.getState();
 
@@ -51,5 +59,22 @@ export const useStandingsStore = create<StandingsStore>((set) => ({
     });
 
     set({ standings: sorted });
+  },
+
+  // Load standings directly from API (calculates from database)
+  loadStandings: async () => {
+    try {
+      set({ loading: true, error: null });
+      const { tournament } = useTournamentStore.getState();
+
+      const standings = await standingsAPI.calculateStandings(tournament.id);
+      set({ standings, loading: false });
+    } catch (err) {
+      console.error("Error loading standings:", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to load standings",
+        loading: false
+      });
+    }
   },
 }));

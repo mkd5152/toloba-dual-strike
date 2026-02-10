@@ -19,49 +19,73 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Team, Player } from "@/lib/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTournamentStore } from "@/lib/stores/tournament-store";
+import { createPlayers } from "@/lib/api/players";
 import { TEAM_COLORS } from "@/lib/constants";
+import type { Player } from "@/lib/types";
 
 interface AddTeamDialogProps {
-  onAdd: (team: Team) => void;
   trigger?: React.ReactNode;
 }
 
-export function AddTeamDialog({ onAdd, trigger }: AddTeamDialogProps) {
+export function AddTeamDialog({ trigger }: AddTeamDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [color, setColor] = useState(TEAM_COLORS[0]);
   const [player1, setPlayer1] = useState("");
   const [player2, setPlayer2] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const addTeam = useTournamentStore(state => state.addTeam);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = `team-${Date.now()}`;
-    const players: Player[] = [
-      {
-        id: `${id}-p1`,
-        name: player1 || "Player 1",
-        teamId: id,
-        isLateArrival: false,
-      },
-      {
-        id: `${id}-p2`,
-        name: player2 || "Player 2",
-        teamId: id,
-        isLateArrival: false,
-      },
-    ];
-    onAdd({
-      id,
-      name: name || "New Team",
-      color,
-      players,
-    });
-    setName("");
-    setColor(TEAM_COLORS[0]);
-    setPlayer1("");
-    setPlayer2("");
-    setOpen(false);
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Create team in database
+      const team = await addTeam({
+        name: name || "New Team",
+        color,
+        players: [], // Will be added separately
+      });
+
+      // Create players for the team
+      const playersToCreate: Omit<Player, "id" | "createdAt" | "updatedAt">[] = [
+        {
+          teamId: team.id,
+          name: player1 || "Player 1",
+          role: "none",
+          isLateArrival: false,
+        },
+        {
+          teamId: team.id,
+          name: player2 || "Player 2",
+          role: "none",
+          isLateArrival: false,
+        },
+      ];
+
+      await createPlayers(playersToCreate);
+
+      // Reload teams to get the updated data with players
+      await useTournamentStore.getState().loadTeams();
+
+      // Reset form
+      setName("");
+      setColor(TEAM_COLORS[0]);
+      setPlayer1("");
+      setPlayer2("");
+      setOpen(false);
+    } catch (err) {
+      console.error("Error adding team:", err);
+      setError(err instanceof Error ? err.message : "Failed to add team");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -83,11 +107,13 @@ export function AddTeamDialog({ onAdd, trigger }: AddTeamDialogProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Chennai Kings"
+              disabled={loading}
+              required
             />
           </div>
           <div>
             <Label>Team color</Label>
-            <Select value={color} onValueChange={setColor}>
+            <Select value={color} onValueChange={setColor} disabled={loading}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -113,6 +139,8 @@ export function AddTeamDialog({ onAdd, trigger }: AddTeamDialogProps) {
               value={player1}
               onChange={(e) => setPlayer1(e.target.value)}
               placeholder="Name"
+              disabled={loading}
+              required
             />
           </div>
           <div>
@@ -122,13 +150,24 @@ export function AddTeamDialog({ onAdd, trigger }: AddTeamDialogProps) {
               value={player2}
               onChange={(e) => setPlayer2(e.target.value)}
               placeholder="Name"
+              disabled={loading}
+              required
             />
           </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit">Add Team</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Adding..." : "Add Team"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
