@@ -8,6 +8,8 @@ import {
 } from "@/lib/utils/scoring-engine";
 import { POINTS_SYSTEM } from "@/lib/constants";
 import { useTournamentStore } from "./tournament-store";
+import { recordBall as recordBallAPI, deleteLastBall } from "@/lib/api/balls";
+import { updateInningsTotals } from "@/lib/api/innings";
 
 interface MatchStore {
   currentMatch: Match | null;
@@ -196,10 +198,31 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       currentOverIndex: nextOverIndex,
     });
 
-    // Update match innings in database
-    useTournamentStore.getState().updateMatch(currentMatch.id, {
-      innings: updatedMatch.innings,
+    // Persist ball to database
+    if (over.id) {
+      recordBallAPI(over.id, ballWithEffective).catch((err) => {
+        console.error("Failed to record ball to database:", err);
+      });
+    }
+
+    // Update innings totals in database
+    updateInningsTotals(innings.id, {
+      totalRuns: updatedInnings.totalRuns,
+      totalWickets: updatedInnings.totalWickets,
+      noWicketBonus: updatedInnings.noWicketBonus,
+      finalScore: updatedInnings.finalScore,
+    }).catch((err) => {
+      console.error("Failed to update innings totals:", err);
     });
+
+    // Update match state in database (for rankings when completed)
+    if (updatedMatch.state === "COMPLETED" && updatedMatch.rankings) {
+      useTournamentStore.getState().updateMatch(currentMatch.id, {
+        state: "COMPLETED",
+        rankings: updatedMatch.rankings,
+        lockedAt: updatedMatch.lockedAt || null,
+      });
+    }
 
     // If we transitioned to a new innings, update its state in the database
     if (nextInningsIndex !== currentInningsIndex && nextInningsIndex < currentMatch.innings.length) {
@@ -361,8 +384,22 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     };
 
     set({ currentMatch: updatedMatch });
-    useTournamentStore.getState().updateMatch(currentMatch.id, {
-      innings: updatedMatch.innings,
+
+    // Delete ball from database
+    if (over.id) {
+      deleteLastBall(over.id).catch((err) => {
+        console.error("Failed to delete ball from database:", err);
+      });
+    }
+
+    // Update innings totals in database
+    updateInningsTotals(innings.id, {
+      totalRuns: updatedInnings.totalRuns,
+      totalWickets: updatedInnings.totalWickets,
+      noWicketBonus: updatedInnings.noWicketBonus,
+      finalScore: updatedInnings.finalScore,
+    }).catch((err) => {
+      console.error("Failed to update innings totals after undo:", err);
     });
   },
 }));

@@ -83,6 +83,7 @@ export interface Innings {
 }
 
 export interface Over {
+  id?: string; // Database ID (optional for client-side creation)
   overNumber: number; // 0-2
   bowlingTeamId: string; // Team that bowls this over
   bowlerId: string;
