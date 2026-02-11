@@ -4,14 +4,19 @@ import { SCORING_RULES, POINTS_SYSTEM } from "@/lib/constants";
 export function calculateBallRuns(ball: Ball, isPowerplay: boolean): number {
   let runs: number = ball.runs;
 
-  // Wicket penalties
+  // Wicket penalties for BATTING team
   if (ball.isWicket) {
     if (ball.wicketType === "NORMAL") {
+      // 3 consecutive dot balls = normal wicket penalty
       runs = isPowerplay
         ? SCORING_RULES.POWERPLAY_WICKET_PENALTY
         : SCORING_RULES.NORMAL_WICKET_PENALTY;
-    } else if (ball.wicketType === "BOWLING_ONLY") {
-      runs = SCORING_RULES.BOWLING_WICKET_BONUS;
+    } else if (ball.wicketType === "BOWLING_TEAM" || ball.wicketType === "CATCH_OUT" || ball.wicketType === "RUN_OUT") {
+      // These wickets give penalty to batting team
+      // Fielding credit (+5 runs) is handled separately in match-store
+      runs = isPowerplay
+        ? SCORING_RULES.POWERPLAY_WICKET_PENALTY
+        : SCORING_RULES.NORMAL_WICKET_PENALTY;
     }
   }
 
@@ -103,11 +108,43 @@ export function canBowlerBowlNextOver(
   return prevBowlerId !== newBowlerId;
 }
 
+/**
+ * Calculate fielding credits for all teams in the match
+ * Returns a map of teamId -> total fielding bonus runs
+ */
+export function calculateFieldingCredits(innings: Innings[]): Record<string, number> {
+  const credits: Record<string, number> = {};
+
+  for (const inning of innings) {
+    for (const over of inning.overs) {
+      for (const ball of over.balls) {
+        if (ball.isWicket && ball.fieldingTeamId) {
+          // CATCH_OUT or RUN_OUT: Credit the fielding team
+          credits[ball.fieldingTeamId] = (credits[ball.fieldingTeamId] || 0) + SCORING_RULES.BOWLING_WICKET_BONUS;
+        } else if (ball.isWicket && ball.wicketType === "BOWLING_TEAM") {
+          // BOWLING_TEAM wicket: Credit the bowling team (current over's bowling team)
+          const bowlingTeamId = over.bowlingTeamId;
+          credits[bowlingTeamId] = (credits[bowlingTeamId] || 0) + SCORING_RULES.BOWLING_WICKET_BONUS;
+        }
+      }
+    }
+  }
+
+  return credits;
+}
+
 export function rankTeamsInMatch(
   innings: Innings[]
 ): { teamId: string; rank: number; points: number }[] {
+  // Calculate fielding credits for all teams
+  const fieldingCredits = calculateFieldingCredits(innings);
+
+  // Apply fielding credits to final scores
   const sorted = innings
-    .map((i) => ({ teamId: i.teamId, score: i.finalScore }))
+    .map((i) => ({
+      teamId: i.teamId,
+      score: i.finalScore + (fieldingCredits[i.teamId] || 0), // Add fielding bonus to final score
+    }))
     .sort((a, b) => b.score - a.score);
 
   const pointsMap = [

@@ -277,6 +277,7 @@ export async function fetchMatchInnings(matchId: string): Promise<Innings[]> {
             runs: ballRow.runs,
             isWicket: ballRow.is_wicket,
             wicketType: ballRow.wicket_type,
+            fieldingTeamId: ballRow.fielding_team_id || undefined,
             isNoball: ballRow.is_noball,
             isWide: ballRow.is_wide,
             isFreeHit: ballRow.is_free_hit,
