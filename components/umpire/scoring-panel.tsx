@@ -24,7 +24,7 @@ export function ScoringPanel() {
     currentInnings?.overs?.[0];
   const ballNumber = currentOver ? currentOver.balls.length + 1 : 1;
 
-  const handleRunScore = (runs: 0 | 1 | 2 | 3 | 4 | 6) => {
+  const handleRunScore = (runs: 0 | 1 | 2 | 3 | 4 | 5 | 6) => {
     recordBall({
       ballNumber: 1,
       runs,
@@ -60,7 +60,7 @@ export function ScoringPanel() {
     setShowExtrasDialog(true);
   };
 
-  const handleExtrasRunsSelected = (runs: 0 | 1 | 2 | 3 | 4 | 6) => {
+  const handleExtrasRunsSelected = (runs: 0 | 1 | 2 | 3 | 4 | 5 | 6) => {
     recordBall({
       ballNumber: 1,
       runs,
@@ -104,8 +104,8 @@ export function ScoringPanel() {
           <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
             Score Runs
           </h3>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
-            {([0, 1, 2, 3, 4, 6] as const).map((runs) => (
+          <div className="grid grid-cols-3 sm:grid-cols-7 gap-2 sm:gap-2 md:gap-3">
+            {([0, 1, 2, 3, 4, 5, 6] as const).map((runs) => (
               <Button
                 key={runs}
                 size="lg"
