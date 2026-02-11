@@ -4,10 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useMatchStore } from "@/lib/stores/match-store";
 import type { Ball } from "@/lib/types";
+import { ExtrasRunSelector } from "./extras-run-selector";
+import { useState } from "react";
+import { SCORING_RULES } from "@/lib/constants";
 
 export function ScoringPanel() {
   const { currentMatch, recordBall, selectPowerplay, undoLastBall } =
     useMatchStore();
+
+  const [showExtrasDialog, setShowExtrasDialog] = useState(false);
+  const [extrasType, setExtrasType] = useState<"noball" | "wide">("noball");
 
   const innings = currentMatch?.innings?.[0];
   const currentInnings = currentMatch?.innings?.find(
@@ -45,26 +51,23 @@ export function ScoringPanel() {
   };
 
   const handleNoball = () => {
-    recordBall({
-      ballNumber: 1,
-      runs: 0,
-      isWicket: false,
-      wicketType: null,
-      isNoball: true,
-      isWide: false,
-      isFreeHit: false,
-      misconduct: false,
-    });
+    setExtrasType("noball");
+    setShowExtrasDialog(true);
   };
 
   const handleWide = () => {
+    setExtrasType("wide");
+    setShowExtrasDialog(true);
+  };
+
+  const handleExtrasRunsSelected = (runs: 0 | 1 | 2 | 3 | 4 | 6) => {
     recordBall({
       ballNumber: 1,
-      runs: 0,
+      runs,
       isWicket: false,
       wicketType: null,
-      isNoball: false,
-      isWide: true,
+      isNoball: extrasType === "noball",
+      isWide: extrasType === "wide",
       isFreeHit: false,
       misconduct: false,
     });
@@ -86,8 +89,17 @@ export function ScoringPanel() {
   const powerplayNotSet = currentInnings?.powerplayOver == null;
 
   return (
-    <Card className="p-3 sm:p-4 md:p-6">
-      <div className="space-y-4 sm:space-y-5 md:space-y-6">
+    <>
+      <ExtrasRunSelector
+        open={showExtrasDialog}
+        onClose={() => setShowExtrasDialog(false)}
+        onSelectRuns={handleExtrasRunsSelected}
+        extrasType={extrasType}
+        baseRuns={extrasType === "noball" ? SCORING_RULES.NOBALL_RUNS : SCORING_RULES.WIDE_RUNS}
+      />
+
+      <Card className="p-3 sm:p-4 md:p-6">
+        <div className="space-y-4 sm:space-y-5 md:space-y-6">
         <div>
           <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
             Score Runs
@@ -170,5 +182,6 @@ export function ScoringPanel() {
         </Button>
       </div>
     </Card>
+    </>
   );
 }
