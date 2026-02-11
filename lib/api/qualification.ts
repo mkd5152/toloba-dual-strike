@@ -85,15 +85,14 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
       })
     })
 
-    // Sort each group and get top 2
-    const getTopTwo = (groupMap: Map<string, StandingsEntry>): StandingsEntry[] => {
+    // Sort each group and return all teams (not just top 2)
+    const getAllTeamsSorted = (groupMap: Map<string, StandingsEntry>): StandingsEntry[] => {
       return Array.from(groupMap.values())
         .sort((a, b) => {
           if (b.points !== a.points) return b.points - a.points
           if (b.totalRuns !== a.totalRuns) return b.totalRuns - a.totalRuns
           return a.teamName.localeCompare(b.teamName)
         })
-        .slice(0, 2)
         .map((standing, index) => ({
           ...standing,
           rank: index + 1,
@@ -101,10 +100,10 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
     }
 
     return {
-      group1: getTopTwo(standingsByGroup[1]),
-      group2: getTopTwo(standingsByGroup[2]),
-      group3: getTopTwo(standingsByGroup[3]),
-      group4: getTopTwo(standingsByGroup[4]),
+      group1: getAllTeamsSorted(standingsByGroup[1]),
+      group2: getAllTeamsSorted(standingsByGroup[2]),
+      group3: getAllTeamsSorted(standingsByGroup[3]),
+      group4: getAllTeamsSorted(standingsByGroup[4]),
     }
   } catch (err) {
     // Silently ignore abort errors (React Strict Mode unmounting)
