@@ -152,7 +152,7 @@ export function ScoringPanel() {
               Powerplay (Select Once)
             </h3>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {[1, 2, 3].map((over) => (
+              {[0, 1, 2].map((over) => (
                 <Button
                   key={over}
                   variant="outline"

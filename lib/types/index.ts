@@ -75,7 +75,7 @@ export interface Innings {
   battingPair: [string, string]; // Player IDs
   state: InningsState;
   overs: Over[]; // Each over has its own bowlingTeamId
-  powerplayOver: number | null; // 1, 2, or 3
+  powerplayOver: number | null; // 0, 1, or 2
   totalRuns: number;
   totalWickets: number;
   noWicketBonus: boolean;
@@ -83,7 +83,7 @@ export interface Innings {
 }
 
 export interface Over {
-  overNumber: number; // 1-3
+  overNumber: number; // 0-2
   bowlingTeamId: string; // Team that bowls this over
   bowlerId: string;
   keeperId: string;
