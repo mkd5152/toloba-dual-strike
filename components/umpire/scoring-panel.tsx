@@ -28,7 +28,6 @@ export function ScoringPanel() {
       isWide: false,
       isFreeHit: false,
       misconduct: false,
-      thirdBallViolation: false,
     });
   };
 
@@ -42,7 +41,6 @@ export function ScoringPanel() {
       isWide: false,
       isFreeHit: false,
       misconduct: false,
-      thirdBallViolation: false,
     });
   };
 
@@ -56,7 +54,6 @@ export function ScoringPanel() {
       isWide: false,
       isFreeHit: false,
       misconduct: false,
-      thirdBallViolation: false,
     });
   };
 
@@ -70,7 +67,6 @@ export function ScoringPanel() {
       isWide: true,
       isFreeHit: false,
       misconduct: false,
-      thirdBallViolation: false,
     });
   };
 
@@ -84,7 +80,6 @@ export function ScoringPanel() {
       isWide: false,
       isFreeHit: false,
       misconduct: true,
-      thirdBallViolation: false,
     });
   };
 

@@ -308,7 +308,6 @@ export interface Database {
           is_wide: boolean
           is_free_hit: boolean
           misconduct: boolean
-          third_ball_violation: boolean
           effective_runs: number
           timestamp: string
         }
@@ -323,7 +322,6 @@ export interface Database {
           is_wide?: boolean
           is_free_hit?: boolean
           misconduct?: boolean
-          third_ball_violation?: boolean
           effective_runs: number
           timestamp?: string
         }
@@ -338,7 +336,6 @@ export interface Database {
           is_wide?: boolean
           is_free_hit?: boolean
           misconduct?: boolean
-          third_ball_violation?: boolean
           effective_runs?: number
           timestamp?: string
         }

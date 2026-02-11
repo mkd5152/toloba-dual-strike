@@ -56,14 +56,14 @@ export function InningsHeader() {
   // Find current over (first over with less than 6 balls)
   const overIndex = currentInnings.overs.findIndex((o) => o.balls.length < 6);
   const currentOver = overIndex >= 0 ? currentInnings.overs[overIndex] : currentInnings.overs[currentInnings.overs.length - 1];
-  const overNum = overIndex >= 0 ? overIndex + 1 : currentInnings.overs.length;
+  const overNum = overIndex >= 0 ? overIndex : currentInnings.overs.length - 1;
   const ballInOver = currentOver?.balls?.length ?? 0;
 
   // Get bowling team for current over
   const bowlingTeam = currentOver ? getTeam(currentOver.bowlingTeamId) : null;
 
-  // Calculate total overs in match (innings number * 3)
-  const totalOverInMatch = currentInningsIndex * 3 + overNum;
+  // Calculate total overs in match (innings number * 3) - add 1 for display (1-12 instead of 0-11)
+  const totalOverInMatch = currentInningsIndex * 3 + overNum + 1;
 
   const isPowerplay = currentOver?.isPowerplay ?? false;
 
