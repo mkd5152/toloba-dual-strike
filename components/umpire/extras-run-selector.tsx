@@ -34,8 +34,8 @@ export function ExtrasRunSelector({
     : "hover:border-blue-500 hover:bg-gradient-to-br hover:from-blue-100/50 hover:to-blue-50";
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-lg p-0 gap-0 bg-gradient-to-br from-white via-gray-50 to-white border-4 border-[#0d3944] rounded-3xl shadow-2xl">
+    <Dialog open={open} onOpenChange={onClose} modal={true}>
+      <DialogContent className="w-[95vw] max-w-lg p-0 gap-0 bg-white border-4 border-[#0d3944] rounded-3xl shadow-2xl">
         {/* Header Section */}
         <DialogHeader className={`bg-gradient-to-br ${bgGradient} border-b-4 ${accentColor} p-4 sm:p-6 rounded-t-2xl`}>
           <DialogTitle className="text-center">

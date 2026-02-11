@@ -20,6 +20,7 @@ interface MatchStore {
   setCurrentMatch: (match: Match) => void;
   recordBall: (ballData: Omit<Ball, "effectiveRuns" | "timestamp">) => void;
   selectPowerplay: (overNumber: number) => void;
+  setBowlingTeamsForInnings: (bowlingTeamIds: [string, string, string]) => void;
   completeInnings: () => void;
   completeMatch: () => void;
   undoLastBall: () => void;
@@ -262,6 +263,43 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     };
 
     set({ currentMatch: updatedMatch });
+    useTournamentStore.getState().updateMatch(currentMatch.id, {
+      innings: updatedMatch.innings,
+    });
+  },
+
+  setBowlingTeamsForInnings: (bowlingTeamIds) => {
+    const { currentMatch, currentInningsIndex } = get();
+    if (!currentMatch) return;
+
+    const innings = currentMatch.innings[currentInningsIndex];
+    if (!innings || innings.overs.length !== 3) return;
+
+    // Update each over with the selected bowling team
+    const updatedInnings: Innings = {
+      ...innings,
+      overs: innings.overs.map((over, i) => ({
+        ...over,
+        bowlingTeamId: bowlingTeamIds[i],
+      })),
+    };
+
+    const updatedMatch: Match = {
+      ...currentMatch,
+      innings: currentMatch.innings.map((inn, i) =>
+        i === currentInningsIndex ? updatedInnings : inn
+      ),
+    };
+
+    set({ currentMatch: updatedMatch });
+
+    // Persist bowling team selections to database
+    import("@/lib/api/innings").then(({ updateBowlingTeamsForInnings }) => {
+      updateBowlingTeamsForInnings(innings.id, bowlingTeamIds).catch((err) => {
+        console.error("Failed to update bowling teams in database:", err);
+      });
+    });
+
     useTournamentStore.getState().updateMatch(currentMatch.id, {
       innings: updatedMatch.innings,
     });

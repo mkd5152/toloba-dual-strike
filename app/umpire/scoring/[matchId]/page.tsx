@@ -6,6 +6,7 @@ import { ScoringPanel } from "@/components/umpire/scoring-panel";
 import { InningsHeader } from "@/components/umpire/innings-header";
 import { BallLog } from "@/components/umpire/ball-log";
 import { BattingOrderSelector } from "@/components/umpire/batting-order-selector";
+import { BowlingTeamSelector } from "@/components/umpire/bowling-team-selector";
 import { useMatchStore } from "@/lib/stores/match-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { Card } from "@/components/ui/card";
@@ -23,18 +24,20 @@ export default function ScoringPage() {
   const router = useRouter();
   const matchId = params.matchId as string;
 
-  const { setCurrentMatch, currentMatch } = useMatchStore();
-  const { matches, teams, loadMatches, loadTeams } = useTournamentStore();
+  const { setCurrentMatch, currentMatch, setBowlingTeamsForInnings, currentInningsIndex } = useMatchStore();
+  const { matches, teams, loadMatches, loadTeams, getTeam } = useTournamentStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showBattingOrderSelector, setShowBattingOrderSelector] = useState(false);
+  const [showBowlingTeamSelector, setShowBowlingTeamSelector] = useState(false);
   const [matchTeams, setMatchTeams] = useState<Team[]>([]);
   const [initializingMatch, setInitializingMatch] = useState(false);
 
   // Prevent multiple initializations and multiple selector shows
   const isInitializingRef = useRef(false);
   const hasLoadedOnceRef = useRef(false);
+  const lastInningsIndexRef = useRef(-1);
 
   useEffect(() => {
     // Only load once per mount
@@ -43,6 +46,31 @@ export default function ScoringPage() {
       loadMatchData();
     }
   }, [matchId]);
+
+  // Check if we need to show bowling team selector when innings changes
+  useEffect(() => {
+    if (!currentMatch || !currentMatch.innings || currentMatch.innings.length === 0) {
+      return;
+    }
+
+    const currentInnings = currentMatch.innings[currentInningsIndex];
+    if (!currentInnings) return;
+
+    // Only show selector if:
+    // 1. Innings is in progress
+    // 2. We haven't shown selector for this innings yet
+    // 3. No balls have been bowled yet in any over
+    const noBallsBowled = currentInnings.overs.every(over => over.balls.length === 0);
+
+    if (
+      currentInnings.state === "IN_PROGRESS" &&
+      lastInningsIndexRef.current !== currentInningsIndex &&
+      noBallsBowled
+    ) {
+      lastInningsIndexRef.current = currentInningsIndex;
+      setShowBowlingTeamSelector(true);
+    }
+  }, [currentMatch, currentInningsIndex]);
 
   const loadMatchData = async () => {
     try {
@@ -165,6 +193,24 @@ export default function ScoringPage() {
     }
   };
 
+  const handleBowlingTeamsConfirm = (bowlingTeamIds: [string, string, string]) => {
+    try {
+      // Validate that all teams are different
+      const uniqueTeams = new Set(bowlingTeamIds);
+      if (uniqueTeams.size !== 3) {
+        setError("Please select 3 different teams for bowling");
+        return;
+      }
+
+      // Set bowling teams for current innings
+      setBowlingTeamsForInnings(bowlingTeamIds);
+      setShowBowlingTeamSelector(false);
+    } catch (err: any) {
+      console.error('Error setting bowling teams:', err);
+      setError(err.message || 'Failed to set bowling teams');
+    }
+  };
+
   const handleResetMatch = async () => {
     if (!confirm('Are you sure you want to reset this match? This will clear all innings and scores.')) {
       return;
@@ -251,6 +297,18 @@ export default function ScoringPage() {
     currentMatch.stage === "SEMI" ? "bg-purple-600" :
     "bg-yellow-600";
 
+  // Get bowling team options (exclude batting team)
+  const currentInnings = currentMatch?.innings?.[currentInningsIndex];
+  const battingTeamId = currentInnings?.teamId || "";
+  const availableTeamsForBowling = matchTeams
+    .filter((team) => team.id !== battingTeamId)
+    .map((team) => ({
+      id: team.id,
+      name: team.name,
+      color: team.color,
+    }));
+  const battingTeam = matchTeams.find((t) => t.id === battingTeamId);
+
   return (
     <div className="min-h-screen tournament-bg-pattern">
       <BattingOrderSelector
@@ -258,6 +316,14 @@ export default function ScoringPage() {
         open={showBattingOrderSelector}
         onConfirm={handleBattingOrderConfirm}
         onCancel={() => router.back()}
+      />
+
+      <BowlingTeamSelector
+        open={showBowlingTeamSelector}
+        onClose={() => setShowBowlingTeamSelector(false)}
+        onConfirm={handleBowlingTeamsConfirm}
+        availableTeams={availableTeamsForBowling}
+        battingTeamName={battingTeam?.name || "Batting Team"}
       />
 
       <div className="p-3 sm:p-4 md:p-8 max-w-7xl mx-auto">
@@ -312,14 +378,97 @@ export default function ScoringPage() {
               <InningsHeader />
             </div>
 
-            {/* Show scoring panel only if match is not completed */}
-            {currentMatch.state !== "COMPLETED" && (
+            {/* Check if bowling order is set */}
+            {currentMatch.state !== "COMPLETED" && currentInnings && (
               <>
-                <ScoringPanel />
+                {(() => {
+                  const noBallsBowled = currentInnings.overs.every(over => over.balls.length === 0);
+                  const bowlingOrderSet = currentInnings.overs.every(over => over.bowlingTeamId && over.bowlingTeamId !== "");
 
-                <div className="mt-4 sm:mt-6">
-                  <BallLog />
-                </div>
+                  // Show prompt if no balls bowled and bowling order not set
+                  if (noBallsBowled && !bowlingOrderSet) {
+                    return (
+                      <Card className="p-4 sm:p-6 mb-4 border-4 border-red-600 bg-gradient-to-r from-red-50 to-white shadow-xl">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 flex items-center justify-center bg-red-600 rounded-full text-white text-2xl font-black shadow-lg">
+                              ⚠️
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-base sm:text-lg font-black text-red-700">
+                                Bowling Order Required!
+                              </p>
+                              <p className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
+                                You must set the bowling order before scoring can begin
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              lastInningsIndexRef.current = -1;
+                              setShowBowlingTeamSelector(true);
+                            }}
+                            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold h-12 sm:h-14 text-base sm:text-lg shadow-lg"
+                          >
+                            ⚾ Set Bowling Order Now
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  }
+
+                  // Show small prompt if balls have been bowled but order can be changed
+                  if (noBallsBowled && bowlingOrderSet) {
+                    return (
+                      <Card className="p-3 sm:p-4 mb-4 border-2 border-green-600 bg-gradient-to-r from-green-50 to-white">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm sm:text-base font-bold text-green-700">
+                              ✓ Bowling Order Set
+                            </p>
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                              Ready to start scoring
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              lastInningsIndexRef.current = -1;
+                              setShowBowlingTeamSelector(true);
+                            }}
+                            variant="outline"
+                            className="border-2 border-green-600 text-green-700 hover:bg-green-50 font-bold h-10 sm:h-12 px-4 sm:px-6"
+                          >
+                            Change Order
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  }
+
+                  return null;
+                })()}
+              </>
+            )}
+
+            {/* Show scoring panel only if match is not completed AND bowling order is set */}
+            {currentMatch.state !== "COMPLETED" && currentInnings && (
+              <>
+                {(() => {
+                  const bowlingOrderSet = currentInnings.overs.every(over => over.bowlingTeamId && over.bowlingTeamId !== "");
+
+                  if (!bowlingOrderSet) {
+                    return null; // Don't show scoring panel if bowling order not set
+                  }
+
+                  return (
+                    <>
+                      <ScoringPanel />
+                      <div className="mt-4 sm:mt-6">
+                        <BallLog />
+                      </div>
+                    </>
+                  );
+                })()}
               </>
             )}
 

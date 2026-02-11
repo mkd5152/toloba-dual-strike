@@ -56,8 +56,8 @@ export function WicketTypeSelector({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-lg p-0 gap-0 bg-gradient-to-br from-white via-red-50/30 to-white border-4 border-red-600 rounded-3xl shadow-2xl">
+    <Dialog open={open} onOpenChange={handleClose} modal={true}>
+      <DialogContent className="w-[95vw] max-w-lg p-0 gap-0 bg-white border-4 border-red-600 rounded-3xl shadow-2xl">
         {stage === "wicketType" ? (
           <>
             {/* Wicket Type Selection */}
