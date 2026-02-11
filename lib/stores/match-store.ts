@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Match, Ball, Innings, Over } from "@/lib/types";
 import {
   calculateBallRuns,
-  checkThirdBallViolation,
+  checkConsecutiveDotBallViolation,
   calculateInningsFinalScore,
   rankTeamsInMatch,
 } from "@/lib/utils/scoring-engine";
@@ -72,21 +72,30 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       effectiveRuns: 0,
       timestamp: new Date(),
     };
+
+    // Check for 3 consecutive dot balls violation
+    // Get previous overs from current innings (all overs before the current one)
+    const previousOvers = innings.overs.slice(0, currentOverIndex);
+
+    if (
+      checkConsecutiveDotBallViolation(
+        over,
+        ballWithEffective.runs,
+        ballWithEffective.isNoball,
+        ballWithEffective.isWide,
+        previousOvers
+      )
+    ) {
+      // This is the 3rd consecutive dot ball - make it a wicket
+      ballWithEffective.isWicket = true;
+      ballWithEffective.wicketType = "NORMAL";
+    }
+
+    // Calculate effective runs (applies wicket penalties if isWicket is true)
     ballWithEffective.effectiveRuns = calculateBallRuns(
       ballWithEffective,
       isPowerplay
     );
-
-    // Check third ball violation (before adding ball)
-    if (
-      over.balls.length === 2 &&
-      checkThirdBallViolation(over, over.balls.length)
-    ) {
-      ballWithEffective.thirdBallViolation = true;
-      ballWithEffective.isWicket = true;
-      ballWithEffective.wicketType = "NORMAL";
-      ballWithEffective.effectiveRuns = isPowerplay ? -10 : -5;
-    }
 
     const updatedOver: Over = {
       ...over,

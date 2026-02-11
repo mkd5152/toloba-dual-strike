@@ -233,7 +233,6 @@ function generateCompletedBalls(isPowerplay: boolean): Ball[] {
       isWide: false,
       isFreeHit: false,
       misconduct: false,
-      thirdBallViolation: false,
       effectiveRuns: isPowerplay && !isWicket ? runs * 2 : runs,
       timestamp: new Date(),
     };

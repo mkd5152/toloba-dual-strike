@@ -100,7 +100,6 @@ export interface Ball {
   isWide: boolean;
   isFreeHit: boolean;
   misconduct: boolean;
-  thirdBallViolation: boolean;
   effectiveRuns: number; // After powerplay/penalties
   timestamp: Date;
 }

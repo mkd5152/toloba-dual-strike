@@ -30,16 +30,59 @@ export function calculateBallRuns(ball: Ball, isPowerplay: boolean): number {
   return runs;
 }
 
-export function checkThirdBallViolation(
+/**
+ * Check if the current ball is the 3rd consecutive dot ball (0 runs)
+ * A dot ball is a legal delivery where the batting team scores 0 runs.
+ * Extras (noballs, wides) do NOT count as dot balls.
+ * If this is the 3rd consecutive dot ball, it should be considered a wicket.
+ */
+export function checkConsecutiveDotBallViolation(
   over: Over,
-  ballIndex: number
+  currentBallRuns: number,
+  currentBallIsNoball: boolean,
+  currentBallIsWide: boolean,
+  previousOvers?: Over[]
 ): boolean {
-  if (ballIndex !== 2) return false; // Only check on 3rd ball (index 2)
+  // Only apply if current ball is a legal dot ball (0 runs, no extras)
+  if (currentBallRuns !== 0 || currentBallIsNoball || currentBallIsWide) {
+    return false;
+  }
 
-  const runsSoFar = over.balls
-    .slice(0, 2)
-    .reduce((sum, b) => sum + b.runs, 0);
-  return runsSoFar < 3;
+  const allPreviousBalls: Ball[] = [];
+
+  // Add balls from current over FIRST (most recent)
+  for (let i = over.balls.length - 1; i >= 0; i--) {
+    allPreviousBalls.push(over.balls[i]);
+  }
+
+  // Then collect balls from previous overs (in reverse order, most recent first)
+  if (previousOvers && previousOvers.length > 0) {
+    for (let i = previousOvers.length - 1; i >= 0; i--) {
+      const prevOver = previousOvers[i];
+      for (let j = prevOver.balls.length - 1; j >= 0; j--) {
+        allPreviousBalls.push(prevOver.balls[j]);
+      }
+    }
+  }
+
+  // Find the last 2 LEGAL dot balls (excluding noballs and wides)
+  let dotBallCount = 0;
+
+  for (const ball of allPreviousBalls) {
+    // Only count legal dot balls (0 runs, not noball, not wide)
+    if (ball.runs === 0 && !ball.isNoball && !ball.isWide) {
+      dotBallCount++;
+      if (dotBallCount === 2) {
+        // Found 2 consecutive legal dot balls before current ball
+        return true;
+      }
+    } else {
+      // Not a dot ball - reset counter
+      break;
+    }
+  }
+
+  return false;
 }
 
 export function calculateInningsFinalScore(innings: Innings): number {
