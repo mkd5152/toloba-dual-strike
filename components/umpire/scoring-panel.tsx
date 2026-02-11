@@ -88,9 +88,7 @@ export function ScoringPanel() {
     });
   };
 
-  const powerplayNotSet =
-    currentInnings?.powerplayOver == null &&
-    (currentInnings?.overs?.some((o) => o.balls.length > 0) ?? false);
+  const powerplayNotSet = currentInnings?.powerplayOver == null;
 
   return (
     <Card className="p-3 sm:p-4 md:p-6">
