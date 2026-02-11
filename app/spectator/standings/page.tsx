@@ -30,18 +30,27 @@ export default function StandingsPage() {
         <div className="inline-block px-3 py-1 mb-2 rounded-full bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] text-xs font-bold uppercase tracking-wide">
           Leaderboard
         </div>
-        <h1 className="text-4xl font-black text-white drop-shadow-lg">Tournament Standings</h1>
+        <div className="flex items-baseline gap-4">
+          <h1 className="text-4xl font-black text-white drop-shadow-lg">Tournament Standings</h1>
+          {!loading && standings.length > 0 && (
+            <span className="text-xl font-bold text-white/70">
+              {standings.length} {standings.length === 1 ? 'Team' : 'Teams'}
+            </span>
+          )}
+        </div>
       </div>
 
       {loading ? (
         <div className="text-center text-white/70 py-12">Loading standings...</div>
       ) : standings.length === 0 ? (
         <div className="text-center text-white/70 py-12">
-          No standings yet. Matches need to be completed first!
+          No teams found. Please add teams to the tournament!
         </div>
       ) : (
-        <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
-          <StandingsTable standings={standings} />
+        <Card className="border-2 border-[#0d3944]/10 shadow-lg">
+          <div className="overflow-x-auto">
+            <StandingsTable standings={standings} />
+          </div>
         </Card>
       )}
     </div>
