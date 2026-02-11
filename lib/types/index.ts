@@ -94,7 +94,7 @@ export interface Over {
 
 export interface Ball {
   ballNumber: number;
-  runs: 0 | 1 | 2 | 3 | 4 | 6;
+  runs: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   isWicket: boolean;
   wicketType: WicketType;
   isNoball: boolean;
