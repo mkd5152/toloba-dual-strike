@@ -8,7 +8,7 @@ export type MatchState =
   | "LOCKED";
 export type MatchStage = "LEAGUE" | "SEMI" | "FINAL";
 export type InningsState = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
-export type WicketType = "NORMAL" | "BOWLING_ONLY" | null;
+export type WicketType = "NORMAL" | "BOWLING_TEAM" | "CATCH_OUT" | "RUN_OUT" | null;
 
 // Core Entities
 export interface Tournament {
@@ -97,6 +97,7 @@ export interface Ball {
   runs: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   isWicket: boolean;
   wicketType: WicketType;
+  fieldingTeamId?: string; // Team that gets credit for CATCH_OUT or RUN_OUT (gets +5 runs)
   isNoball: boolean;
   isWide: boolean;
   isFreeHit: boolean;

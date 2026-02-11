@@ -16,13 +16,14 @@ export async function recordBall(
   ball: Ball
 ): Promise<void> {
   try {
-    const ballData: BallInsert = {
+    const ballData: any = {
       id: crypto.randomUUID(),
       over_id: overId,
       ball_number: ball.ballNumber,
       runs: ball.runs,
       is_wicket: ball.isWicket,
       wicket_type: ball.wicketType,
+      fielding_team_id: ball.fieldingTeamId || null,
       is_noball: ball.isNoball,
       is_wide: ball.isWide,
       is_free_hit: ball.isFreeHit,
@@ -62,6 +63,7 @@ export async function fetchBallsForOver(overId: string): Promise<Ball[]> {
       runs: row.runs,
       isWicket: row.is_wicket,
       wicketType: row.wicket_type,
+      fieldingTeamId: row.fielding_team_id || undefined,
       isNoball: row.is_noball,
       isWide: row.is_wide,
       isFreeHit: row.is_free_hit,

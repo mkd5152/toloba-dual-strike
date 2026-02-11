@@ -3,17 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useMatchStore } from "@/lib/stores/match-store";
-import type { Ball } from "@/lib/types";
+import { useTournamentStore } from "@/lib/stores/tournament-store";
+import type { WicketType } from "@/lib/types";
 import { ExtrasRunSelector } from "./extras-run-selector";
+import { WicketTypeSelector } from "./wicket-type-selector";
 import { useState } from "react";
 import { SCORING_RULES } from "@/lib/constants";
 
 export function ScoringPanel() {
   const { currentMatch, recordBall, selectPowerplay, undoLastBall } =
     useMatchStore();
+  const { getTeam } = useTournamentStore();
 
   const [showExtrasDialog, setShowExtrasDialog] = useState(false);
   const [extrasType, setExtrasType] = useState<"noball" | "wide">("noball");
+  const [showWicketDialog, setShowWicketDialog] = useState(false);
 
   const innings = currentMatch?.innings?.[0];
   const currentInnings = currentMatch?.innings?.find(
@@ -38,11 +42,16 @@ export function ScoringPanel() {
   };
 
   const handleWicket = () => {
+    setShowWicketDialog(true);
+  };
+
+  const handleWicketTypeSelected = (wicketType: WicketType, fieldingTeamId?: string) => {
     recordBall({
       ballNumber: 1,
       runs: 0,
       isWicket: true,
-      wicketType: "NORMAL",
+      wicketType,
+      fieldingTeamId,
       isNoball: false,
       isWide: false,
       isFreeHit: false,
@@ -88,6 +97,20 @@ export function ScoringPanel() {
 
   const powerplayNotSet = currentInnings?.powerplayOver == null;
 
+  // Get bowling team and fielding teams for wicket selector
+  const bowlingTeamId = currentOver?.bowlingTeamId || "";
+  const bowlingTeam = getTeam(bowlingTeamId);
+  const battingTeamId = currentInnings?.teamId || "";
+
+  // Get the 2 fielding teams (exclude batting and bowling teams)
+  const fieldingTeams = currentMatch?.teamIds
+    .filter((teamId) => teamId !== battingTeamId && teamId !== bowlingTeamId)
+    .map((teamId) => {
+      const team = getTeam(teamId);
+      return team ? { id: team.id, name: team.name, color: team.color } : null;
+    })
+    .filter((team): team is { id: string; name: string; color: string } => team !== null) || [];
+
   return (
     <>
       <ExtrasRunSelector
@@ -96,6 +119,15 @@ export function ScoringPanel() {
         onSelectRuns={handleExtrasRunsSelected}
         extrasType={extrasType}
         baseRuns={extrasType === "noball" ? SCORING_RULES.NOBALL_RUNS : SCORING_RULES.WIDE_RUNS}
+      />
+
+      <WicketTypeSelector
+        open={showWicketDialog}
+        onClose={() => setShowWicketDialog(false)}
+        onSelectWicket={handleWicketTypeSelected}
+        bowlingTeamId={bowlingTeamId}
+        bowlingTeamName={bowlingTeam?.name || "Bowling Team"}
+        fieldingTeams={fieldingTeams}
       />
 
       <Card className="p-3 sm:p-4 md:p-6">
