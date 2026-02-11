@@ -18,13 +18,34 @@ psql "postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT].supabase.co:5432/post
 ### Option 2: Using Supabase Dashboard
 1. Go to Supabase Dashboard → **SQL Editor**
 2. Click **New Query**
-3. Copy contents from `supabase/migrations/20260211_fix_over_numbering.sql`
-4. Paste and click **Run**
+3. Copy this SQL and paste:
+
+```sql
+-- Drop old constraints
+ALTER TABLE public.overs DROP CONSTRAINT IF EXISTS overs_over_number_check;
+ALTER TABLE public.innings DROP CONSTRAINT IF EXISTS innings_powerplay_over_check;
+
+-- Update existing data BEFORE adding new constraints
+UPDATE public.overs SET over_number = over_number - 1
+  WHERE over_number > 0;
+
+UPDATE public.innings SET powerplay_over = powerplay_over - 1
+  WHERE powerplay_over IS NOT NULL AND powerplay_over > 0;
+
+-- Add new constraints (0-2 instead of 1-3)
+ALTER TABLE public.overs ADD CONSTRAINT overs_over_number_check
+  CHECK (over_number BETWEEN 0 AND 2);
+
+ALTER TABLE public.innings ADD CONSTRAINT innings_powerplay_over_check
+  CHECK (powerplay_over IN (0, 1, 2));
+```
+
+4. Click **Run**
 
 ## What the Migration Does:
-1. ✅ Updates over_number constraint: `BETWEEN 1 AND 3` → `BETWEEN 0 AND 2`
-2. ✅ Updates powerplay_over constraint: `IN (1, 2, 3)` → `IN (0, 1, 2)`
-3. ✅ Shifts any existing data down by 1 (1→0, 2→1, 3→2)
+1. ✅ Drops old constraints
+2. ✅ Shifts existing data down by 1 (1→0, 2→1, 3→2)
+3. ✅ Adds new constraints: `BETWEEN 0 AND 2` for over_number, `IN (0, 1, 2)` for powerplay
 
 ## After Running Migration:
 - Over numbering: **0.1, 0.2, 0.3** → **1.1, 1.2, 1.3** → **2.1, 2.2, 2.3**
