@@ -244,7 +244,7 @@ export async function fetchMatchInnings(matchId: string): Promise<Innings[]> {
 
     if (inningsError) throw inningsError;
 
-    // Fetch overs for all innings
+    // Fetch overs and balls for all innings
     const innings: Innings[] = [];
     for (const inningsRow of inningsData || []) {
       const { data: oversData, error: oversError } = await (supabase as any)
@@ -255,19 +255,45 @@ export async function fetchMatchInnings(matchId: string): Promise<Innings[]> {
 
       if (oversError) throw oversError;
 
+      // Fetch balls for each over
+      const overs: Over[] = [];
+      for (const overRow of oversData || []) {
+        const { data: ballsData, error: ballsError } = await (supabase as any)
+          .from("balls")
+          .select("*")
+          .eq("over_id", overRow.id)
+          .order("ball_number");
+
+        if (ballsError) throw ballsError;
+
+        overs.push({
+          id: overRow.id, // Include database ID for recording balls
+          overNumber: overRow.over_number,
+          bowlingTeamId: inningsRow.bowling_team_id,
+          bowlerId: overRow.bowler_id || '',
+          keeperId: overRow.keeper_id || '',
+          balls: (ballsData || []).map((ballRow: any) => ({
+            ballNumber: ballRow.ball_number,
+            runs: ballRow.runs,
+            isWicket: ballRow.is_wicket,
+            wicketType: ballRow.wicket_type,
+            isNoball: ballRow.is_noball,
+            isWide: ballRow.is_wide,
+            isFreeHit: ballRow.is_free_hit,
+            misconduct: ballRow.misconduct,
+            effectiveRuns: ballRow.effective_runs,
+            timestamp: new Date(ballRow.timestamp),
+          })),
+          isPowerplay: overRow.is_powerplay,
+        } as any);
+      }
+
       innings.push({
         id: inningsRow.id,
         teamId: inningsRow.team_id,
         battingPair: inningsRow.batting_pair as [string, string],
         state: inningsRow.state as InningsState,
-        overs: (oversData || []).map((over: any) => ({
-          overNumber: over.over_number,
-          bowlingTeamId: inningsRow.bowling_team_id,
-          bowlerId: over.bowler_id || '',
-          keeperId: over.keeper_id || '',
-          balls: [],
-          isPowerplay: over.is_powerplay,
-        })),
+        overs,
         powerplayOver: inningsRow.powerplay_over,
         totalRuns: inningsRow.total_runs,
         totalWickets: inningsRow.total_wickets,
@@ -285,6 +311,60 @@ export async function fetchMatchInnings(matchId: string): Promise<Innings[]> {
     console.error("Error fetching match innings:", err);
     throw new Error(
       `Failed to fetch match innings: ${err instanceof Error ? err.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
+ * Update innings totals (runs, wickets, score) in the database
+ */
+export async function updateInningsTotals(
+  inningsId: string,
+  updates: {
+    totalRuns: number;
+    totalWickets: number;
+    noWicketBonus: boolean;
+    finalScore: number;
+  }
+): Promise<void> {
+  try {
+    const { error } = await (supabase as any)
+      .from("innings")
+      .update({
+        total_runs: updates.totalRuns,
+        total_wickets: updates.totalWickets,
+        no_wicket_bonus: updates.noWicketBonus,
+        final_score: updates.finalScore,
+      } as any)
+      .eq("id", inningsId);
+
+    if (error) throw error;
+  } catch (err) {
+    console.error("Error updating innings totals:", err);
+    throw new Error(
+      `Failed to update innings totals: ${err instanceof Error ? err.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
+ * Complete an innings (set state to COMPLETED and update final score)
+ */
+export async function completeInnings(inningsId: string, finalScore: number): Promise<void> {
+  try {
+    const { error } = await (supabase as any)
+      .from("innings")
+      .update({
+        state: "COMPLETED",
+        final_score: finalScore,
+      } as any)
+      .eq("id", inningsId);
+
+    if (error) throw error;
+  } catch (err) {
+    console.error("Error completing innings:", err);
+    throw new Error(
+      `Failed to complete innings: ${err instanceof Error ? err.message : "Unknown error"}`
     );
   }
 }
