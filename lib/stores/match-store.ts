@@ -178,9 +178,16 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
     const updatedMatch: Match = {
       ...currentMatch,
-      innings: currentMatch.innings.map((inn, i) =>
-        i === currentInningsIndex ? updatedInnings : inn
-      ),
+      innings: currentMatch.innings.map((inn, i) => {
+        if (i === currentInningsIndex) {
+          return updatedInnings;
+        }
+        // Set next innings to IN_PROGRESS when transitioning to it
+        if (i === nextInningsIndex && nextInningsIndex !== currentInningsIndex) {
+          return { ...inn, state: "IN_PROGRESS" };
+        }
+        return inn;
+      }),
     };
 
     set({
@@ -188,9 +195,24 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       currentInningsIndex: nextInningsIndex,
       currentOverIndex: nextOverIndex,
     });
+
+    // Update match innings in database
     useTournamentStore.getState().updateMatch(currentMatch.id, {
       innings: updatedMatch.innings,
     });
+
+    // If we transitioned to a new innings, update its state in the database
+    if (nextInningsIndex !== currentInningsIndex && nextInningsIndex < currentMatch.innings.length) {
+      const nextInnings = updatedMatch.innings[nextInningsIndex];
+      if (nextInnings) {
+        // Update the next innings state to IN_PROGRESS in the database
+        import("@/lib/api/innings").then(({ updateInningsState }) => {
+          updateInningsState(nextInnings.id, "IN_PROGRESS").catch((err) => {
+            console.error("Failed to update innings state:", err);
+          });
+        });
+      }
+    }
   },
 
   selectPowerplay: (overNumber) => {
@@ -236,21 +258,43 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       finalScore,
     };
 
+    const nextInningsIndex = currentInningsIndex + 1;
+
     const updatedMatch: Match = {
       ...currentMatch,
-      innings: currentMatch.innings.map((inn, i) =>
-        i === currentInningsIndex ? updatedInnings : inn
-      ),
+      innings: currentMatch.innings.map((inn, i) => {
+        if (i === currentInningsIndex) {
+          return updatedInnings;
+        }
+        // Set next innings to IN_PROGRESS when transitioning to it
+        if (i === nextInningsIndex && nextInningsIndex < currentMatch.innings.length) {
+          return { ...inn, state: "IN_PROGRESS" };
+        }
+        return inn;
+      }),
     };
 
-    set((state) => ({
+    set({
       currentMatch: updatedMatch,
-      currentInningsIndex: state.currentInningsIndex + 1,
+      currentInningsIndex: nextInningsIndex,
       currentOverIndex: 0,
-    }));
+    });
+
     useTournamentStore.getState().updateMatch(currentMatch.id, {
       innings: updatedMatch.innings,
     });
+
+    // Update next innings state in database
+    if (nextInningsIndex < currentMatch.innings.length) {
+      const nextInnings = updatedMatch.innings[nextInningsIndex];
+      if (nextInnings) {
+        import("@/lib/api/innings").then(({ updateInningsState }) => {
+          updateInningsState(nextInnings.id, "IN_PROGRESS").catch((err) => {
+            console.error("Failed to update innings state:", err);
+          });
+        });
+      }
+    }
   },
 
   completeMatch: () => {
