@@ -91,7 +91,7 @@ export async function initializeMatchInnings(
           .from("overs")
           .insert({
             innings_id: inningsId,
-            over_number: overIdx + 1,
+            over_number: overIdx,
             bowler_id: bowlingTeamPlayers[0].id, // Default, can be changed by umpire
             keeper_id: bowlingTeamPlayers[1].id, // Default, can be changed by umpire
             is_powerplay: false,
@@ -102,7 +102,7 @@ export async function initializeMatchInnings(
         if (overError) throw overError;
 
         overs.push({
-          overNumber: overIdx + 1,
+          overNumber: overIdx,
           bowlingTeamId: bowlingTeamId,
           bowlerId: bowlingTeamPlayers[0].id,
           keeperId: bowlingTeamPlayers[1].id,
@@ -204,7 +204,7 @@ export async function updateInningsState(
 /**
  * Set powerplay over for an innings
  */
-export async function setPowerplayOver(inningsId: string, overNumber: 1 | 2 | 3): Promise<void> {
+export async function setPowerplayOver(inningsId: string, overNumber: 0 | 1 | 2): Promise<void> {
   try {
     // Update innings powerplay_over field
     const { error: inningsError } = await (supabase as any)
