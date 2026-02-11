@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,12 @@ export default function UmpireMatchesPage() {
   const { user, profile } = useAuthStore();
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [loading, setLoading] = useState(true);
-  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (!hasLoaded.current && user && profile) {
-      hasLoaded.current = true;
+    if (user && profile) {
       fetchMyMatches();
+    } else {
+      setLoading(false);
     }
   }, [user, profile]);
 
