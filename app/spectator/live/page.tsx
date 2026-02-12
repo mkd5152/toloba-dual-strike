@@ -1,27 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { LiveMatchCard } from "@/components/spectator/live-match-card";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Zap, Flame, TrendingUp, Activity, Radio } from "lucide-react";
 import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
 
 export const dynamic = 'force-dynamic';
 
-interface LiveEvent {
-  id: string;
-  matchNumber: number;
-  teamName: string;
-  event: string;
-  icon: string;
-  time: Date;
-}
-
 export default function SpectatorLivePage() {
   const { matches, teams, loadTeams, loadMatches, loading, getTeam, tournament } = useTournamentStore();
-  const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
   const hasLoaded = useRef(false);
 
   // Enable real-time updates for all tournament matches
@@ -44,46 +33,6 @@ export default function SpectatorLivePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
-  useEffect(() => {
-    // Generate simulated live events for demonstration
-    const generateLiveEvents = () => {
-      const events: LiveEvent[] = [];
-      const inProgressMatches = matches.filter((m) => m.state === "IN_PROGRESS");
-
-      inProgressMatches.forEach((match) => {
-        match.teamIds.slice(0, 2).forEach((teamId) => {
-          const team = getTeam(teamId);
-          if (team) {
-            const eventTypes = [
-              { event: "FOUR!", icon: "🏏" },
-              { event: "SIX!", icon: "🚀" },
-              { event: "WICKET!", icon: "🎯" },
-              { event: "Run out!", icon: "⚡" },
-            ];
-            const randomEvent = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-            events.push({
-              id: `${match.id}-${teamId}-${Date.now()}`,
-              matchNumber: match.matchNumber,
-              teamName: team.name,
-              event: randomEvent.event,
-              icon: randomEvent.icon,
-              time: new Date(),
-            });
-          }
-        });
-      });
-
-      setLiveEvents(events.slice(0, 5)); // Keep only latest 5
-    };
-
-    // Generate initial events
-    generateLiveEvents();
-
-    // Update events every 8 seconds for live effect
-    const interval = setInterval(generateLiveEvents, 8000);
-    return () => clearInterval(interval);
-  }, [matches, getTeam]);
-
   const liveMatches = matches.filter((m) => m.state === "IN_PROGRESS");
   const upcomingMatches = matches.filter(
     (m) => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS"
@@ -91,41 +40,6 @@ export default function SpectatorLivePage() {
 
   return (
     <div className="p-4 md:p-8">
-      {/* Live Events Ticker */}
-      {liveEvents.length > 0 && (
-        <Card className="mb-8 border-2 border-[#b71c1c] bg-gradient-to-r from-[#b71c1c] to-[#c62828] shadow-2xl overflow-hidden">
-          <div className="p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-                <Activity className="w-4 h-4 text-yellow-300 animate-pulse" />
-                <span className="text-white font-black text-sm uppercase">Live Updates</span>
-              </div>
-            </div>
-
-            <div className="space-y-2 max-h-[200px] overflow-y-auto">
-              {liveEvents.map((event, index) => (
-                <div
-                  key={event.id}
-                  className="flex items-center gap-3 p-3 bg-white/10 backdrop-blur-sm rounded-lg animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <span className="text-2xl">{event.icon}</span>
-                  <div className="flex-1">
-                    <p className="text-white font-black">
-                      Match {event.matchNumber} • {event.teamName}
-                    </p>
-                    <p className="text-yellow-300 font-bold text-sm">{event.event}</p>
-                  </div>
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    Just now
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-      )}
-
       {/* Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="border-2 border-[#b71c1c] bg-gradient-to-br from-[#b71c1c] to-[#c62828] shadow-lg overflow-hidden">
