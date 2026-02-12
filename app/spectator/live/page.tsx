@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { LiveMatchCard } from "@/components/spectator/live-match-card";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Zap, Flame, TrendingUp, Activity, Radio } from "lucide-react";
 import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
+import { supabase } from "@/lib/supabase/client";
 
 export const dynamic = 'force-dynamic';
+
+interface LiveEvent {
+  id: string;
+  matchNumber: number;
+  teamName: string;
+  event: string;
+  icon: string;
+  time: Date;
+  runs: number;
+}
 
 export default function SpectatorLivePage() {
   const { matches, teams, loadTeams, loadMatches, loading, getTeam, tournament } = useTournamentStore();
   const hasLoaded = useRef(false);
+  const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
 
   // Enable real-time updates for all tournament matches
   const { isMatchesSubscribed } = useRealtimeTournament({
@@ -33,6 +46,88 @@ export default function SpectatorLivePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
+  // Subscribe to real-time ball events
+  useEffect(() => {
+    const channel = supabase
+      .channel('live-balls-feed')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'balls',
+        },
+        async (payload) => {
+          console.log('Live ball recorded:', payload);
+
+          // Get the ball data
+          const ball = payload.new as any;
+
+          // Fetch innings to get match and team info
+          const { data: inningsData } = await supabase
+            .from('innings')
+            .select('match_id, team_id')
+            .eq('id', ball.innings_id)
+            .single() as any;
+
+          if (!inningsData) return;
+
+          // Find the match
+          const match = matches.find((m: any) => m.id === inningsData.match_id);
+          if (!match || match.state !== 'IN_PROGRESS') return;
+
+          // Get the team
+          const team = getTeam(inningsData.team_id);
+          if (!team) return;
+
+          // Determine event type and icon
+          let eventText = '';
+          let icon = '';
+
+          if (ball.is_wicket) {
+            eventText = 'WICKET!';
+            icon = '🎯';
+          } else if (ball.runs === 6) {
+            eventText = 'SIX!';
+            icon = '🚀';
+          } else if (ball.runs === 4) {
+            eventText = 'FOUR!';
+            icon = '🏏';
+          } else if (ball.is_wide) {
+            eventText = 'Wide';
+            icon = '↔️';
+          } else if (ball.is_no_ball) {
+            eventText = 'No Ball';
+            icon = '🚫';
+          } else if (ball.runs === 0) {
+            eventText = 'Dot Ball';
+            icon = '⚫';
+          } else {
+            eventText = `${ball.runs} Run${ball.runs > 1 ? 's' : ''}`;
+            icon = '🏃';
+          }
+
+          // Add to live events
+          const newEvent: LiveEvent = {
+            id: ball.id,
+            matchNumber: match.matchNumber,
+            teamName: team.name,
+            event: eventText,
+            icon: icon,
+            time: new Date(ball.created_at),
+            runs: ball.runs,
+          };
+
+          setLiveEvents(prev => [newEvent, ...prev].slice(0, 10)); // Keep latest 10
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [matches, getTeam]);
+
   const liveMatches = matches.filter((m) => m.state === "IN_PROGRESS");
   const upcomingMatches = matches.filter(
     (m) => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS"
@@ -40,6 +135,41 @@ export default function SpectatorLivePage() {
 
   return (
     <div className="p-4 md:p-8">
+      {/* Live Events Ticker - Real Data */}
+      {liveEvents.length > 0 && (
+        <Card className="mb-8 border-2 border-[#b71c1c] bg-gradient-to-r from-[#b71c1c] to-[#c62828] shadow-2xl overflow-hidden">
+          <div className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
+                <Activity className="w-4 h-4 text-yellow-300 animate-pulse" />
+                <span className="text-white font-black text-sm uppercase">Live Updates</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              {liveEvents.map((event, index) => (
+                <div
+                  key={event.id}
+                  className="flex items-center gap-3 p-3 bg-white/10 backdrop-blur-sm rounded-lg animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <span className="text-2xl">{event.icon}</span>
+                  <div className="flex-1">
+                    <p className="text-white font-black">
+                      Match {event.matchNumber} • {event.teamName}
+                    </p>
+                    <p className="text-yellow-300 font-bold text-sm">{event.event}</p>
+                  </div>
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    Just now
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card className="border-2 border-[#b71c1c] bg-gradient-to-br from-[#b71c1c] to-[#c62828] shadow-lg overflow-hidden">
