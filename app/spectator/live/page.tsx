@@ -5,7 +5,8 @@ import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { LiveMatchCard } from "@/components/spectator/live-match-card";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Flame, TrendingUp, Activity } from "lucide-react";
+import { Zap, Flame, TrendingUp, Activity, Radio } from "lucide-react";
+import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
 
 export const dynamic = 'force-dynamic';
 
@@ -19,9 +20,17 @@ interface LiveEvent {
 }
 
 export default function SpectatorLivePage() {
-  const { matches, teams, loadTeams, loadMatches, loading, getTeam } = useTournamentStore();
+  const { matches, teams, loadTeams, loadMatches, loading, getTeam, tournament } = useTournamentStore();
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
   const hasLoaded = useRef(false);
+
+  // Enable real-time updates for all tournament matches
+  const { isMatchesSubscribed } = useRealtimeTournament({
+    tournamentId: tournament.id,
+    enabled: true,
+    watchMatches: true,
+    watchStandings: false,
+  });
 
   useEffect(() => {
     if (!hasLoaded.current) {
@@ -160,10 +169,18 @@ export default function SpectatorLivePage() {
       {liveMatches.length > 0 && (
         <div className="mb-8">
           <div className="mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-3 rounded-full bg-gradient-to-r from-[#b71c1c] to-[#c62828] text-white text-sm font-black uppercase tracking-wide shadow-lg">
-              <span className="w-3 h-3 bg-white rounded-full animate-ping absolute" />
-              <span className="w-3 h-3 bg-white rounded-full" />
-              Live Now
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 mb-3 rounded-full bg-gradient-to-r from-[#b71c1c] to-[#c62828] text-white text-sm font-black uppercase tracking-wide shadow-lg">
+                <span className="w-3 h-3 bg-white rounded-full animate-ping absolute" />
+                <span className="w-3 h-3 bg-white rounded-full" />
+                Live Now
+              </div>
+              {isMatchesSubscribed && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">
+                  <Radio className="w-3 h-3 animate-pulse" />
+                  Real-time updates
+                </div>
+              )}
             </div>
             <h2 className="text-3xl font-black text-white drop-shadow-lg">
               Matches in Progress

@@ -5,11 +5,21 @@ import { Card } from "@/components/ui/card";
 import { useStandingsStore } from "@/lib/stores/standings-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { StandingsTable } from "@/components/spectator/standings-table";
+import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
+import { Radio } from "lucide-react";
 
 export default function StandingsPage() {
   const { standings, loadStandings, loading } = useStandingsStore();
-  const { loadTeams, loadMatches } = useTournamentStore();
+  const { loadTeams, loadMatches, tournament } = useTournamentStore();
   const hasLoaded = useRef(false);
+
+  // Enable real-time standings updates when matches complete
+  const { isStandingsSubscribed } = useRealtimeTournament({
+    tournamentId: tournament.id,
+    enabled: true,
+    watchMatches: false,
+    watchStandings: true,
+  });
 
   useEffect(() => {
     if (!hasLoaded.current) {
@@ -30,12 +40,18 @@ export default function StandingsPage() {
         <div className="inline-block px-3 py-1 mb-2 rounded-full bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] text-xs font-bold uppercase tracking-wide">
           Leaderboard
         </div>
-        <div className="flex items-baseline gap-4">
+        <div className="flex items-baseline gap-4 flex-wrap">
           <h1 className="text-4xl font-black text-white drop-shadow-lg">Tournament Standings</h1>
           {!loading && standings.length > 0 && (
             <span className="text-xl font-bold text-white/70">
               {standings.length} {standings.length === 1 ? 'Team' : 'Teams'}
             </span>
+          )}
+          {isStandingsSubscribed && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold animate-pulse">
+              <Radio className="w-3 h-3" />
+              Live Updates
+            </div>
           )}
         </div>
       </div>
