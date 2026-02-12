@@ -29,7 +29,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
   const exportMatchToCSV = (match: Match) => {
     const teams = match.teamIds.map((id) => getTeam(id));
     const rows = [
-      ["Match Number", "Court", "Stage", "Date", "Rank", "Team", "Runs", "Points"],
+      ["Match Number", "Court", "Stage", "Date", "Rank", "Team", "Runs", "Wickets", "Points"],
     ];
 
     match.rankings.forEach((ranking, index) => {
@@ -42,6 +42,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
         (index + 1).toString(),
         team?.name || "Unknown",
         ranking.totalRuns.toString(),
+        ranking.totalDismissals?.toString() || "0",
         ranking.points.toString(),
       ]);
     });
@@ -118,7 +119,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
                       {winnerTeam?.name || "Unknown"}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {winner?.totalRuns} runs • {winner?.points} pts
+                      {winner?.totalRuns}r / {winner?.totalDismissals || 0}w • {winner?.points} pts
                     </div>
                   </div>
                 </div>
@@ -143,7 +144,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
                         </span>
                         <span className="text-gray-400">-</span>
                         <span className="text-gray-600">
-                          {ranking.totalRuns}r
+                          {ranking.totalRuns}r/{ranking.totalDismissals || 0}w
                         </span>
                         <span className="text-gray-400">•</span>
                         <span className="font-bold text-[#ff9800]">

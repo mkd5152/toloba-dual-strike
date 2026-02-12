@@ -12,7 +12,7 @@ interface StandingsStore {
   loadStandings: () => Promise<void>;
 }
 
-export const useStandingsStore = create<StandingsStore>((set) => ({
+export const useStandingsStore = create<StandingsStore>((set, get) => ({
   standings: [],
   loading: false,
   error: null,
@@ -42,8 +42,9 @@ export const useStandingsStore = create<StandingsStore>((set) => ({
           const entry = standingsMap.get(ranking.teamId);
           if (entry) {
             entry.matchesPlayed += 1;
-            entry.points += ranking.points;
-            entry.totalRuns += ranking.totalRuns;
+            entry.points += ranking.points || 0;
+            entry.totalRuns += ranking.totalRuns || 0;
+            entry.totalDismissals += ranking.totalDismissals || 0;
           }
         });
       });
@@ -63,6 +64,12 @@ export const useStandingsStore = create<StandingsStore>((set) => ({
 
   // Load standings directly from API (calculates from database)
   loadStandings: async () => {
+    const { loading } = get();
+    if (loading) {
+      console.log("loadStandings: Already loading, skipping");
+      return; // Prevent concurrent loads
+    }
+
     try {
       set({ loading: true, error: null });
       const { tournament } = useTournamentStore.getState();
@@ -71,7 +78,7 @@ export const useStandingsStore = create<StandingsStore>((set) => ({
       set({ standings, loading: false });
     } catch (err) {
       // Silently ignore abort errors (React Strict Mode unmounting)
-      if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
         set({ loading: false });
         return;
       }

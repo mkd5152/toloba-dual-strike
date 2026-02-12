@@ -81,6 +81,7 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
           standing.matchesPlayed++
           standing.points += ranking.points || 0
           standing.totalRuns += ranking.totalRuns || 0
+          standing.totalDismissals += ranking.totalDismissals || 0
         }
       })
     })
@@ -230,6 +231,7 @@ export async function getStandingsByStage(
         standing.matchesPlayed++
         standing.points += ranking.points || 0
         standing.totalRuns += ranking.totalRuns || 0
+        standing.totalDismissals += ranking.totalDismissals || 0
       })
     })
 

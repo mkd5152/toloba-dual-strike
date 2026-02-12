@@ -78,6 +78,7 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
         .map((score) => ({
           teamId: score.teamId,
           totalRuns: score.runs,
+          totalDismissals: score.wickets,
           points: score.points,
           rank: 0, // Will be recalculated
         }))
