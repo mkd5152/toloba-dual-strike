@@ -11,6 +11,42 @@ type MatchInsert = Database["public"]["Tables"]["matches"]["Insert"]
 type MatchUpdate = Database["public"]["Tables"]["matches"]["Update"]
 
 /**
+ * Retry helper for handling transient errors like timeouts
+ */
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+
+      // Check if this is a retryable error (timeout/abort)
+      const isRetryable =
+        lastError.name === 'AbortError' ||
+        lastError.message.toLowerCase().includes('abort') ||
+        lastError.message.toLowerCase().includes('timeout')
+
+      if (!isRetryable || attempt === maxRetries) {
+        throw lastError
+      }
+
+      // Exponential backoff: wait longer between each retry
+      const waitTime = delayMs * Math.pow(2, attempt)
+      console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${waitTime}ms...`)
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+  }
+
+  throw lastError || new Error('Operation failed after retries')
+}
+
+/**
  * Fetch all matches for a tournament
  */
 export async function fetchMatches(tournamentId: string): Promise<Match[]> {
@@ -177,28 +213,30 @@ export async function updateMatch(matchId: string, updates: Partial<{
   rankings: MatchRanking[]
   lockedAt: Date | null
 }>): Promise<Match> {
-  try {
-    const matchData: MatchUpdate = {
-      ...(updates.state && { state: updates.state }),
-      ...(updates.umpireId !== undefined && { umpire_id: updates.umpireId }),
-      ...(updates.umpireName !== undefined && { umpire_name: updates.umpireName }),
-      ...(updates.battingOrder && { batting_order: updates.battingOrder }),
-      ...(updates.rankings && { rankings: updates.rankings as any }),
-      ...(updates.lockedAt !== undefined && { locked_at: updates.lockedAt?.toISOString() || null }),
-      updated_at: new Date().toISOString(),
+  return retryOperation(async () => {
+    try {
+      const matchData: MatchUpdate = {
+        ...(updates.state && { state: updates.state }),
+        ...(updates.umpireId !== undefined && { umpire_id: updates.umpireId }),
+        ...(updates.umpireName !== undefined && { umpire_name: updates.umpireName }),
+        ...(updates.battingOrder && { batting_order: updates.battingOrder }),
+        ...(updates.rankings && { rankings: updates.rankings as any }),
+        ...(updates.lockedAt !== undefined && { locked_at: updates.lockedAt?.toISOString() || null }),
+        updated_at: new Date().toISOString(),
+      }
+
+      // @ts-ignore - Supabase browser client type inference limitation
+      const { data, error } = await supabase.from("matches").update(matchData).eq("id", matchId).select().single()
+
+      if (error) throw error
+      if (!data) throw new Error("No data returned from update")
+
+      return transformMatchRow(data)
+    } catch (err) {
+      console.error("Error updating match:", err)
+      throw new Error(`Failed to update match: ${err instanceof Error ? err.message : "Unknown error"}`)
     }
-
-    // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase.from("matches").update(matchData).eq("id", matchId).select().single()
-
-    if (error) throw error
-    if (!data) throw new Error("No data returned from update")
-
-    return transformMatchRow(data)
-  } catch (err) {
-    console.error("Error updating match:", err)
-    throw new Error(`Failed to update match: ${err instanceof Error ? err.message : "Unknown error"}`)
-  }
+  }, 3, 500) // Retry up to 3 times with 500ms initial delay
 }
 
 /**

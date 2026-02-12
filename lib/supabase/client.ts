@@ -8,4 +8,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env.local file.')
 }
 
-export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+  db: {
+    schema: 'public',
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'dual-strike-scoring',
+    },
+  },
+  // Increase timeout for long-running operations like match initialization
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+})
