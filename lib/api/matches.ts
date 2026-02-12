@@ -47,20 +47,60 @@ async function retryOperation<T>(
 }
 
 /**
- * Fetch all matches for a tournament
+ * Fetch all matches for a tournament with innings data
  */
 export async function fetchMatches(tournamentId: string): Promise<Match[]> {
   try {
+    // Fetch matches
     // @ts-ignore - Supabase browser client type inference limitation
-    const { data, error } = await supabase
+    const { data: matchesData, error: matchesError } = await supabase
       .from("matches")
       .select("*")
       .eq("tournament_id", tournamentId)
       .order("match_number")
 
-    if (error) throw error
+    if (matchesError) throw matchesError
+    if (!matchesData) return []
 
-    return (data || []).map(transformMatchRow)
+    // Fetch all innings for these matches
+    const matchIds = matchesData.map((m: any) => m.id)
+    const { data: inningsData, error: inningsError } = await supabase
+      .from("innings")
+      .select("*")
+      .in("match_id", matchIds) as any
+
+    if (inningsError) {
+      console.warn("Error fetching innings:", inningsError)
+    }
+
+    // Transform matches and attach innings
+    const matches = matchesData.map((matchRow: any) => {
+      const match = transformMatchRow(matchRow)
+
+      // Find innings for this match
+      if (inningsData) {
+        match.innings = inningsData
+          .filter((i: any) => i.match_id === match.id)
+          .map((i: any) => ({
+            id: i.id,
+            matchId: i.match_id,
+            teamId: i.team_id,
+            battingPair: i.batting_pair || [],
+            bowlingTeamId: i.bowling_team_id,
+            state: i.state,
+            powerplayOver: i.powerplay_over,
+            totalRuns: i.total_runs || 0,
+            totalWickets: i.total_wickets || 0,
+            noWicketBonus: i.no_wicket_bonus || false,
+            finalScore: i.final_score || 0,
+            overs: [], // Overs can be loaded on-demand if needed
+          }))
+      }
+
+      return match
+    })
+
+    return matches
   } catch (err) {
     // Silently ignore abort errors (React Strict Mode unmounting)
     if (err instanceof Error && err.name === 'AbortError') {
