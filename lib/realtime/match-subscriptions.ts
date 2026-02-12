@@ -76,6 +76,7 @@ export function subscribeToMatch(
 
 /**
  * Subscribe to all matches in a tournament (for live dashboard)
+ * Also listens to innings and balls for live score updates
  */
 export function subscribeToTournamentMatches(
   tournamentId: string,
@@ -83,6 +84,7 @@ export function subscribeToTournamentMatches(
 ): RealtimeChannel {
   const channel = supabase
     .channel(`tournament:${tournamentId}:matches`)
+    // Listen to match-level changes
     .on(
       "postgres_changes",
       {
@@ -96,9 +98,41 @@ export function subscribeToTournamentMatches(
         onMatchUpdate(payload);
       }
     )
+    // Listen to innings updates for live scores
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "innings",
+      },
+      (payload) => {
+        console.log("Real-time: Innings updated for live scores", payload);
+        // Trigger match reload for any innings update
+        onMatchUpdate(payload);
+      }
+    )
+    // Listen to ball inserts for instant updates
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "balls",
+      },
+      (payload) => {
+        console.log("Real-time: Ball recorded for live scores", payload);
+        // Trigger match reload for any ball recorded
+        onMatchUpdate(payload);
+      }
+    )
     .subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        console.log(`Real-time: Subscribed to tournament ${tournamentId} matches`);
+        console.log(`Real-time: Subscribed to tournament ${tournamentId} matches, innings, and balls`);
+      } else if (status === "CHANNEL_ERROR") {
+        console.error(`Real-time: Error subscribing to tournament ${tournamentId}`);
+      } else if (status === "TIMED_OUT") {
+        console.error(`Real-time: Timeout subscribing to tournament ${tournamentId}`);
       }
     });
 
