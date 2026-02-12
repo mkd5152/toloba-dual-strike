@@ -31,7 +31,7 @@ export default function OrganizerMatchesPage() {
 
   const exportAllResultsToCSV = () => {
     const rows = [
-      ["Match #", "Court", "Stage", "Date", "Rank", "Team", "Runs", "Points"],
+      ["Match #", "Court", "Stage", "Date", "Rank", "Team", "Runs", "Wickets", "Points"],
     ];
 
     completedMatches.forEach((match) => {
@@ -45,6 +45,7 @@ export default function OrganizerMatchesPage() {
           (index + 1).toString(),
           team?.name || "Unknown",
           ranking.totalRuns.toString(),
+          ranking.totalDismissals?.toString() || "0",
           ranking.points.toString(),
         ]);
       });

@@ -47,6 +47,12 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
 
   // Load teams from database
   loadTeams: async () => {
+    const { loading } = get();
+    if (loading) {
+      console.log("loadTeams: Already loading, skipping");
+      return; // Prevent concurrent loads
+    }
+
     try {
       set({ loading: true, error: null });
       const { tournament } = get();
@@ -68,7 +74,7 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
       set({ teams, loading: false });
     } catch (err) {
       // Silently ignore abort errors (React Strict Mode unmounting)
-      if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
         set({ loading: false });
         return;
       }
@@ -82,6 +88,12 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
 
   // Load matches from database
   loadMatches: async () => {
+    const { loading } = get();
+    if (loading) {
+      console.log("loadMatches: Already loading, skipping");
+      return; // Prevent concurrent loads
+    }
+
     try {
       set({ loading: true, error: null });
       const { tournament } = get();
@@ -90,7 +102,7 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
       set({ matches, loading: false });
     } catch (err) {
       // Silently ignore abort errors (React Strict Mode unmounting)
-      if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
+      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
         set({ loading: false });
         return;
       }
