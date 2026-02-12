@@ -47,12 +47,6 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
 
   // Load teams from database
   loadTeams: async () => {
-    const { loading } = get();
-    if (loading) {
-      console.log("loadTeams: Already loading, skipping");
-      return; // Prevent concurrent loads
-    }
-
     try {
       set({ loading: true, error: null });
       const { tournament } = get();
@@ -88,12 +82,6 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
 
   // Load matches from database
   loadMatches: async () => {
-    const { loading } = get();
-    if (loading) {
-      console.log("loadMatches: Already loading, skipping");
-      return; // Prevent concurrent loads
-    }
-
     try {
       set({ loading: true, error: null });
       const { tournament } = get();

@@ -12,7 +12,7 @@ interface StandingsStore {
   loadStandings: () => Promise<void>;
 }
 
-export const useStandingsStore = create<StandingsStore>((set, get) => ({
+export const useStandingsStore = create<StandingsStore>((set) => ({
   standings: [],
   loading: false,
   error: null,
@@ -64,12 +64,6 @@ export const useStandingsStore = create<StandingsStore>((set, get) => ({
 
   // Load standings directly from API (calculates from database)
   loadStandings: async () => {
-    const { loading } = get();
-    if (loading) {
-      console.log("loadStandings: Already loading, skipping");
-      return; // Prevent concurrent loads
-    }
-
     try {
       set({ loading: true, error: null });
       const { tournament } = useTournamentStore.getState();
