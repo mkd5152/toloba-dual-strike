@@ -11,14 +11,17 @@ export default function SchedulePage() {
   const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      const loadData = async () => {
+    // Always reload matches when navigating to this page
+    // This ensures fresh data after scoring or other updates
+    const loadData = async () => {
+      if (!hasLoaded.current) {
+        hasLoaded.current = true;
         await loadTeams();
-        await loadMatches();
-      };
-      loadData();
-    }
+      }
+      // Always reload matches to get latest updates
+      await loadMatches();
+    };
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
@@ -34,16 +37,20 @@ export default function SchedulePage() {
         <GenerateMatchesDialog />
       </div>
 
-      {loading && matches.length === 0 ? (
-        <div className="text-center text-white/70 py-12">Loading matches...</div>
-      ) : matches.length === 0 ? (
-        <div className="text-center text-white/70 py-12">
-          No matches scheduled yet. Create some teams first, then generate the match schedule!
-        </div>
+      {matches.length === 0 ? (
+        loading ? (
+          <div className="text-center text-white/70 py-12">Loading matches...</div>
+        ) : (
+          <div className="text-center text-white/70 py-12">
+            No matches scheduled yet. Create some teams first, then generate the match schedule!
+          </div>
+        )
       ) : (
         <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
-            <CardTitle className="text-xl font-black">All matches</CardTitle>
+            <CardTitle className="text-xl font-black">
+              All matches {loading && <span className="text-sm font-normal opacity-70">(updating...)</span>}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <MatchScheduleTable matches={matches} />
