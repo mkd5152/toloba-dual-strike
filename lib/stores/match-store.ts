@@ -69,9 +69,32 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     if (!over) return;
 
     const isPowerplay = over.isPowerplay;
+
+    // Calculate ball number based on legal balls
+    // In powerplay: wide/noball doesn't increment ball number (repeats same number)
+    // In normal over: all deliveries count
+    let ballNumber: number;
+    if (isPowerplay) {
+      // Count legal balls delivered before this one
+      const legalBallsBefore = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+
+      if (ballData.isWide || ballData.isNoball) {
+        // Wide/noball in powerplay: "retry" the same ball number
+        // If no legal balls yet, we're attempting ball 1
+        // If there were legal balls, we're retrying the ball after the last legal one
+        ballNumber = legalBallsBefore === 0 ? 1 : legalBallsBefore;
+      } else {
+        // Legal ball in powerplay: increment from legal balls count
+        ballNumber = legalBallsBefore + 1;
+      }
+    } else {
+      // Normal over: all balls count (including wides/noballs)
+      ballNumber = over.balls.length + 1;
+    }
+
     const ballWithEffective: Ball = {
       ...ballData,
-      ballNumber: over.balls.length + 1,
+      ballNumber: ballNumber,
       effectiveRuns: 0,
       timestamp: new Date(),
     };
@@ -120,8 +143,21 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       state: "IN_PROGRESS",
     });
 
-    // If over complete (6 balls), move to next over or next innings
-    if (updatedOver.balls.length >= 6) {
+    // Count legal balls in this over
+    // In powerplay: wide/no ball doesn't count towards the 6-ball limit
+    // In normal over: all balls count
+    const legalBallCount = updatedOver.balls.filter(ball => {
+      if (isPowerplay) {
+        // In powerplay, only count balls that are NOT wide or no ball
+        return !ball.isWide && !ball.isNoball;
+      } else {
+        // In normal overs, all balls count
+        return true;
+      }
+    }).length;
+
+    // If over complete (6 legal balls), move to next over or next innings
+    if (legalBallCount >= 6) {
       if (currentOverIndex < innings.overs.length - 1) {
         nextOverIndex = currentOverIndex + 1;
       } else {
