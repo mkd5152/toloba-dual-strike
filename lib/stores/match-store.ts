@@ -74,22 +74,28 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     // In powerplay: wide/noball doesn't increment ball number (repeats same number)
     // In normal over: all deliveries count
     let ballNumber: number;
+
+    console.log(`[recordBall] isPowerplay=${isPowerplay}, ballData.isWide=${ballData.isWide}, ballData.isNoball=${ballData.isNoball}`);
+
     if (isPowerplay) {
       // Count legal balls delivered before this one
       const legalBallsBefore = over.balls.filter(b => !b.isWide && !b.isNoball).length;
 
       if (ballData.isWide || ballData.isNoball) {
-        // Wide/noball in powerplay: "retry" the same ball number
-        // If no legal balls yet, we're attempting ball 1
-        // If there were legal balls, we're retrying the ball after the last legal one
-        ballNumber = legalBallsBefore === 0 ? 1 : legalBallsBefore;
+        // Wide/noball in powerplay: DON'T increment ball number (retry same ball)
+        // Use the last legal ball's number (or 1 if no legal balls yet)
+        // Example: After legal ball 0.1, a wide should also show 0.1, then next legal shows 0.2
+        ballNumber = Math.max(1, legalBallsBefore);
+        console.log(`[recordBall] Powerplay wide/noball: legalBallsBefore=${legalBallsBefore}, ballNumber=${ballNumber}`);
       } else {
         // Legal ball in powerplay: increment from legal balls count
         ballNumber = legalBallsBefore + 1;
+        console.log(`[recordBall] Powerplay legal ball: legalBallsBefore=${legalBallsBefore}, ballNumber=${ballNumber}`);
       }
     } else {
       // Normal over: all balls count (including wides/noballs)
       ballNumber = over.balls.length + 1;
+      console.log(`[recordBall] Normal over: ballNumber=${ballNumber}`);
     }
 
     const ballWithEffective: Ball = {
