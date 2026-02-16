@@ -11,14 +11,15 @@ export default function OrganizerDashboard() {
   const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      const loadData = async () => {
-        await loadTeams();
-        await loadMatches();
-      };
-      loadData();
-    }
+    // Always reload data when navigating to dashboard
+    const loadData = async () => {
+      if (!hasLoaded.current) {
+        hasLoaded.current = true;
+      }
+      await loadTeams();
+      await loadMatches();
+    };
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
@@ -69,7 +70,7 @@ export default function OrganizerDashboard() {
         <CreateUmpireDialog />
       </div>
 
-      {loading ? (
+      {loading && teams.length === 0 && matches.length === 0 ? (
         <div className="text-center text-white/70 py-12">Loading dashboard...</div>
       ) : (
         <>

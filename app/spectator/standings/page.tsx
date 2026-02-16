@@ -22,15 +22,17 @@ export default function StandingsPage() {
   });
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      const loadData = async () => {
+    // Always reload standings when navigating to this page
+    const loadData = async () => {
+      if (!hasLoaded.current) {
+        hasLoaded.current = true;
         await loadTeams();
         await loadMatches();
-        await loadStandings();
-      };
-      loadData();
-    }
+      }
+      // Always reload standings to get latest updates
+      await loadStandings();
+    };
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
@@ -56,16 +58,23 @@ export default function StandingsPage() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center text-white/70 py-12">Loading standings...</div>
-      ) : standings.length === 0 ? (
-        <div className="text-center text-white/70 py-12">
-          No teams found. Please add teams to the tournament!
-        </div>
+      {standings.length === 0 ? (
+        loading ? (
+          <div className="text-center text-white/70 py-12">Loading standings...</div>
+        ) : (
+          <div className="text-center text-white/70 py-12">
+            No teams found. Please add teams to the tournament!
+          </div>
+        )
       ) : (
         <Card className="border-2 border-[#0d3944]/10 shadow-lg">
           <div className="overflow-x-auto">
             <StandingsTable standings={standings} />
+            {loading && (
+              <div className="text-center text-white/70 py-2 text-sm opacity-70">
+                Updating...
+              </div>
+            )}
           </div>
         </Card>
       )}

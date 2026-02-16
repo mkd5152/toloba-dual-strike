@@ -20,14 +20,14 @@ export default function OrganizerGroupsPage() {
   const hasLoaded = useRef(false)
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true
-      loadGroupStandings()
-    }
+    // Always reload group standings when navigating to this page
+    loadGroupStandings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadGroupStandings = async () => {
     try {
+      setLoading(true)
       setError(null)
       const standings = await getQualifiedTeamsForSemis("tdst-season-1")
       setGroupStandings(standings)
@@ -39,7 +39,8 @@ export default function OrganizerGroupsPage() {
     }
   }
 
-  if (loading) {
+  // Show loading only if we have no data yet
+  if (loading && !groupStandings) {
     return (
       <div className="p-4 md:p-8">
         <div className="text-center py-12">

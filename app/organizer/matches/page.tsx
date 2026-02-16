@@ -13,17 +13,19 @@ export default function OrganizerMatchesPage() {
   const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      const loadData = async () => {
+    // Always reload matches when navigating to this page
+    const loadData = async () => {
+      if (!hasLoaded.current) {
+        hasLoaded.current = true;
         await loadTeams();
-        await loadMatches();
-        setInitialLoadComplete(true);
-      };
-      loadData();
-    }
+      }
+      // Always reload matches to get latest results
+      await loadMatches();
+      setInitialLoadComplete(true);
+    };
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []); // Run on mount
 
   const completedMatches = matches.filter(
     (m) => m.state === "COMPLETED" || m.state === "LOCKED"
@@ -61,7 +63,8 @@ export default function OrganizerMatchesPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (!initialLoadComplete || loading) {
+  // Show loading only if we haven't loaded anything yet
+  if (!initialLoadComplete && completedMatches.length === 0) {
     return (
       <div className="p-4 md:p-8">
         <div className="text-center py-12">
