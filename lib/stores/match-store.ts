@@ -437,41 +437,100 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     const { currentMatch, currentInningsIndex, currentOverIndex } = get();
     if (!currentMatch) return;
 
-    const innings = currentMatch.innings[currentInningsIndex];
-    if (!innings) return;
-    const over = innings.overs[currentOverIndex];
-    if (!over || over.balls.length === 0) return;
+    // Find the last ball in the entire match (works across overs/innings)
+    let targetInningsIndex = currentInningsIndex;
+    let targetOverIndex = currentOverIndex;
+    let targetInnings = currentMatch.innings[targetInningsIndex];
+    let targetOver = targetInnings?.overs[targetOverIndex];
 
+    // If current over is empty, search backwards for the last ball
+    if (!targetOver || targetOver.balls.length === 0) {
+      // Search backwards through overs in current innings
+      for (let overIdx = currentOverIndex - 1; overIdx >= 0; overIdx--) {
+        const over = targetInnings.overs[overIdx];
+        if (over && over.balls.length > 0) {
+          targetOverIndex = overIdx;
+          targetOver = over;
+          break;
+        }
+      }
+
+      // If still no ball found, search in previous innings
+      if (!targetOver || targetOver.balls.length === 0) {
+        for (let inningsIdx = currentInningsIndex - 1; inningsIdx >= 0; inningsIdx--) {
+          const innings = currentMatch.innings[inningsIdx];
+          if (innings) {
+            // Search from last over backwards
+            for (let overIdx = innings.overs.length - 1; overIdx >= 0; overIdx--) {
+              const over = innings.overs[overIdx];
+              if (over && over.balls.length > 0) {
+                targetInningsIndex = inningsIdx;
+                targetOverIndex = overIdx;
+                targetInnings = innings;
+                targetOver = over;
+                break;
+              }
+            }
+            if (targetOver && targetOver.balls.length > 0) break;
+          }
+        }
+      }
+    }
+
+    // No ball to undo
+    if (!targetInnings || !targetOver || targetOver.balls.length === 0) {
+      console.warn("No ball to undo");
+      return;
+    }
+
+    console.log(`Undoing ball from innings ${targetInningsIndex}, over ${targetOverIndex}`);
+
+    // Remove the last ball from the target over
     const updatedOver: Over = {
-      ...over,
-      balls: over.balls.slice(0, -1),
+      ...targetOver,
+      balls: targetOver.balls.slice(0, -1),
     };
 
+    // Recalculate innings totals
     const updatedInnings = recalcInningsFromBalls({
-      ...innings,
-      overs: innings.overs.map((o, i) =>
-        i === currentOverIndex ? updatedOver : o
+      ...targetInnings,
+      overs: targetInnings.overs.map((o, i) =>
+        i === targetOverIndex ? updatedOver : o
       ),
+      state: "IN_PROGRESS", // Mark as in progress again if it was completed
     });
 
+    // Update all innings in the match
     const updatedMatch: Match = {
       ...currentMatch,
       innings: currentMatch.innings.map((inn, i) =>
-        i === currentInningsIndex ? updatedInnings : inn
+        i === targetInningsIndex ? updatedInnings : inn
       ),
+      state: "IN_PROGRESS", // Mark match as in progress if it was completed
     };
 
-    set({ currentMatch: updatedMatch });
+    // Update indices to point to the over we just undid
+    set({
+      currentMatch: updatedMatch,
+      currentInningsIndex: targetInningsIndex,
+      currentOverIndex: targetOverIndex,
+    });
 
     // Delete ball from database
-    if (over.id) {
-      deleteLastBall(over.id).catch((err) => {
+    if (targetOver.id) {
+      deleteLastBall(targetOver.id).catch((err) => {
         console.error("Failed to delete ball from database:", err);
       });
     }
 
-    // Update innings totals in database
-    updateInningsTotals(innings.id, {
+    // Update innings state and totals in database
+    import("@/lib/api/innings").then(({ updateInningsState }) => {
+      updateInningsState(targetInnings.id, "IN_PROGRESS").catch((err) => {
+        console.error("Failed to update innings state after undo:", err);
+      });
+    });
+
+    updateInningsTotals(targetInnings.id, {
       totalRuns: updatedInnings.totalRuns,
       totalWickets: updatedInnings.totalWickets,
       noWicketBonus: updatedInnings.noWicketBonus,
@@ -479,5 +538,14 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     }).catch((err) => {
       console.error("Failed to update innings totals after undo:", err);
     });
+
+    // If match was completed, revert it back to IN_PROGRESS
+    if (currentMatch.state === "COMPLETED") {
+      useTournamentStore.getState().updateMatch(currentMatch.id, {
+        state: "IN_PROGRESS",
+        rankings: [],
+        lockedAt: null,
+      });
+    }
   },
 }));
