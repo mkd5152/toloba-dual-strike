@@ -11,14 +11,20 @@
 /**
  * Calculate which 3 teams bowl during a specific innings
  *
+ * Uses "bottom-to-top" rotation pattern:
+ * - When Team A (index 0) bats: Bowl with teams at indices [3,2,1] (D,C,B)
+ * - When Team B (index 1) bats: Bowl with teams at indices [2,0,3] (C,A,D)
+ * - When Team C (index 2) bats: Bowl with teams at indices [1,0,3] (B,A,D)
+ * - When Team D (index 3) bats: Bowl with teams at indices [2,1,0] (C,B,A)
+ *
  * @param battingOrder - Array of 4 team IDs in batting order (from toss)
  * @param inningsIndex - Innings number (0-3)
  * @returns Array of 3 team IDs that will bowl (one over each)
  *
  * Example:
- * battingOrder = ['team-b', 'team-d', 'team-a', 'team-c']
- * inningsIndex = 0 (Team B batting)
- * Returns: ['team-a', 'team-c', 'team-d'] - the 3 non-batting teams
+ * battingOrder = ['team-a', 'team-b', 'team-c', 'team-d']
+ * inningsIndex = 0 (Team A batting at index 0)
+ * Returns: ['team-d', 'team-c', 'team-b'] - bottom-to-top rotation
  */
 export function calculateBowlingTeamsForInnings(
   battingOrder: string[],
@@ -31,14 +37,21 @@ export function calculateBowlingTeamsForInnings(
     throw new Error("Innings index must be between 0 and 3");
   }
 
-  const battingTeam = battingOrder[inningsIndex];
+  // Bottom-to-top rotation pattern based on batting position
+  const bowlingPatterns = [
+    [3, 2, 1], // When index 0 bats: bowl with indices 3,2,1 (bottom to top)
+    [2, 0, 3], // When index 1 bats: bowl with indices 2,0,3
+    [1, 0, 3], // When index 2 bats: bowl with indices 1,0,3
+    [2, 1, 0], // When index 3 bats: bowl with indices 2,1,0
+  ];
 
-  // Get the other 3 teams (non-batting teams)
-  const bowlingTeams = battingOrder.filter(teamId => teamId !== battingTeam);
+  const bowlingIndices = bowlingPatterns[inningsIndex];
 
-  // Return in specific rotation order
-  // This ensures consistent rotation throughout the match
-  return [bowlingTeams[0], bowlingTeams[1], bowlingTeams[2]];
+  return [
+    battingOrder[bowlingIndices[0]],
+    battingOrder[bowlingIndices[1]],
+    battingOrder[bowlingIndices[2]],
+  ];
 }
 
 /**
