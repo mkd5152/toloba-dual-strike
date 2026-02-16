@@ -12,17 +12,19 @@ export default function OrganizerStandingsPage() {
   const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      const loadData = async () => {
+    // Always reload standings when navigating to this page
+    const loadData = async () => {
+      if (!hasLoaded.current) {
+        hasLoaded.current = true;
         await loadTeams();
         await loadMatches();
-        await loadStandings();
-      };
-      loadData();
-    }
+      }
+      // Always reload standings to get latest data
+      await loadStandings();
+    };
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []); // Run on mount
 
   return (
     <div className="p-4 md:p-8">
@@ -31,7 +33,9 @@ export default function OrganizerStandingsPage() {
           Leaderboard
         </div>
         <div className="flex items-baseline gap-4">
-          <h1 className="text-4xl font-black text-white drop-shadow-lg">Tournament Standings</h1>
+          <h1 className="text-4xl font-black text-white drop-shadow-lg">
+            Tournament Standings {loading && standings.length > 0 && <span className="text-sm font-normal opacity-70">(updating...)</span>}
+          </h1>
           {!loading && standings.length > 0 && (
             <span className="text-xl font-bold text-white/70">
               {standings.length} {standings.length === 1 ? 'Team' : 'Teams'}
@@ -40,12 +44,14 @@ export default function OrganizerStandingsPage() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center text-white/70 py-12">Loading standings...</div>
-      ) : standings.length === 0 ? (
-        <div className="text-center text-white/70 py-12">
-          No teams found. Please add teams to the tournament!
-        </div>
+      {standings.length === 0 ? (
+        loading ? (
+          <div className="text-center text-white/70 py-12">Loading standings...</div>
+        ) : (
+          <div className="text-center text-white/70 py-12">
+            No teams found. Please add teams to the tournament!
+          </div>
+        )
       ) : (
         <Card className="border-2 border-[#0d3944]/10 shadow-lg">
           <div className="overflow-x-auto">
