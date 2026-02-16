@@ -20,17 +20,21 @@ export default function UmpireMatchesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Always reload matches when navigating to this page
+    // This ensures fresh data after scoring
     if (user && profile) {
       fetchMyMatches();
     } else {
       setLoading(false);
     }
-  }, [user, profile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run on every mount to get fresh data
 
   const fetchMyMatches = async () => {
     if (!user) return;
 
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from("matches")
         .select("*")
@@ -46,7 +50,8 @@ export default function UmpireMatchesPage() {
     }
   };
 
-  if (loading) {
+  // Show loading spinner only if we have no matches yet
+  if (loading && matches.length === 0) {
     return (
       <div className="p-4 md:p-8">
         <div className="text-center py-12">
@@ -81,7 +86,9 @@ export default function UmpireMatchesPage() {
       ) : (
         <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
-            <CardTitle className="text-xl font-black">All Matches</CardTitle>
+            <CardTitle className="text-xl font-black">
+              All Matches {loading && <span className="text-sm font-normal opacity-70">(updating...)</span>}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-3">
