@@ -92,6 +92,7 @@ export async function initializeMatchInnings(
           .insert({
             innings_id: inningsId,
             over_number: overIdx,
+            bowling_team_id: bowlingTeamId, // CRITICAL: Set which team bowls this over
             bowler_id: bowlingTeamPlayers[0].id, // Default, can be changed by umpire
             keeper_id: bowlingTeamPlayers[1].id, // Default, can be changed by umpire
             is_powerplay: false,
@@ -310,7 +311,7 @@ export async function fetchMatchInnings(matchId: string): Promise<Innings[]> {
         overs.push({
           id: overRow.id, // Include database ID for recording balls
           overNumber: overRow.over_number,
-          bowlingTeamId: inningsRow.bowling_team_id,
+          bowlingTeamId: overRow.bowling_team_id, // FIXED: Use over-specific bowling team, not innings-level
           bowlerId: overRow.bowler_id || '',
           keeperId: overRow.keeper_id || '',
           balls: (ballsData || []).map((ballRow: any) => ({
