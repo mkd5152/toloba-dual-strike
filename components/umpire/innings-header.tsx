@@ -53,11 +53,25 @@ export function InningsHeader() {
 
   const battingTeam = getTeam(currentInnings.teamId);
 
-  // Find current over (first over with less than 6 balls)
-  const overIndex = currentInnings.overs.findIndex((o) => o.balls.length < 6);
+  // Find current over (first over with less than 6 balls in powerplay, or less than 6 legal balls in normal)
+  const overIndex = currentInnings.overs.findIndex((o) => {
+    const isPowerplayOver = o.isPowerplay;
+    if (isPowerplayOver) {
+      // In powerplay, count only legal balls
+      const legalBallCount = o.balls.filter(b => !b.isWide && !b.isNoball).length;
+      return legalBallCount < 6;
+    } else {
+      // In normal over, all balls count
+      return o.balls.length < 6;
+    }
+  });
   const currentOver = overIndex >= 0 ? currentInnings.overs[overIndex] : currentInnings.overs[currentInnings.overs.length - 1];
   const overNum = overIndex >= 0 ? overIndex : currentInnings.overs.length - 1;
-  const ballInOver = currentOver?.balls?.length ?? 0;
+
+  // Get ball number from most recent ball (or calculate for next ball)
+  const ballInOver = currentOver?.balls && currentOver.balls.length > 0
+    ? currentOver.balls[currentOver.balls.length - 1].ballNumber  // Use actual ball number from last ball
+    : 0;
 
   // Get bowling team for current over
   const bowlingTeam = currentOver ? getTeam(currentOver.bowlingTeamId) : null;
