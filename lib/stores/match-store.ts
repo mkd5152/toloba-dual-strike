@@ -75,8 +75,6 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     // In normal over: all deliveries count
     let ballNumber: number;
 
-    console.log(`[recordBall] isPowerplay=${isPowerplay}, ballData.isWide=${ballData.isWide}, ballData.isNoball=${ballData.isNoball}`);
-
     if (isPowerplay) {
       // Count legal balls delivered before this one
       const legalBallsBefore = over.balls.filter(b => !b.isWide && !b.isNoball).length;
@@ -86,16 +84,13 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         // Use the last legal ball's number (or 1 if no legal balls yet)
         // Example: After legal ball 0.1, a wide should also show 0.1, then next legal shows 0.2
         ballNumber = Math.max(1, legalBallsBefore);
-        console.log(`[recordBall] Powerplay wide/noball: legalBallsBefore=${legalBallsBefore}, ballNumber=${ballNumber}`);
       } else {
         // Legal ball in powerplay: increment from legal balls count
         ballNumber = legalBallsBefore + 1;
-        console.log(`[recordBall] Powerplay legal ball: legalBallsBefore=${legalBallsBefore}, ballNumber=${ballNumber}`);
       }
     } else {
       // Normal over: all balls count (including wides/noballs)
       ballNumber = over.balls.length + 1;
-      console.log(`[recordBall] Normal over: ballNumber=${ballNumber}`);
     }
 
     const ballWithEffective: Ball = {
