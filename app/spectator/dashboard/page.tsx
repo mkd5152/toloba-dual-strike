@@ -13,6 +13,9 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import type { Match } from "@/lib/types"
+import LiveCricketNotifications from "@/components/spectator/live-cricket-notifications"
+
+type NotificationType = "FOUR" | "SIX" | "WICKET"
 
 export default function SpectatorDashboardPage() {
   const { tournament, teams, matches, loadTeams, loadMatches } = useTournamentStore()
@@ -20,6 +23,24 @@ export default function SpectatorDashboardPage() {
   const [detailedMatches, setDetailedMatches] = useState<Match[]>([])
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false)
   const hasLoaded = useRef(false)
+
+  // Cricket notifications state
+  const [notifications, setNotifications] = useState<Array<{
+    id: string
+    type: NotificationType
+    teamName?: string
+    message?: string
+  }>>([])
+
+  const triggerNotification = useCallback((type: NotificationType, teamName?: string, message?: string) => {
+    const id = `${Date.now()}-${Math.random()}`
+    setNotifications(prev => [...prev, { id, type, teamName, message }])
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id))
+    }, 4000)
+  }, [])
 
   // Load detailed matches for statistics calculation
   const loadDetailedMatches = useCallback(async () => {
@@ -114,6 +135,22 @@ export default function SpectatorDashboardPage() {
         },
         (payload) => {
           console.log("Dashboard: Ball recorded via realtime", payload)
+
+          // Trigger cricket notifications for boundaries and wickets
+          const ball = payload.new as any
+          if (ball) {
+            if (ball.runs === 6) {
+              triggerNotification("SIX", undefined, "Maximum!")
+            } else if (ball.runs === 4) {
+              triggerNotification("FOUR", undefined, "Boundary!")
+            }
+
+            if (ball.is_wicket) {
+              const wicketType = ball.wicket_type?.replace(/_/g, ' ') || "Out"
+              triggerNotification("WICKET", undefined, wicketType)
+            }
+          }
+
           loadDetailedMatches()
         }
       )
@@ -257,6 +294,9 @@ export default function SpectatorDashboardPage() {
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Live Cricket Notifications */}
+      <LiveCricketNotifications notifications={notifications} />
+
       {/* Animated Hero Section with Glassmorphism */}
       <div className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 p-8 md:p-12 shadow-2xl">
         {/* Animated background elements */}
