@@ -45,7 +45,7 @@ export default function UmpireLayout({
                   {TOURNAMENT_INFO.NAME}
                 </h1>
                 <p className="text-[10px] md:text-xs text-[#ffb300] font-semibold uppercase tracking-wide">
-                  Umpire Portal
+                  Scorer Portal
                 </p>
               </div>
             </Link>
