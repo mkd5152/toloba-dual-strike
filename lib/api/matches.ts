@@ -116,6 +116,142 @@ export async function fetchMatches(tournamentId: string): Promise<Match[]> {
 }
 
 /**
+ * Fetch all matches with full details (innings, overs, balls) for dashboard statistics
+ * This is more expensive than fetchMatches() but necessary for boundary/powerplay stats
+ */
+export async function fetchMatchesWithDetails(tournamentId: string): Promise<Match[]> {
+  try {
+    // Fetch matches
+    // @ts-ignore - Supabase browser client type inference limitation
+    const { data: matchesData, error: matchesError } = await supabase
+      .from("matches")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .in("state", ["COMPLETED", "LOCKED"]) // Only load completed matches for stats
+      .order("match_number")
+
+    if (matchesError) throw matchesError
+    if (!matchesData) return []
+
+    // Fetch all innings for these matches
+    const matchIds = matchesData.map((m: any) => m.id)
+    const { data: inningsData, error: inningsError } = await supabase
+      .from("innings")
+      .select("*")
+      .in("match_id", matchIds) as any
+
+    if (inningsError) {
+      console.warn("Error fetching innings:", inningsError)
+    }
+
+    // Fetch all overs for these innings
+    const inningsIds = inningsData?.map((i: any) => i.id) || []
+    const { data: oversData, error: oversError } = await supabase
+      .from("overs")
+      .select("*")
+      .in("innings_id", inningsIds)
+      .order("over_number") as any
+
+    if (oversError) {
+      console.warn("Error fetching overs:", oversError)
+    }
+
+    // Fetch all balls for these overs
+    const overIds = oversData?.map((o: any) => o.id) || []
+    const { data: ballsData, error: ballsError } = await supabase
+      .from("balls")
+      .select("*")
+      .in("over_id", overIds)
+      .order("ball_number") as any
+
+    if (ballsError) {
+      console.warn("Error fetching balls:", ballsError)
+    }
+
+    // Transform and nest the data
+    const matches = matchesData.map((matchRow: any) => {
+      const match = transformMatchRow(matchRow)
+
+      // Find innings for this match
+      if (inningsData) {
+        match.innings = inningsData
+          .filter((i: any) => i.match_id === match.id)
+          .map((i: any) => {
+            const innings = {
+              id: i.id,
+              matchId: i.match_id,
+              teamId: i.team_id,
+              battingPair: i.batting_pair || [],
+              bowlingTeamId: i.bowling_team_id,
+              state: i.state,
+              powerplayOver: i.powerplay_over,
+              totalRuns: i.total_runs || 0,
+              totalWickets: i.total_wickets || 0,
+              noWicketBonus: i.no_wicket_bonus || false,
+              finalScore: i.final_score || 0,
+              overs: [] as any[],
+            }
+
+            // Find overs for this innings
+            if (oversData) {
+              innings.overs = oversData
+                .filter((o: any) => o.innings_id === innings.id)
+                .map((o: any) => {
+                  const over = {
+                    id: o.id,
+                    overNumber: o.over_number,
+                    bowlingTeamId: o.bowling_team_id,
+                    bowlerId: o.bowler_id,
+                    keeperId: o.keeper_id,
+                    isPowerplay: o.is_powerplay || false,
+                    balls: [] as any[],
+                  }
+
+                  // Find balls for this over
+                  if (ballsData) {
+                    over.balls = ballsData
+                      .filter((b: any) => b.over_id === over.id)
+                      .map((b: any) => ({
+                        ballNumber: b.ball_number,
+                        runs: b.runs,
+                        isWicket: b.is_wicket || false,
+                        wicketType: b.wicket_type,
+                        fieldingTeamId: b.fielding_team_id,
+                        isNoball: b.is_noball || false,
+                        isWide: b.is_wide || false,
+                        isFreeHit: b.is_free_hit || false,
+                        misconduct: b.misconduct || false,
+                        effectiveRuns: b.effective_runs || 0,
+                        timestamp: new Date(b.timestamp),
+                      }))
+                  }
+
+                  return over
+                })
+            }
+
+            return innings
+          })
+      }
+
+      return match
+    })
+
+    return matches
+  } catch (err) {
+    // Silently ignore abort errors (React Strict Mode unmounting)
+    if (err instanceof Error && err.name === 'AbortError') {
+      return []
+    }
+    if (err instanceof Error && err.message.toLowerCase().includes('abort')) {
+      return []
+    }
+    console.error("Error fetching matches with details:", err)
+    throw new Error(`Failed to fetch matches with details: ${err instanceof Error ? err.message : "Unknown error"}`)
+  }
+}
+
+/**
  * Fetch a single match by ID
  */
 export async function fetchMatch(matchId: string): Promise<Match | null> {

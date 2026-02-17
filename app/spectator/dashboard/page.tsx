@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useMemo } from "react"
+import { useEffect, useRef, useMemo, useState } from "react"
 import { useTournamentStore } from "@/lib/stores/tournament-store"
 import { useStandingsStore } from "@/lib/stores/standings-store"
+import { fetchMatchesWithDetails } from "@/lib/api/matches"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -10,10 +11,12 @@ import {
   Award, Crosshair, Shield, Sparkles, Radio, Crown
 } from "lucide-react"
 import Link from "next/link"
+import type { Match } from "@/lib/types"
 
 export default function SpectatorDashboardPage() {
   const { tournament, teams, matches, loadTeams, loadMatches } = useTournamentStore()
   const { standings, loadStandings } = useStandingsStore()
+  const [detailedMatches, setDetailedMatches] = useState<Match[]>([])
   const hasLoaded = useRef(false)
 
   useEffect(() => {
@@ -23,6 +26,13 @@ export default function SpectatorDashboardPage() {
         await loadTeams()
         await loadMatches()
         await loadStandings()
+        // Load detailed matches for statistics calculation
+        try {
+          const detailed = await fetchMatchesWithDetails(tournament.id)
+          setDetailedMatches(detailed)
+        } catch (err) {
+          console.error("Error loading detailed matches:", err)
+        }
       }
       loadData()
     }
@@ -42,8 +52,11 @@ export default function SpectatorDashboardPage() {
     let highestScore = { runs: 0, team: '', match: 0 }
     let lowestScore = { runs: Infinity, team: '', match: 0 }
 
-    // Only process completed matches for accurate statistics
-    const completedMatches = matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED")
+    // Use detailed matches for statistics (already filtered to COMPLETED/LOCKED in API)
+    // Fall back to regular matches if detailed matches haven't loaded yet
+    const completedMatches = detailedMatches.length > 0
+      ? detailedMatches
+      : matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED")
 
     completedMatches.forEach((match) => {
       // Use rankings for highest/lowest scores (includes bonuses)
@@ -114,7 +127,7 @@ export default function SpectatorDashboardPage() {
       strikeRate: totalBalls > 0 ? ((totalRuns / totalBalls) * 100).toFixed(1) : 0,
       wicketsPerMatch: completedMatchesCount > 0 ? (totalWickets / completedMatchesCount).toFixed(1) : 0
     }
-  }, [matches, teams])
+  }, [matches, teams, detailedMatches])
 
   // Top 3 teams for podium
   const podiumTeams = standings.slice(0, 3)
