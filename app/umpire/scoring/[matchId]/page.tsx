@@ -375,7 +375,7 @@ export default function ScoringPage() {
                             </div>
                             <div className="text-right">
                               <p className="text-2xl font-black text-[#0d3944]">
-                                {ranking.totalRuns}
+                                {ranking.totalScore || ranking.totalRuns}
                               </p>
                               <p className="text-sm text-gray-600">runs</p>
                             </div>

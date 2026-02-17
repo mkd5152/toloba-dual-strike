@@ -43,7 +43,8 @@ export const useStandingsStore = create<StandingsStore>((set) => ({
           if (entry) {
             entry.matchesPlayed += 1;
             entry.points += ranking.points || 0;
-            entry.totalRuns += ranking.totalRuns || 0;
+            // Use totalScore (includes bonuses) instead of totalRuns for accurate display
+            entry.totalRuns += ranking.totalScore || ranking.totalRuns || 0;
             entry.totalDismissals += ranking.totalDismissals || 0;
           }
         });

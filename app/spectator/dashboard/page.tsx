@@ -46,37 +46,41 @@ export default function SpectatorDashboardPage() {
     const completedMatches = matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED")
 
     completedMatches.forEach((match) => {
+      // Use rankings for highest/lowest scores (includes bonuses)
+      if (match.rankings && match.rankings.length > 0) {
+        match.rankings.forEach((ranking) => {
+          const teamName = teams.find(t => t.id === ranking.teamId)?.name || 'Unknown'
+          const scoreWithBonuses = ranking.totalScore || ranking.totalRuns || 0
+
+          if (scoreWithBonuses > highestScore.runs) {
+            highestScore = { runs: scoreWithBonuses, team: teamName, match: match.matchNumber }
+          }
+          if (scoreWithBonuses < lowestScore.runs && scoreWithBonuses > 0) {
+            lowestScore = { runs: scoreWithBonuses, team: teamName, match: match.matchNumber }
+          }
+        })
+      }
+
+      // Calculate stats from innings data
       if (match.innings && match.innings.length > 0) {
         match.innings.forEach((innings) => {
-          // Only process completed innings
-          if (innings.state !== 'COMPLETED') return
-
-          const actualRuns = innings.totalRuns || 0
-          totalRuns += actualRuns
+          totalRuns += innings.totalRuns || 0
           totalWickets += innings.totalWickets || 0
 
-          // Track highest and lowest ACTUAL RUNS (not finalScore with bonuses)
-          const teamName = teams.find(t => t.id === innings.teamId)?.name || 'Unknown'
-
-          if (actualRuns > highestScore.runs) {
-            highestScore = { runs: actualRuns, team: teamName, match: match.matchNumber }
-          }
-          if (actualRuns < lowestScore.runs && actualRuns > 0) {
-            lowestScore = { runs: actualRuns, team: teamName, match: match.matchNumber }
-          }
-
+          // Calculate other stats from balls
           innings.overs?.forEach((over) => {
             const isPowerplay = over.isPowerplay
             over.balls?.forEach((ball) => {
               totalBalls++
+              const ballRuns = ball.effectiveRuns || 0
 
               if (ball.runs === 4) total4s++
               if (ball.runs === 6) total6s++
 
               if (isPowerplay) {
-                totalPowerplayRuns += ball.effectiveRuns || 0
+                totalPowerplayRuns += ballRuns
               } else {
-                totalNormalRuns += ball.effectiveRuns || 0
+                totalNormalRuns += ballRuns
               }
 
               if (ball.isWicket && ball.wicketType === 'CATCH_OUT') totalCatches++

@@ -53,7 +53,8 @@ export async function calculateStandings(tournamentId: string): Promise<Standing
         if (standing) {
           standing.matchesPlayed++
           standing.points += ranking.points || 0
-          standing.totalRuns += ranking.totalRuns || 0
+          // Use totalScore (includes bonuses) instead of totalRuns for accurate display
+          standing.totalRuns += ranking.totalScore || ranking.totalRuns || 0
           // totalDismissals would come from innings data if available
         }
       })

@@ -135,7 +135,7 @@ export function calculateFieldingCredits(innings: Innings[]): Record<string, num
 
 export function rankTeamsInMatch(
   innings: Innings[]
-): { teamId: string; rank: number; points: number }[] {
+): { teamId: string; rank: number; points: number; totalScore: number }[] {
   // Calculate fielding credits for all teams
   const fieldingCredits = calculateFieldingCredits(innings);
 
@@ -172,7 +172,7 @@ export function rankTeamsInMatch(
     POINTS_SYSTEM.FOURTH,  // 0
   ];
 
-  const results: { teamId: string; rank: number; points: number }[] = [];
+  const results: { teamId: string; rank: number; points: number; totalScore: number }[] = [];
   let i = 0;
 
   while (i < sorted.length) {
@@ -201,6 +201,7 @@ export function rankTeamsInMatch(
         teamId: team.teamId,
         rank: rank,
         points: avgPoints,
+        totalScore: team.score, // Include the total score (finalScore + fielding)
       });
     }
 
@@ -210,7 +211,7 @@ export function rankTeamsInMatch(
 
   console.log("=== FINAL RANKINGS ===");
   results.forEach((r) => {
-    console.log(`Team ${r.teamId}: rank=${r.rank}, points=${r.points}`);
+    console.log(`Team ${r.teamId}: rank=${r.rank}, points=${r.points}, totalScore=${r.totalScore}`);
   });
 
   return results;

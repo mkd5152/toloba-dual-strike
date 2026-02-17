@@ -46,7 +46,7 @@ export default function OrganizerMatchesPage() {
           match.startTime.toISOString(),
           (index + 1).toString(),
           team?.name || "Unknown",
-          ranking.totalRuns.toString(),
+          (ranking.totalScore || ranking.totalRuns).toString(),
           ranking.totalDismissals?.toString() || "0",
           ranking.points.toString(),
         ]);
