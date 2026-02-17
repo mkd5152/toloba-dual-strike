@@ -1,25 +1,24 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useMemo } from "react"
 import { useTournamentStore } from "@/lib/stores/tournament-store"
 import { useStandingsStore } from "@/lib/stores/standings-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
-  Trophy, TrendingUp, Zap, Users, Target, Flame,
-  Calendar, Clock, ChevronRight
+  Trophy, TrendingUp, Zap, Target, Flame, Activity,
+  Award, Crosshair, Shield, Sparkles, Radio, Crown
 } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import Link from "next/link"
 
 export default function SpectatorDashboardPage() {
-  const { tournament, teams, matches, loadTeams, loadMatches, loading } = useTournamentStore()
+  const { tournament, teams, matches, loadTeams, loadMatches } = useTournamentStore()
   const { standings, loadStandings } = useStandingsStore()
   const hasLoaded = useRef(false)
 
   useEffect(() => {
     if (!hasLoaded.current) {
-      hasLoaded.current = true
+      hasLoaded.current = true;
       const loadData = async () => {
         await loadTeams()
         await loadMatches()
@@ -27,301 +26,486 @@ export default function SpectatorDashboardPage() {
       }
       loadData()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount
+  }, [])
 
-  // Calculate statistics
-  const totalMatches = matches.length
-  const completedMatches = matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED").length
-  const liveMatches = matches.filter(m => m.state === "IN_PROGRESS")
-  const upcomingMatches = matches.filter(m => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS")
+  // Calculate real tournament statistics
+  const stats = useMemo(() => {
+    let totalRuns = 0
+    let totalWickets = 0
+    let totalBalls = 0
+    let total4s = 0
+    let total6s = 0
+    let totalPowerplayRuns = 0
+    let totalNormalRuns = 0
+    let totalCatches = 0
+    let totalRunOuts = 0
+    let highestScore = { runs: 0, team: '', match: 0 }
+    let lowestScore = { runs: Infinity, team: '', match: 0 }
 
-  // Top 5 teams for chart
-  const top5Teams = standings.slice(0, 5).map(s => ({
-    name: s.teamName.split(' ')[0], // First word only for chart
-    points: s.points,
-    runs: s.totalRuns,
-    matches: s.matchesPlayed
-  }))
+    matches.forEach((match) => {
+      if (match.innings && match.innings.length > 0) {
+        match.innings.forEach((innings) => {
+          totalRuns += innings.totalRuns || 0
+          totalWickets += innings.totalWickets || 0
 
-  // Match completion progress
-  const progressData = [
-    { name: 'Completed', value: completedMatches, color: '#4ade80' },
-    { name: 'Live', value: liveMatches.length, color: '#f59e0b' },
-    { name: 'Upcoming', value: upcomingMatches.length, color: '#60a5fa' },
-  ]
+          // Track highest and lowest scores
+          const teamName = teams.find(t => t.id === innings.teamId)?.name || 'Unknown'
+          if ((innings.totalRuns || 0) > highestScore.runs) {
+            highestScore = { runs: innings.totalRuns || 0, team: teamName, match: match.matchNumber }
+          }
+          if ((innings.totalRuns || 0) < lowestScore.runs && (innings.totalRuns || 0) > 0) {
+            lowestScore = { runs: innings.totalRuns || 0, team: teamName, match: match.matchNumber }
+          }
 
-  // Tournament momentum (matches per day simulation)
-  const momentumData = [
-    { day: 'Day 1', matches: 8 },
-    { day: 'Day 2', matches: 10 },
-    { day: 'Day 3', matches: 7 },
-    { day: 'Today', matches: liveMatches.length + 3 },
-  ]
+          innings.overs?.forEach((over) => {
+            const isPowerplay = over.isPowerplay
+            over.balls?.forEach((ball) => {
+              totalBalls++
+
+              if (ball.runs === 4) total4s++
+              if (ball.runs === 6) total6s++
+
+              if (isPowerplay) {
+                totalPowerplayRuns += ball.effectiveRuns || 0
+              } else {
+                totalNormalRuns += ball.effectiveRuns || 0
+              }
+
+              if (ball.isWicket && ball.wicketType === 'CATCH_OUT') totalCatches++
+              if (ball.isWicket && ball.wicketType === 'RUN_OUT') totalRunOuts++
+            })
+          })
+        })
+      }
+    })
+
+    const completedMatches = matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED").length
+    const liveMatches = matches.filter(m => m.state === "IN_PROGRESS")
+
+    return {
+      totalRuns,
+      totalWickets,
+      totalBalls,
+      total4s,
+      total6s,
+      totalBoundaries: total4s + total6s,
+      boundaryRuns: (total4s * 4) + (total6s * 6),
+      totalPowerplayRuns,
+      totalNormalRuns,
+      totalCatches,
+      totalRunOuts,
+      highestScore,
+      lowestScore: lowestScore.runs === Infinity ? { runs: 0, team: '', match: 0 } : lowestScore,
+      completedMatches,
+      liveMatches,
+      avgRunsPerMatch: completedMatches > 0 ? Math.round(totalRuns / completedMatches) : 0,
+      strikeRate: totalBalls > 0 ? ((totalRuns / totalBalls) * 100).toFixed(1) : 0,
+      wicketsPerMatch: completedMatches > 0 ? (totalWickets / completedMatches).toFixed(1) : 0
+    }
+  }, [matches, teams])
+
+  // Top 3 teams for podium
+  const podiumTeams = standings.slice(0, 3)
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      {/* Hero Section */}
-      <div className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#b71c1c] via-[#c62828] to-[#ff9800] p-8 md:p-12 shadow-2xl">
-        <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
-          <div className="cricket-pattern w-full h-full"></div>
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Animated Hero Section with Glassmorphism */}
+      <div className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 p-8 md:p-12 shadow-2xl">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
-            <Trophy className="w-12 h-12 text-yellow-300 animate-bounce" />
-            <Badge className="bg-yellow-300 text-[#b71c1c] font-black text-sm px-4 py-1 animate-pulse">
-              LIVE TOURNAMENT
-            </Badge>
+            <div className="relative">
+              <Trophy className="w-12 h-12 text-yellow-200 animate-bounce" />
+              <div className="absolute -top-1 -right-1">
+                <Sparkles className="w-6 h-6 text-yellow-300 animate-spin" />
+              </div>
+            </div>
+            {stats.liveMatches.length > 0 && (
+              <Badge className="bg-white/20 backdrop-blur-md text-white border-2 border-white/50 font-black text-sm px-4 py-1.5 animate-pulse shadow-lg">
+                <Radio className="w-4 h-4 mr-2 inline animate-ping" />
+                {stats.liveMatches.length} LIVE NOW
+              </Badge>
+            )}
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-3 drop-shadow-lg">
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-3 drop-shadow-2xl tracking-tight">
             {tournament.name}
           </h1>
 
-          <p className="text-2xl text-white/90 font-bold italic mb-6">
+          <p className="text-2xl md:text-3xl text-white/95 font-bold italic mb-6 drop-shadow-lg">
             {tournament.tagline}
           </p>
 
-          <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-xl">
-              <Users className="w-5 h-5 text-yellow-300" />
-              <span className="text-white font-bold">{teams.length} Teams</span>
+          <div className="flex flex-wrap gap-3">
+            <div className="backdrop-blur-md bg-white/10 border border-white/20 px-5 py-3 rounded-2xl shadow-xl">
+              <p className="text-white/80 text-xs font-bold mb-1">Tournament Progress</p>
+              <p className="text-white font-black text-lg">{stats.completedMatches} / {matches.length} Matches</p>
             </div>
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-xl">
-              <Flame className="w-5 h-5 text-yellow-300" />
-              <span className="text-white font-bold">{liveMatches.length} Live Now</span>
+            <div className="backdrop-blur-md bg-white/10 border border-white/20 px-5 py-3 rounded-2xl shadow-xl">
+              <p className="text-white/80 text-xs font-bold mb-1">Teams Competing</p>
+              <p className="text-white font-black text-lg">{teams.length} Teams</p>
             </div>
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-3 rounded-xl">
-              <Calendar className="w-5 h-5 text-yellow-300" />
-              <span className="text-white font-bold">{completedMatches}/{totalMatches} Completed</span>
+            <div className="backdrop-blur-md bg-white/10 border border-white/20 px-5 py-3 rounded-2xl shadow-xl">
+              <p className="text-white/80 text-xs font-bold mb-1">Total Runs Scored</p>
+              <p className="text-white font-black text-lg">{stats.totalRuns.toLocaleString()}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Live Matches Ticker */}
-      {liveMatches.length > 0 && (
-        <div className="mb-8 bg-gradient-to-r from-[#ff9800] to-[#ffb300] rounded-2xl p-6 shadow-lg animate-pulse">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-            <h2 className="text-2xl font-black text-[#0d3944]">LIVE MATCHES</h2>
-          </div>
-
-          <div className="grid gap-4">
-            {liveMatches.slice(0, 2).map((match) => (
-              <Link key={match.id} href={`/spectator/live`}>
-                <div className="bg-white rounded-xl p-4 hover:shadow-xl transition-all cursor-pointer group">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-[#0d3944] text-lg">Match {match.matchNumber}</p>
-                      <p className="text-gray-600 font-bold">{match.court}</p>
-                    </div>
-                    <ChevronRight className="w-6 h-6 text-[#ff9800] group-hover:translate-x-2 transition-transform" />
-                  </div>
+      {/* Live Match Alert */}
+      {stats.liveMatches.length > 0 && (
+        <Link href="/spectator/live">
+          <div className="mb-8 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-3 h-3 bg-white rounded-full animate-ping absolute"></div>
+                <div className="w-3 h-3 bg-white rounded-full"></div>
+                <div>
+                  <h2 className="text-2xl font-black text-white drop-shadow-lg">🔥 LIVE ACTION</h2>
+                  <p className="text-white/90 font-bold">{stats.liveMatches.length} match{stats.liveMatches.length > 1 ? 'es' : ''} in progress • Click to watch!</p>
                 </div>
-              </Link>
-            ))}
+              </div>
+              <Zap className="w-8 h-8 text-yellow-200 animate-pulse" />
+            </div>
           </div>
-        </div>
+        </Link>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-white shadow-lg hover:shadow-xl transition-all">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Trophy className="w-12 h-12 text-green-600" />
-              <div className="text-right">
-                <p className="text-4xl font-black text-green-600">{teams.length}</p>
-                <p className="text-sm font-bold text-gray-600">Teams</p>
+      {/* Tournament Statistics Grid - THE MAIN SHOWCASE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Runs */}
+        <Card className="border-0 bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <CardContent className="p-6 relative">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                <Target className="w-8 h-8 text-white" />
               </div>
+              <Sparkles className="w-5 h-5 text-emerald-200 group-hover:animate-spin" />
             </div>
-            <div className="h-2 bg-green-200 rounded-full overflow-hidden">
-              <div className="h-full bg-green-600 w-full animate-pulse"></div>
+            <p className="text-emerald-100 font-bold text-sm mb-2 tracking-wider">TOTAL RUNS</p>
+            <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.totalRuns.toLocaleString()}</p>
+            <div className="flex items-center gap-2 text-emerald-100">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-bold">Avg {stats.avgRunsPerMatch}/match</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-lg hover:shadow-xl transition-all">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Target className="w-12 h-12 text-blue-600" />
-              <div className="text-right">
-                <p className="text-4xl font-black text-blue-600">{totalMatches}</p>
-                <p className="text-sm font-bold text-gray-600">Total Matches</p>
+        {/* Total Wickets */}
+        <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <CardContent className="p-6 relative">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                <Crosshair className="w-8 h-8 text-white" />
               </div>
+              <Flame className="w-5 h-5 text-rose-200 group-hover:animate-pulse" />
             </div>
-            <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-600 animate-pulse" style={{ width: `${(completedMatches / totalMatches) * 100}%` }}></div>
+            <p className="text-rose-100 font-bold text-sm mb-2 tracking-wider">WICKETS TAKEN</p>
+            <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.totalWickets}</p>
+            <div className="flex items-center gap-2 text-rose-100">
+              <Target className="w-4 h-4" />
+              <span className="text-sm font-bold">Avg {stats.wicketsPerMatch}/match</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white shadow-lg hover:shadow-xl transition-all">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Flame className="w-12 h-12 text-orange-600 animate-pulse" />
-              <div className="text-right">
-                <p className="text-4xl font-black text-orange-600">{liveMatches.length}</p>
-                <p className="text-sm font-bold text-gray-600">Live Now</p>
+        {/* Boundaries */}
+        <Card className="border-0 bg-gradient-to-br from-purple-500 to-indigo-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <CardContent className="p-6 relative">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                <Zap className="w-8 h-8 text-white" />
               </div>
+              <Award className="w-5 h-5 text-purple-200 group-hover:animate-bounce" />
             </div>
-            <div className="h-2 bg-orange-200 rounded-full overflow-hidden">
-              <div className="h-full bg-orange-600 w-full animate-pulse"></div>
+            <p className="text-purple-100 font-bold text-sm mb-2 tracking-wider">BOUNDARIES</p>
+            <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.totalBoundaries}</p>
+            <div className="flex items-center gap-3 text-purple-100">
+              <span className="text-sm font-bold">{stats.total4s} Fours</span>
+              <span className="text-white/50">•</span>
+              <span className="text-sm font-bold">{stats.total6s} Sixes</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white shadow-lg hover:shadow-xl transition-all">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Clock className="w-12 h-12 text-purple-600" />
-              <div className="text-right">
-                <p className="text-4xl font-black text-purple-600">{upcomingMatches.length}</p>
-                <p className="text-sm font-bold text-gray-600">Upcoming</p>
+        {/* Strike Rate */}
+        <Card className="border-0 bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <CardContent className="p-6 relative">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                <Activity className="w-8 h-8 text-white" />
               </div>
+              <TrendingUp className="w-5 h-5 text-amber-200 group-hover:animate-pulse" />
             </div>
-            <div className="h-2 bg-purple-200 rounded-full overflow-hidden">
-              <div className="h-full bg-purple-600 w-full"></div>
+            <p className="text-amber-100 font-bold text-sm mb-2 tracking-wider">STRIKE RATE</p>
+            <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.strikeRate}</p>
+            <div className="flex items-center gap-2 text-amber-100">
+              <Activity className="w-4 h-4" />
+              <span className="text-sm font-bold">Runs per 100 balls</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Section */}
+      {/* Powerplay & Boundary Stats */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {/* Top Teams Performance */}
-        <Card className="border-2 border-[#0d3944]/10 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#ffb300]" />
-              Top 5 Teams Performance
+        {/* Powerplay Dominance */}
+        <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 pb-8">
+            <CardTitle className="text-white font-black text-xl flex items-center gap-3">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Shield className="w-6 h-6" />
+              </div>
+              POWERPLAY IMPACT
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={top5Teams}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="points" fill="#b71c1c" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Match Distribution */}
-        <Card className="border-2 border-[#0d3944]/10 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944]">
-            <CardTitle className="flex items-center gap-2 font-black">
-              <Zap className="w-5 h-5" />
-              Tournament Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={progressData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {progressData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Leaderboard & Momentum */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Top 10 Leaderboard */}
-        <Card className="border-2 border-[#0d3944]/10 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-[#b71c1c] to-[#c62828] text-white">
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-300" />
-              Tournament Leaderboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              {standings.slice(0, 10).map((team, index) => (
-                <div
-                  key={team.teamId}
-                  className={`flex items-center gap-4 p-3 rounded-lg transition-all ${
-                    index < 3 ? 'bg-gradient-to-r from-yellow-100 to-orange-100 border-2 border-yellow-400' : 'bg-gray-50'
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${
-                    index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                    index === 1 ? 'bg-gray-300 text-gray-700' :
-                    index === 2 ? 'bg-orange-400 text-orange-900' :
-                    'bg-gray-200 text-gray-600'
-                  }`}>
-                    {team.rank}
-                  </div>
-
-                  <div className="flex-1">
-                    <p className="font-black text-[#0d3944]">{team.teamName}</p>
-                    <p className="text-xs text-gray-600 font-bold">
-                      {team.matchesPlayed} matches • {team.totalRuns} runs
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-2xl font-black text-[#b71c1c]">{team.points}</p>
-                    <p className="text-xs text-gray-600 font-bold">points</p>
-                  </div>
+          <CardContent className="p-8">
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <p className="text-slate-400 font-bold text-sm mb-2">Powerplay Runs</p>
+                <p className="text-4xl font-black text-cyan-400 mb-1">{stats.totalPowerplayRuns}</p>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"
+                    style={{ width: `${(stats.totalPowerplayRuns / stats.totalRuns) * 100}%` }}
+                  ></div>
                 </div>
-              ))}
+              </div>
+              <div>
+                <p className="text-slate-400 font-bold text-sm mb-2">Normal Overs</p>
+                <p className="text-4xl font-black text-emerald-400 mb-1">{stats.totalNormalRuns}</p>
+                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full"
+                    style={{ width: `${(stats.totalNormalRuns / stats.totalRuns) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/20">
+              <p className="text-slate-300 font-bold text-sm">
+                ⚡ Powerplay contributed <span className="text-cyan-400 text-lg font-black">{((stats.totalPowerplayRuns / stats.totalRuns) * 100).toFixed(1)}%</span> of total runs
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Tournament Momentum */}
-        <Card className="border-2 border-[#0d3944]/10 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#ffb300]" />
-              Tournament Momentum
+        {/* Boundary Bash */}
+        <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 pb-8">
+            <CardTitle className="text-white font-black text-xl flex items-center gap-3">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Zap className="w-6 h-6" />
+              </div>
+              BOUNDARY BASH
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={momentumData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="matches"
-                  stroke="#ff9800"
-                  strokeWidth={3}
-                  dot={{ fill: '#b71c1c', r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-
-            <div className="mt-6 p-4 bg-gradient-to-r from-[#ff9800]/10 to-[#ffb300]/10 rounded-lg border-2 border-[#ff9800]/20">
-              <p className="text-sm font-bold text-gray-700">
-                🔥 Tournament heating up! {liveMatches.length} matches in progress right now!
+          <CardContent className="p-8">
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl border border-blue-500/20">
+                <p className="text-blue-400 font-bold text-sm mb-2">FOURS</p>
+                <p className="text-5xl font-black text-blue-300 mb-1">{stats.total4s}</p>
+                <p className="text-blue-400/70 font-bold text-xs">{stats.total4s * 4} runs</p>
+              </div>
+              <div className="text-center p-6 bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-2xl border border-red-500/20">
+                <p className="text-red-400 font-bold text-sm mb-2">SIXES</p>
+                <p className="text-5xl font-black text-red-300 mb-1">{stats.total6s}</p>
+                <p className="text-red-400/70 font-bold text-xs">{stats.total6s * 6} runs</p>
+              </div>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl border border-orange-500/20">
+              <p className="text-slate-300 font-bold text-sm">
+                🏏 Boundaries scored <span className="text-orange-400 text-lg font-black">{stats.boundaryRuns}</span> runs (<span className="text-orange-400 font-black">{((stats.boundaryRuns / stats.totalRuns) * 100).toFixed(1)}%</span> of total)
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Fielding Excellence & Score Records */}
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        {/* Fielding Stats */}
+        <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 pb-8">
+            <CardTitle className="text-white font-black text-xl flex items-center gap-3">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Award className="w-6 h-6" />
+              </div>
+              FIELDING EXCELLENCE
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-2xl border border-emerald-500/20">
+                <div>
+                  <p className="text-emerald-400 font-bold text-sm mb-1">CATCHES</p>
+                  <p className="text-emerald-300 font-bold text-xs">Brilliant grabs!</p>
+                </div>
+                <p className="text-5xl font-black text-emerald-300">{stats.totalCatches}</p>
+              </div>
+              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-2xl border border-orange-500/20">
+                <div>
+                  <p className="text-orange-400 font-bold text-sm mb-1">RUN OUTS</p>
+                  <p className="text-orange-300 font-bold text-xs">Direct hits!</p>
+                </div>
+                <p className="text-5xl font-black text-orange-300">{stats.totalRunOuts}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Score Records */}
+        <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 pb-8">
+            <CardTitle className="text-white font-black text-xl flex items-center gap-3">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Trophy className="w-6 h-6" />
+              </div>
+              SCORING RECORDS
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="space-y-6">
+              <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 rounded-2xl border-2 border-yellow-500/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <Crown className="w-5 h-5 text-yellow-400" />
+                  <p className="text-yellow-400 font-black text-sm">HIGHEST SCORE</p>
+                </div>
+                <p className="text-4xl font-black text-yellow-300 mb-2">{stats.highestScore.runs}</p>
+                <p className="text-yellow-400/80 font-bold text-sm">{stats.highestScore.team}</p>
+                <p className="text-yellow-400/60 font-bold text-xs">Match {stats.highestScore.match}</p>
+              </div>
+              <div className="p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl border border-blue-500/20">
+                <p className="text-blue-400 font-bold text-sm mb-2">LOWEST SCORE</p>
+                <p className="text-3xl font-black text-blue-300 mb-2">{stats.lowestScore.runs}</p>
+                <p className="text-blue-400/80 font-bold text-sm">{stats.lowestScore.team}</p>
+                <p className="text-blue-400/60 font-bold text-xs">Match {stats.lowestScore.match}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Championship Podium */}
+      {podiumTeams.length > 0 && (
+        <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden mb-8">
+          <CardHeader className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 pb-12">
+            <CardTitle className="text-white font-black text-2xl flex items-center gap-3 justify-center">
+              <Crown className="w-8 h-8 text-yellow-200 animate-bounce" />
+              CHAMPIONSHIP PODIUM
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="flex items-end justify-center gap-4 mb-8">
+              {/* 2nd Place */}
+              {podiumTeams[1] && (
+                <div className="flex-1 max-w-xs">
+                  <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-t-3xl p-6 text-center border-4 border-slate-400 relative">
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-slate-300 to-slate-400 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                      <span className="text-2xl font-black text-slate-700">2</span>
+                    </div>
+                    <p className="text-3xl font-black text-white mt-4 mb-2">{podiumTeams[1].teamName}</p>
+                    <p className="text-5xl font-black text-slate-300 mb-1">{podiumTeams[1].points}</p>
+                    <p className="text-slate-400 font-bold text-sm">POINTS</p>
+                  </div>
+                  <div className="h-32 bg-gradient-to-b from-slate-600 to-slate-700 rounded-b-2xl border-4 border-t-0 border-slate-400"></div>
+                </div>
+              )}
+
+              {/* 1st Place - Highest */}
+              {podiumTeams[0] && (
+                <div className="flex-1 max-w-xs">
+                  <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-t-3xl p-8 text-center border-4 border-yellow-300 relative shadow-2xl">
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-2xl animate-pulse">
+                      <Crown className="w-8 h-8 text-yellow-800" />
+                    </div>
+                    <p className="text-4xl font-black text-yellow-900 mt-6 mb-2">{podiumTeams[0].teamName}</p>
+                    <p className="text-6xl font-black text-yellow-900 mb-1">{podiumTeams[0].points}</p>
+                    <p className="text-yellow-800 font-bold">POINTS</p>
+                  </div>
+                  <div className="h-48 bg-gradient-to-b from-yellow-400 to-amber-500 rounded-b-2xl border-4 border-t-0 border-yellow-300"></div>
+                </div>
+              )}
+
+              {/* 3rd Place */}
+              {podiumTeams[2] && (
+                <div className="flex-1 max-w-xs">
+                  <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-t-3xl p-6 text-center border-4 border-orange-400 relative">
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                      <span className="text-2xl font-black text-orange-900">3</span>
+                    </div>
+                    <p className="text-3xl font-black text-white mt-4 mb-2">{podiumTeams[2].teamName}</p>
+                    <p className="text-5xl font-black text-orange-200 mb-1">{podiumTeams[2].points}</p>
+                    <p className="text-orange-300 font-bold text-sm">POINTS</p>
+                  </div>
+                  <div className="h-24 bg-gradient-to-b from-orange-600 to-orange-700 rounded-b-2xl border-4 border-t-0 border-orange-400"></div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quick Navigation */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <Link href="/spectator/live">
+          <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group">
+            <CardContent className="p-6 text-center">
+              <Radio className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-pulse" />
+              <p className="text-white font-black text-xl">LIVE MATCHES</p>
+              <p className="text-white/80 font-bold text-sm">Watch the action now!</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/spectator/standings">
+          <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group">
+            <CardContent className="p-6 text-center">
+              <Trophy className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-bounce" />
+              <p className="text-white font-black text-xl">STANDINGS</p>
+              <p className="text-white/80 font-bold text-sm">Full leaderboard</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/spectator/groups">
+          <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group">
+            <CardContent className="p-6 text-center">
+              <Shield className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-pulse" />
+              <p className="text-white font-black text-xl">GROUPS</p>
+              <p className="text-white/80 font-bold text-sm">Group standings</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      <style jsx global>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -50px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(40px, 40px) scale(1.05); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   )
 }
