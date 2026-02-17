@@ -3,7 +3,7 @@
 import { useEffect, useRef, useMemo, useState, useCallback } from "react"
 import { useTournamentStore } from "@/lib/stores/tournament-store"
 import { useStandingsStore } from "@/lib/stores/standings-store"
-import { useRealtimeTournament } from "@/hooks/use-realtime-tournament"
+import { supabase } from "@/lib/supabase/client"
 import { fetchMatchesWithDetails } from "@/lib/api/matches"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,7 @@ export default function SpectatorDashboardPage() {
   const { tournament, teams, matches, loadTeams, loadMatches } = useTournamentStore()
   const { standings, loadStandings } = useStandingsStore()
   const [detailedMatches, setDetailedMatches] = useState<Match[]>([])
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false)
   const hasLoaded = useRef(false)
 
   // Load detailed matches for statistics calculation
@@ -29,14 +30,6 @@ export default function SpectatorDashboardPage() {
       console.error("Error loading detailed matches:", err)
     }
   }, [tournament.id])
-
-  // Enable real-time updates for matches and standings
-  const { isMatchesSubscribed, isStandingsSubscribed } = useRealtimeTournament({
-    tournamentId: tournament.id,
-    enabled: true,
-    watchMatches: true,
-    watchStandings: true,
-  })
 
   // Initial load
   useEffect(() => {
@@ -55,9 +48,91 @@ export default function SpectatorDashboardPage() {
   // Reload detailed matches when regular matches change (real-time updates)
   useEffect(() => {
     if (hasLoaded.current && matches.length > 0) {
+      console.log("Dashboard: Matches changed, reloading detailed matches for stats")
       loadDetailedMatches()
     }
   }, [matches, loadDetailedMatches])
+
+  // Enable real-time updates with custom handler
+  useEffect(() => {
+    if (!hasLoaded.current || !tournament.id) return
+
+    const channelMatches = supabase
+      .channel(`dashboard:${tournament.id}`)
+      // Listen to match changes
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "matches",
+          filter: `tournament_id=eq.${tournament.id}`,
+        },
+        (payload) => {
+          console.log("Dashboard: Match updated via realtime", payload)
+          loadMatches()
+          loadDetailedMatches()
+          // Reload standings when match completes
+          if (payload.new?.state === "COMPLETED" || payload.new?.state === "LOCKED") {
+            loadStandings()
+          }
+        }
+      )
+      // Listen to innings updates
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "innings",
+        },
+        (payload) => {
+          console.log("Dashboard: Innings updated via realtime", payload)
+          loadDetailedMatches()
+        }
+      )
+      // Listen to ball inserts (scoring)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "balls",
+        },
+        (payload) => {
+          console.log("Dashboard: Ball recorded via realtime", payload)
+          loadDetailedMatches()
+        }
+      )
+      // Listen to ball deletes (undo)
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "balls",
+        },
+        (payload) => {
+          console.log("Dashboard: Ball deleted via realtime", payload)
+          loadDetailedMatches()
+        }
+      )
+      .subscribe((status) => {
+        console.log("Dashboard: Realtime subscription status:", status)
+        if (status === "SUBSCRIBED") {
+          setIsRealtimeConnected(true)
+          console.log("Dashboard: Real-time updates ACTIVE!")
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setIsRealtimeConnected(false)
+          console.error("Dashboard: Real-time connection failed:", status)
+        }
+      })
+
+    return () => {
+      setIsRealtimeConnected(false)
+      supabase.removeChannel(channelMatches)
+    }
+  }, [tournament.id, loadMatches, loadDetailedMatches, loadStandings, hasLoaded])
 
   // Calculate real tournament statistics
   const stats = useMemo(() => {
@@ -178,7 +253,7 @@ export default function SpectatorDashboardPage() {
                 {stats.liveMatches.length} LIVE NOW
               </Badge>
             )}
-            {(isMatchesSubscribed || isStandingsSubscribed) && (
+            {isRealtimeConnected && (
               <Badge className="bg-green-500/20 backdrop-blur-md text-white border-2 border-green-300/50 font-bold text-xs px-3 py-1.5 shadow-lg">
                 <Radio className="w-3 h-3 mr-2 inline" />
                 Real-time Updates
