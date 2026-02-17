@@ -57,13 +57,13 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
       setUmpires(data || [])
     } catch (err: any) {
       console.error("Error fetching umpires:", err)
-      setError("Failed to load umpires")
+      setError("Failed to load scorers")
     }
   }
 
   const handleAssign = async () => {
     if (!selectedUmpireId) {
-      setError("Please select an umpire")
+      setError("Please select a scorer")
       return
     }
 
@@ -84,7 +84,7 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
       }, 1500)
     } catch (err: any) {
       console.error("Error assigning umpire:", err)
-      setError(err.message || "Failed to assign umpire")
+      setError(err.message || "Failed to assign scorer")
     } finally {
       setLoading(false)
     }
@@ -101,16 +101,16 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
           className="border-[#ff9800] text-[#ff9800] hover:bg-[#ff9800] hover:text-white"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          {match.umpire_id ? "Reassign" : "Assign"} Umpire
+          {match.umpire_id ? "Reassign" : "Assign"} Scorer
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black text-[#0d3944]">
-            Assign Umpire
+            Assign Scorer
           </DialogTitle>
           <DialogDescription>
-            Assign an umpire to Match {match.match_number} at {match.court}
+            Assign a scorer to Match {match.match_number} at {match.court}
           </DialogDescription>
         </DialogHeader>
 
@@ -126,16 +126,16 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
 
             <div className="space-y-2">
               <Label htmlFor="umpire" className="text-[#0d3944] font-bold">
-                Select Umpire
+                Select Scorer
               </Label>
               <Select value={selectedUmpireId} onValueChange={setSelectedUmpireId}>
                 <SelectTrigger className="border-2 border-[#0d3944]/20">
-                  <SelectValue placeholder="Choose an umpire" />
+                  <SelectValue placeholder="Choose a scorer" />
                 </SelectTrigger>
                 <SelectContent>
                   {umpires.length === 0 ? (
                     <div className="p-4 text-center text-gray-500">
-                      No umpires available. Create umpires first.
+                      No scorers available. Create scorers first.
                     </div>
                   ) : (
                     umpires.map((umpire) => (
@@ -160,7 +160,7 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
                 disabled={loading || !selectedUmpireId}
                 className="flex-1 bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold hover:opacity-90"
               >
-                {loading ? "Assigning..." : "Assign Umpire"}
+                {loading ? "Assigning..." : "Assign Scorer"}
               </Button>
               <Button
                 variant="outline"
@@ -175,7 +175,7 @@ export function AssignUmpireDialog({ match, onAssigned }: AssignUmpireDialogProp
           <div className="py-8 text-center">
             <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
             <p className="text-lg font-bold text-green-600">
-              Umpire assigned successfully!
+              Scorer assigned successfully!
             </p>
           </div>
         )}

@@ -25,7 +25,7 @@ export function RoleSelector() {
     },
     {
       id: "umpire",
-      label: "Umpire",
+      label: "Scorer",
       icon: Gavel,
       description: "Score matches and manage gameplay",
       path: "/umpire/matches",

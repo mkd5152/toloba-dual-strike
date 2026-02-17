@@ -38,7 +38,7 @@ export function CreateUmpireDialog() {
 
   const handleQuickCreate = async () => {
     if (!name.trim()) {
-      setError("Umpire name is required")
+      setError("Scorer name is required")
       return
     }
     const autoEmail = email || generateEmailFromName(name)
@@ -56,7 +56,7 @@ export function CreateUmpireDialog() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        throw new Error("You must be logged in to create umpires")
+        throw new Error("You must be logged in to create scorers")
       }
 
       // Check if umpire with same email already exists
@@ -64,7 +64,7 @@ export function CreateUmpireDialog() {
       const { data: existingUmpire, error: checkError } = await supabase.from('profiles').select('email, full_name').eq('email', umpireEmail).maybeSingle()
 
       if (existingUmpire && !checkError) {
-        throw new Error(`Umpire "${(existingUmpire as any).full_name || umpireEmail}" already exists with this name`)
+        throw new Error(`Scorer "${(existingUmpire as any).full_name || umpireEmail}" already exists with this name`)
       }
 
       // Call server API to create umpire using admin client
@@ -85,7 +85,7 @@ export function CreateUmpireDialog() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create umpire')
+        throw new Error(result.error || 'Failed to create scorer')
       }
 
       setSuccess({ email: umpireEmail, password: umpirePassword })
@@ -93,7 +93,7 @@ export function CreateUmpireDialog() {
       setEmail("")
     } catch (err: any) {
       console.error('Error creating umpire:', err)
-      setError(err.message || "Failed to create umpire account")
+      setError(err.message || "Failed to create scorer account")
     } finally {
       setLoading(false)
     }
@@ -102,7 +102,7 @@ export function CreateUmpireDialog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      setError("Umpire name is required")
+      setError("Scorer name is required")
       return
     }
     const finalEmail = email || generateEmailFromName(name)
@@ -111,7 +111,7 @@ export function CreateUmpireDialog() {
 
   const copyCredentials = () => {
     if (!success) return
-    const text = `TDST Umpire Login:\nEmail: ${success.email}\nPassword: ${success.password}\n\nLogin at: https://your-app-url.com/auth/login`
+    const text = `TDST Scorer Login:\nEmail: ${success.email}\nPassword: ${success.password}\n\nLogin at: https://your-app-url.com/auth/login`
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -131,13 +131,13 @@ export function CreateUmpireDialog() {
       <DialogTrigger asChild>
         <Button className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold hover:opacity-90">
           <UserPlus className="w-4 h-4 mr-2" />
-          Quick Create Umpire
+          Quick Create Scorer
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black text-[#0d3944]">
-            Create Umpire Account
+            Create Scorer Account
           </DialogTitle>
         </DialogHeader>
 
@@ -145,7 +145,7 @@ export function CreateUmpireDialog() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="name" className="text-[#0d3944] font-bold">
-                Umpire Name <span className="text-red-500">*</span>
+                Scorer Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
@@ -187,7 +187,7 @@ export function CreateUmpireDialog() {
                 className="border-2 border-[#0d3944]/20"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Default: tdst2026 (share this with umpires)
+                Default: tdst2026 (share this with scorers)
               </p>
             </div>
 
@@ -220,7 +220,7 @@ export function CreateUmpireDialog() {
           <div className="space-y-4">
             <Alert className="bg-green-50 border-green-200">
               <AlertDescription className="text-green-800">
-                ✅ Umpire account created successfully!
+                ✅ Scorer account created successfully!
               </AlertDescription>
             </Alert>
 

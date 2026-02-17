@@ -88,7 +88,7 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
           <TableHead>Court</TableHead>
           <TableHead>Time</TableHead>
           <TableHead>Teams</TableHead>
-          <TableHead>Umpire</TableHead>
+          <TableHead>Scorer</TableHead>
           <TableHead className="w-24">Status</TableHead>
           <TableHead className="w-40">Action</TableHead>
         </TableRow>
