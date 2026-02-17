@@ -48,18 +48,21 @@ export default function SpectatorDashboardPage() {
     completedMatches.forEach((match) => {
       if (match.innings && match.innings.length > 0) {
         match.innings.forEach((innings) => {
-          totalRuns += innings.totalRuns || 0
+          // Only process completed innings
+          if (innings.state !== 'COMPLETED') return
+
+          const actualRuns = innings.totalRuns || 0
+          totalRuns += actualRuns
           totalWickets += innings.totalWickets || 0
 
-          // Track highest and lowest scores using finalScore (includes bonuses)
+          // Track highest and lowest ACTUAL RUNS (not finalScore with bonuses)
           const teamName = teams.find(t => t.id === innings.teamId)?.name || 'Unknown'
-          const inningsScore = innings.finalScore || innings.totalRuns || 0
 
-          if (inningsScore > highestScore.runs) {
-            highestScore = { runs: inningsScore, team: teamName, match: match.matchNumber }
+          if (actualRuns > highestScore.runs) {
+            highestScore = { runs: actualRuns, team: teamName, match: match.matchNumber }
           }
-          if (inningsScore < lowestScore.runs && inningsScore > 0) {
-            lowestScore = { runs: inningsScore, team: teamName, match: match.matchNumber }
+          if (actualRuns < lowestScore.runs && actualRuns > 0) {
+            lowestScore = { runs: actualRuns, team: teamName, match: match.matchNumber }
           }
 
           innings.overs?.forEach((over) => {
