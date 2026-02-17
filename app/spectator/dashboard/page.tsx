@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useMemo, useState } from "react"
+import { useEffect, useRef, useMemo, useState, useCallback } from "react"
 import { useTournamentStore } from "@/lib/stores/tournament-store"
 import { useStandingsStore } from "@/lib/stores/standings-store"
+import { useRealtimeTournament } from "@/hooks/use-realtime-tournament"
 import { fetchMatchesWithDetails } from "@/lib/api/matches"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,6 +20,25 @@ export default function SpectatorDashboardPage() {
   const [detailedMatches, setDetailedMatches] = useState<Match[]>([])
   const hasLoaded = useRef(false)
 
+  // Load detailed matches for statistics calculation
+  const loadDetailedMatches = useCallback(async () => {
+    try {
+      const detailed = await fetchMatchesWithDetails(tournament.id)
+      setDetailedMatches(detailed)
+    } catch (err) {
+      console.error("Error loading detailed matches:", err)
+    }
+  }, [tournament.id])
+
+  // Enable real-time updates for matches and standings
+  const { isMatchesSubscribed, isStandingsSubscribed } = useRealtimeTournament({
+    tournamentId: tournament.id,
+    enabled: true,
+    watchMatches: true,
+    watchStandings: true,
+  })
+
+  // Initial load
   useEffect(() => {
     if (!hasLoaded.current) {
       hasLoaded.current = true;
@@ -26,17 +46,18 @@ export default function SpectatorDashboardPage() {
         await loadTeams()
         await loadMatches()
         await loadStandings()
-        // Load detailed matches for statistics calculation
-        try {
-          const detailed = await fetchMatchesWithDetails(tournament.id)
-          setDetailedMatches(detailed)
-        } catch (err) {
-          console.error("Error loading detailed matches:", err)
-        }
+        await loadDetailedMatches()
       }
       loadData()
     }
-  }, [])
+  }, [loadTeams, loadMatches, loadStandings, loadDetailedMatches])
+
+  // Reload detailed matches when regular matches change (real-time updates)
+  useEffect(() => {
+    if (hasLoaded.current && matches.length > 0) {
+      loadDetailedMatches()
+    }
+  }, [matches, loadDetailedMatches])
 
   // Calculate real tournament statistics
   const stats = useMemo(() => {
@@ -155,6 +176,12 @@ export default function SpectatorDashboardPage() {
               <Badge className="bg-white/20 backdrop-blur-md text-white border-2 border-white/50 font-black text-sm px-4 py-1.5 animate-pulse shadow-lg">
                 <Radio className="w-4 h-4 mr-2 inline animate-ping" />
                 {stats.liveMatches.length} LIVE NOW
+              </Badge>
+            )}
+            {(isMatchesSubscribed || isStandingsSubscribed) && (
+              <Badge className="bg-green-500/20 backdrop-blur-md text-white border-2 border-green-300/50 font-bold text-xs px-3 py-1.5 shadow-lg">
+                <Radio className="w-3 h-3 mr-2 inline" />
+                Real-time Updates
               </Badge>
             )}
           </div>
