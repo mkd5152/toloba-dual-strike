@@ -7,7 +7,7 @@ import { MatchScheduleTable } from "@/components/organizer/match-schedule-table"
 import { GenerateMatchesDialog } from "@/components/organizer/generate-matches-dialog";
 
 export default function SchedulePage() {
-  const { matches, loadTeams, loadMatches, loading } = useTournamentStore();
+  const { matches, loadTeams, loadMatches, loadingMatches } = useTournamentStore();
   const hasLoaded = useRef(false);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function SchedulePage() {
       </div>
 
       {matches.length === 0 ? (
-        loading ? (
+        loadingMatches ? (
           <div className="text-center text-white/70 py-12">Loading matches...</div>
         ) : (
           <div className="text-center text-white/70 py-12">
@@ -49,7 +49,7 @@ export default function SchedulePage() {
         <Card className="border-2 border-[#0d3944]/10 shadow-lg overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-[#0d3944] to-[#1a4a57] text-white">
             <CardTitle className="text-xl font-black">
-              All matches {loading && <span className="text-sm font-normal opacity-70">(updating...)</span>}
+              All matches {loadingMatches && <span className="text-sm font-normal opacity-70">(updating...)</span>}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
