@@ -42,13 +42,16 @@ export default function SpectatorDashboardPage() {
     let highestScore = { runs: 0, team: '', match: 0 }
     let lowestScore = { runs: Infinity, team: '', match: 0 }
 
-    matches.forEach((match) => {
+    // Only process completed matches for accurate statistics
+    const completedMatches = matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED")
+
+    completedMatches.forEach((match) => {
       if (match.innings && match.innings.length > 0) {
         match.innings.forEach((innings) => {
           totalRuns += innings.totalRuns || 0
           totalWickets += innings.totalWickets || 0
 
-          // Track highest and lowest scores
+          // Track highest and lowest scores from completed matches only
           const teamName = teams.find(t => t.id === innings.teamId)?.name || 'Unknown'
           if ((innings.totalRuns || 0) > highestScore.runs) {
             highestScore = { runs: innings.totalRuns || 0, team: teamName, match: match.matchNumber }
@@ -79,7 +82,7 @@ export default function SpectatorDashboardPage() {
       }
     })
 
-    const completedMatches = matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED").length
+    const completedMatchesCount = completedMatches.length
     const liveMatches = matches.filter(m => m.state === "IN_PROGRESS")
 
     return {
@@ -96,11 +99,11 @@ export default function SpectatorDashboardPage() {
       totalRunOuts,
       highestScore,
       lowestScore: lowestScore.runs === Infinity ? { runs: 0, team: '', match: 0 } : lowestScore,
-      completedMatches,
+      completedMatches: completedMatchesCount,
       liveMatches,
-      avgRunsPerMatch: completedMatches > 0 ? Math.round(totalRuns / completedMatches) : 0,
+      avgRunsPerMatch: completedMatchesCount > 0 ? Math.round(totalRuns / completedMatchesCount) : 0,
       strikeRate: totalBalls > 0 ? ((totalRuns / totalBalls) * 100).toFixed(1) : 0,
-      wicketsPerMatch: completedMatches > 0 ? (totalWickets / completedMatches).toFixed(1) : 0
+      wicketsPerMatch: completedMatchesCount > 0 ? (totalWickets / completedMatchesCount).toFixed(1) : 0
     }
   }, [matches, teams])
 
@@ -263,7 +266,7 @@ export default function SpectatorDashboardPage() {
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* Powerplay Dominance */}
         <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 pb-8">
+          <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600">
             <CardTitle className="text-white font-black text-xl flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
                 <Shield className="w-6 h-6" />
@@ -304,7 +307,7 @@ export default function SpectatorDashboardPage() {
 
         {/* Boundary Bash */}
         <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 pb-8">
+          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600">
             <CardTitle className="text-white font-black text-xl flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
                 <Zap className="w-6 h-6" />
@@ -338,7 +341,7 @@ export default function SpectatorDashboardPage() {
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* Fielding Stats */}
         <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 pb-8">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600">
             <CardTitle className="text-white font-black text-xl flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
                 <Award className="w-6 h-6" />
@@ -368,7 +371,7 @@ export default function SpectatorDashboardPage() {
 
         {/* Score Records */}
         <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 pb-8">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600">
             <CardTitle className="text-white font-black text-xl flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
                 <Trophy className="w-6 h-6" />
@@ -401,56 +404,56 @@ export default function SpectatorDashboardPage() {
       {/* Championship Podium */}
       {podiumTeams.length > 0 && (
         <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden mb-8">
-          <CardHeader className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 pb-12">
+          <CardHeader className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500">
             <CardTitle className="text-white font-black text-2xl flex items-center gap-3 justify-center">
               <Crown className="w-8 h-8 text-yellow-200 animate-bounce" />
               CHAMPIONSHIP PODIUM
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
-            <div className="flex items-end justify-center gap-4 mb-8">
-              {/* 2nd Place */}
-              {podiumTeams[1] && (
-                <div className="flex-1 max-w-xs">
-                  <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-t-3xl p-6 text-center border-4 border-slate-400 relative">
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-slate-300 to-slate-400 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
-                      <span className="text-2xl font-black text-slate-700">2</span>
+          <CardContent className="p-4 md:p-8">
+            <div className="flex flex-col md:flex-row items-end justify-center gap-3 md:gap-4 mb-4 md:mb-8">
+              {/* 1st Place - Show first on mobile, center on desktop */}
+              {podiumTeams[0] && (
+                <div className="w-full md:flex-1 md:max-w-xs md:order-2">
+                  <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-t-3xl p-6 md:p-8 text-center border-4 border-yellow-300 relative shadow-2xl">
+                    <div className="absolute -top-6 md:-top-8 left-1/2 transform -translate-x-1/2 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-2xl animate-pulse">
+                      <Crown className="w-6 h-6 md:w-8 md:h-8 text-yellow-800" />
                     </div>
-                    <p className="text-3xl font-black text-white mt-4 mb-2">{podiumTeams[1].teamName}</p>
-                    <p className="text-5xl font-black text-slate-300 mb-1">{podiumTeams[1].points}</p>
-                    <p className="text-slate-400 font-bold text-sm">POINTS</p>
+                    <p className="text-2xl md:text-4xl font-black text-yellow-900 mt-4 md:mt-6 mb-2">{podiumTeams[0].teamName}</p>
+                    <p className="text-4xl md:text-6xl font-black text-yellow-900 mb-1">{podiumTeams[0].points}</p>
+                    <p className="text-yellow-800 font-bold text-sm md:text-base">POINTS</p>
                   </div>
-                  <div className="h-32 bg-gradient-to-b from-slate-600 to-slate-700 rounded-b-2xl border-4 border-t-0 border-slate-400"></div>
+                  <div className="h-24 md:h-48 bg-gradient-to-b from-yellow-400 to-amber-500 rounded-b-2xl border-4 border-t-0 border-yellow-300"></div>
                 </div>
               )}
 
-              {/* 1st Place - Highest */}
-              {podiumTeams[0] && (
-                <div className="flex-1 max-w-xs">
-                  <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-t-3xl p-8 text-center border-4 border-yellow-300 relative shadow-2xl">
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-2xl animate-pulse">
-                      <Crown className="w-8 h-8 text-yellow-800" />
+              {/* 2nd Place */}
+              {podiumTeams[1] && (
+                <div className="w-full md:flex-1 md:max-w-xs md:order-1">
+                  <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-t-3xl p-4 md:p-6 text-center border-4 border-slate-400 relative">
+                    <div className="absolute -top-4 md:-top-6 left-1/2 transform -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-slate-300 to-slate-400 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                      <span className="text-xl md:text-2xl font-black text-slate-700">2</span>
                     </div>
-                    <p className="text-4xl font-black text-yellow-900 mt-6 mb-2">{podiumTeams[0].teamName}</p>
-                    <p className="text-6xl font-black text-yellow-900 mb-1">{podiumTeams[0].points}</p>
-                    <p className="text-yellow-800 font-bold">POINTS</p>
+                    <p className="text-xl md:text-3xl font-black text-white mt-3 md:mt-4 mb-2">{podiumTeams[1].teamName}</p>
+                    <p className="text-3xl md:text-5xl font-black text-slate-300 mb-1">{podiumTeams[1].points}</p>
+                    <p className="text-slate-400 font-bold text-xs md:text-sm">POINTS</p>
                   </div>
-                  <div className="h-48 bg-gradient-to-b from-yellow-400 to-amber-500 rounded-b-2xl border-4 border-t-0 border-yellow-300"></div>
+                  <div className="h-16 md:h-32 bg-gradient-to-b from-slate-600 to-slate-700 rounded-b-2xl border-4 border-t-0 border-slate-400"></div>
                 </div>
               )}
 
               {/* 3rd Place */}
               {podiumTeams[2] && (
-                <div className="flex-1 max-w-xs">
-                  <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-t-3xl p-6 text-center border-4 border-orange-400 relative">
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
-                      <span className="text-2xl font-black text-orange-900">3</span>
+                <div className="w-full md:flex-1 md:max-w-xs md:order-3">
+                  <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-t-3xl p-4 md:p-6 text-center border-4 border-orange-400 relative">
+                    <div className="absolute -top-4 md:-top-6 left-1/2 transform -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                      <span className="text-xl md:text-2xl font-black text-orange-900">3</span>
                     </div>
-                    <p className="text-3xl font-black text-white mt-4 mb-2">{podiumTeams[2].teamName}</p>
-                    <p className="text-5xl font-black text-orange-200 mb-1">{podiumTeams[2].points}</p>
-                    <p className="text-orange-300 font-bold text-sm">POINTS</p>
+                    <p className="text-xl md:text-3xl font-black text-white mt-3 md:mt-4 mb-2">{podiumTeams[2].teamName}</p>
+                    <p className="text-3xl md:text-5xl font-black text-orange-200 mb-1">{podiumTeams[2].points}</p>
+                    <p className="text-orange-300 font-bold text-xs md:text-sm">POINTS</p>
                   </div>
-                  <div className="h-24 bg-gradient-to-b from-orange-600 to-orange-700 rounded-b-2xl border-4 border-t-0 border-orange-400"></div>
+                  <div className="h-12 md:h-24 bg-gradient-to-b from-orange-600 to-orange-700 rounded-b-2xl border-4 border-t-0 border-orange-400"></div>
                 </div>
               )}
             </div>
@@ -460,8 +463,8 @@ export default function SpectatorDashboardPage() {
 
       {/* Quick Navigation */}
       <div className="grid md:grid-cols-3 gap-6">
-        <Link href="/spectator/live">
-          <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group">
+        <Link href="/spectator/live" className="block">
+          <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
               <Radio className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-pulse" />
               <p className="text-white font-black text-xl">LIVE MATCHES</p>
@@ -469,8 +472,8 @@ export default function SpectatorDashboardPage() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/spectator/standings">
-          <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group">
+        <Link href="/spectator/standings" className="block">
+          <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
               <Trophy className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-bounce" />
               <p className="text-white font-black text-xl">STANDINGS</p>
@@ -478,8 +481,8 @@ export default function SpectatorDashboardPage() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/spectator/groups">
-          <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer group">
+        <Link href="/spectator/groups" className="block">
+          <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
               <Shield className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-pulse" />
               <p className="text-white font-black text-xl">GROUPS</p>
