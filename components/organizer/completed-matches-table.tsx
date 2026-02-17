@@ -41,7 +41,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
         format(match.startTime, "yyyy-MM-dd HH:mm"),
         (index + 1).toString(),
         team?.name || "Unknown",
-        ranking.totalRuns.toString(),
+        (ranking.totalScore || ranking.totalRuns).toString(),
         ranking.totalDismissals?.toString() || "0",
         ranking.points.toString(),
       ]);
@@ -144,7 +144,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
                         </span>
                         <span className="text-gray-400">-</span>
                         <span className="text-gray-600">
-                          {ranking.totalRuns}r/{ranking.totalDismissals || 0}w
+                          {ranking.totalScore || ranking.totalRuns}r/{ranking.totalDismissals || 0}w
                         </span>
                         <span className="text-gray-400">•</span>
                         <span className="font-bold text-[#ff9800]">

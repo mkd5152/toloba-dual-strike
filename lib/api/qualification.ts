@@ -80,7 +80,7 @@ export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
         if (standing) {
           standing.matchesPlayed++
           standing.points += ranking.points || 0
-          standing.totalRuns += ranking.totalRuns || 0
+          standing.totalRuns += ranking.totalScore || ranking.totalRuns || 0
           standing.totalDismissals += ranking.totalDismissals || 0
         }
       })
@@ -164,7 +164,7 @@ export async function getQualifiedTeamsForFinal(tournamentId: string): Promise<{
             teamName: team?.name || ranking.teamId,
             matchesPlayed: 1,
             points: ranking.points || 0,
-            totalRuns: ranking.totalRuns || 0,
+            totalRuns: ranking.totalScore || ranking.totalRuns || 0,
             totalDismissals: 0,
             rank: index + 1,
           }

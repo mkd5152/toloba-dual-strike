@@ -51,7 +51,7 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
       return {
         teamId: ranking.teamId,
         teamName: team?.name || "Unknown Team",
-        runs: ranking.totalRuns,
+        runs: ranking.totalScore || ranking.totalRuns,
         wickets: 0, // Wickets not stored in MatchRanking
         points: ranking.points,
       }

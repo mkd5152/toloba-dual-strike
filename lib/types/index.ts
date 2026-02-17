@@ -110,7 +110,8 @@ export interface MatchRanking {
   teamId: string;
   rank: number; // Can be 1-4, but allows ties (e.g., two teams at rank 2)
   points: number; // Can be fractional for tied positions (e.g., 2.0 for shared 2nd/3rd)
-  totalRuns: number;
+  totalRuns: number; // Actual runs scored by the team (not including bonuses)
+  totalScore: number; // Final score used for ranking (totalRuns + no-wicket bonus + fielding credits)
   totalDismissals: number; // Total wickets lost by this team in their innings
 }
 

@@ -194,6 +194,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
             rank: r.rank,
             points: r.points, // Use calculated points (handles ties)
             totalRuns: completedInnings.find((i) => i.teamId === r.teamId)?.totalRuns ?? 0,
+            totalScore: r.totalScore, // Total score used for ranking (includes bonuses)
             totalDismissals: completedInnings.find((i) => i.teamId === r.teamId)?.totalWickets ?? 0,
           }));
 
@@ -426,6 +427,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       points: r.points as 5 | 3 | 1 | 0, // FIXED: Use calculated points (handles ties)
       totalRuns:
         completedInnings.find((i) => i.teamId === r.teamId)?.totalRuns ?? 0,
+      totalScore: r.totalScore, // Total score used for ranking (includes bonuses)
       totalDismissals:
         completedInnings.find((i) => i.teamId === r.teamId)?.totalWickets ?? 0,
     }));
