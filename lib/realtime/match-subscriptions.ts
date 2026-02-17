@@ -126,6 +126,20 @@ export function subscribeToTournamentMatches(
         onMatchUpdate(payload);
       }
     )
+    // Listen to ball deletes for undo functionality
+    .on(
+      "postgres_changes",
+      {
+        event: "DELETE",
+        schema: "public",
+        table: "balls",
+      },
+      (payload) => {
+        console.log("Real-time: Ball deleted (undo) for live scores", payload);
+        // Trigger match reload when ball is undone
+        onMatchUpdate(payload);
+      }
+    )
     .subscribe((status) => {
       if (status === "SUBSCRIBED") {
         console.log(`Real-time: Subscribed to tournament ${tournamentId} matches, innings, and balls`);
