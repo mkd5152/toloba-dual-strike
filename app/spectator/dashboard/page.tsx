@@ -45,10 +45,25 @@ export default function SpectatorDashboardPage() {
   // Load detailed matches for statistics calculation
   const loadDetailedMatches = useCallback(async () => {
     try {
+      console.log("📊 Loading detailed matches...")
       // Small delay to ensure DB transaction has committed
       await new Promise(resolve => setTimeout(resolve, 100))
       const detailed = await fetchMatchesWithDetails(tournament.id)
+      console.log("📊 Fetched detailed matches:", detailed.length)
+
+      // Log ball counts for debugging
+      let totalBalls = 0
+      detailed.forEach(match => {
+        match.innings?.forEach(innings => {
+          innings.overs?.forEach(over => {
+            totalBalls += over.balls?.length || 0
+          })
+        })
+      })
+      console.log("📊 Total balls in detailed matches:", totalBalls)
+
       setDetailedMatches(detailed)
+      console.log("📊 State updated with detailed matches")
     } catch (err) {
       console.error("Error loading detailed matches:", err)
     }
@@ -122,19 +137,24 @@ export default function SpectatorDashboardPage() {
           table: "balls",
         },
         (payload) => {
-          console.log("Dashboard: Ball recorded via realtime", payload)
+          console.log("🏏 Dashboard: Ball INSERT event received!", payload)
 
           // Trigger cricket notifications for boundaries and wickets
           const ball = payload.new as any
           if (ball) {
+            console.log("Ball data:", { runs: ball.runs, isWicket: ball.is_wicket, wicketType: ball.wicket_type })
+
             if (ball.runs === 6) {
+              console.log("Triggering SIX notification")
               triggerNotification("SIX", undefined, "Maximum!")
             } else if (ball.runs === 4) {
+              console.log("Triggering FOUR notification")
               triggerNotification("FOUR", undefined, "Boundary!")
             }
 
             if (ball.is_wicket) {
               const wicketType = ball.wicket_type?.replace(/_/g, ' ') || "Out"
+              console.log("Triggering WICKET notification:", wicketType)
               triggerNotification("WICKET", undefined, wicketType)
             }
           }
@@ -174,6 +194,10 @@ export default function SpectatorDashboardPage() {
 
   // Calculate real tournament statistics
   const stats = useMemo(() => {
+    console.log("🔢 Stats useMemo recalculating...")
+    console.log("🔢 detailedMatches.length:", detailedMatches.length)
+    console.log("🔢 matches.length:", matches.length)
+
     let totalRuns = 0
     let totalWickets = 0
     let totalBalls = 0
@@ -191,6 +215,8 @@ export default function SpectatorDashboardPage() {
     const completedMatches = detailedMatches.length > 0
       ? detailedMatches
       : matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED")
+
+    console.log("🔢 Using", completedMatches.length, "matches for stats")
 
     completedMatches.forEach((match) => {
       // Use rankings for highest/lowest scores (includes bonuses)
@@ -240,6 +266,16 @@ export default function SpectatorDashboardPage() {
 
     const completedMatchesCount = completedMatches.length
     const liveMatches = matches.filter(m => m.state === "IN_PROGRESS")
+
+    console.log("🔢 Final stats:", {
+      total4s,
+      total6s,
+      totalBalls,
+      totalRuns,
+      totalWickets,
+      completedMatchesCount,
+      liveMatchesCount: liveMatches.length
+    })
 
     return {
       totalRuns,
