@@ -9,7 +9,9 @@ interface TournamentStore {
   tournament: Tournament;
   teams: Team[];
   matches: Match[];
-  loading: boolean;
+  loading: boolean; // Keep for backwards compatibility
+  loadingTeams: boolean;
+  loadingMatches: boolean;
   error: string | null;
 
   // Actions
@@ -43,12 +45,14 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
   teams: [],
   matches: [],
   loading: false,
+  loadingTeams: false,
+  loadingMatches: false,
   error: null,
 
   // Load teams from database
   loadTeams: async () => {
     try {
-      set({ loading: true, error: null });
+      set({ loadingTeams: true, loading: true, error: null });
       const { tournament } = get();
 
       // Fetch teams
@@ -65,16 +69,17 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
         });
       }
 
-      set({ teams, loading: false });
+      set({ teams, loadingTeams: false, loading: false });
     } catch (err) {
       // Silently ignore abort errors (React Strict Mode unmounting)
       if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
-        set({ loading: false });
+        set({ loadingTeams: false, loading: false });
         return;
       }
       console.error("Error loading teams:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load teams",
+        loadingTeams: false,
         loading: false
       });
     }
@@ -83,20 +88,21 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
   // Load matches from database
   loadMatches: async () => {
     try {
-      set({ loading: true, error: null });
+      set({ loadingMatches: true, loading: true, error: null });
       const { tournament } = get();
 
       const matches = await matchesAPI.fetchMatches(tournament.id);
-      set({ matches, loading: false });
+      set({ matches, loadingMatches: false, loading: false });
     } catch (err) {
       // Silently ignore abort errors (React Strict Mode unmounting)
       if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
-        set({ loading: false });
+        set({ loadingMatches: false, loading: false });
         return;
       }
       console.error("Error loading matches:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load matches",
+        loadingMatches: false,
         loading: false
       });
     }

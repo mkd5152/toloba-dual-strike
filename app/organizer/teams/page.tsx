@@ -6,7 +6,7 @@ import { TeamCard } from "@/components/organizer/team-card";
 import { AddTeamDialog } from "@/components/organizer/add-team-dialog";
 
 export default function TeamsPage() {
-  const { teams, loadTeams, removeTeam, loading } = useTournamentStore();
+  const { teams, loadTeams, removeTeam, loadingTeams } = useTournamentStore();
   const hasLoaded = useRef(false);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function TeamsPage() {
         <AddTeamDialog />
       </div>
 
-      {loading && teams.length === 0 ? (
+      {loadingTeams && teams.length === 0 ? (
         <div className="text-center text-white/70 py-12">Loading teams...</div>
       ) : teams.length === 0 ? (
         <div className="text-center text-white/70 py-12">
