@@ -175,9 +175,19 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         if (nextInningsIndex >= currentMatch.innings.length) {
           // Match complete! Calculate rankings and update state
 
-          const completedInnings = currentMatch.innings.map((inn, i) =>
-            i === currentInningsIndex ? updatedInnings : inn
-          );
+          // CRITICAL: Recalculate ALL innings to ensure finalScore is correct
+          const completedInnings = currentMatch.innings.map((inn, i) => {
+            if (i === currentInningsIndex) {
+              return updatedInnings; // Already recalculated
+            }
+            // Recalculate other innings to ensure finalScore is set
+            return recalcInningsFromBalls(inn);
+          });
+
+          console.log("=== MATCH COMPLETION DEBUG ===");
+          completedInnings.forEach((inn) => {
+            console.log(`Innings ${inn.teamId}: totalRuns=${inn.totalRuns}, finalScore=${inn.finalScore}, state=${inn.state}`);
+          });
 
           const rankings = rankTeamsInMatch(completedInnings).map((r) => ({
             teamId: r.teamId,
@@ -400,19 +410,20 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     const { currentMatch } = get();
     if (!currentMatch) return;
 
-    const completedInnings = currentMatch.innings.filter(
-      (i) => i.state === "COMPLETED"
-    );
+    // Recalculate all completed innings to ensure finalScore is correct
+    const completedInnings = currentMatch.innings
+      .filter((i) => i.state === "COMPLETED")
+      .map((i) => recalcInningsFromBalls(i));
+
+    console.log("=== MANUAL MATCH COMPLETION DEBUG ===");
+    completedInnings.forEach((inn) => {
+      console.log(`Innings ${inn.teamId}: totalRuns=${inn.totalRuns}, finalScore=${inn.finalScore}, state=${inn.state}`);
+    });
+
     const rankings = rankTeamsInMatch(completedInnings).map((r) => ({
       teamId: r.teamId,
       rank: r.rank as 1 | 2 | 3 | 4,
-      points: (r.rank === 1
-        ? POINTS_SYSTEM.FIRST
-        : r.rank === 2
-          ? POINTS_SYSTEM.SECOND
-          : r.rank === 3
-            ? POINTS_SYSTEM.THIRD
-            : POINTS_SYSTEM.FOURTH) as 5 | 3 | 1 | 0,
+      points: r.points as 5 | 3 | 1 | 0, // FIXED: Use calculated points (handles ties)
       totalRuns:
         completedInnings.find((i) => i.teamId === r.teamId)?.totalRuns ?? 0,
       totalDismissals:

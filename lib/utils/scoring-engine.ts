@@ -139,12 +139,30 @@ export function rankTeamsInMatch(
   // Calculate fielding credits for all teams
   const fieldingCredits = calculateFieldingCredits(innings);
 
+  // Debug log to check finalScore values
+  console.log("=== RANKING DEBUG ===");
+  innings.forEach((i) => {
+    console.log(`Team ${i.teamId}: totalRuns=${i.totalRuns}, finalScore=${i.finalScore}, state=${i.state}, fielding=${fieldingCredits[i.teamId] || 0}`);
+  });
+
   // Apply fielding credits to final scores
   const sorted = innings
-    .map((i) => ({
-      teamId: i.teamId,
-      score: i.finalScore + (fieldingCredits[i.teamId] || 0), // Add fielding bonus to final score
-    }))
+    .map((i) => {
+      // SAFETY CHECK: Ensure finalScore exists and is a number
+      const finalScore = (typeof i.finalScore === 'number' && !isNaN(i.finalScore))
+        ? i.finalScore
+        : (i.totalRuns + (i.totalWickets === 0 ? 10 : 0)); // Recalculate if missing
+
+      const fieldingBonus = fieldingCredits[i.teamId] || 0;
+      const totalScore = finalScore + fieldingBonus;
+
+      console.log(`Team ${i.teamId}: finalScore=${finalScore}, fielding=${fieldingBonus}, total=${totalScore}`);
+
+      return {
+        teamId: i.teamId,
+        score: totalScore,
+      };
+    })
     .sort((a, b) => b.score - a.score);
 
   const pointsMap = [
@@ -189,6 +207,11 @@ export function rankTeamsInMatch(
     // Move to next group of teams
     i = j;
   }
+
+  console.log("=== FINAL RANKINGS ===");
+  results.forEach((r) => {
+    console.log(`Team ${r.teamId}: rank=${r.rank}, points=${r.points}`);
+  });
 
   return results;
 }
