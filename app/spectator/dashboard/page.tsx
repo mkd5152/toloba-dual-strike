@@ -51,13 +51,15 @@ export default function SpectatorDashboardPage() {
           totalRuns += innings.totalRuns || 0
           totalWickets += innings.totalWickets || 0
 
-          // Track highest and lowest scores from completed matches only
+          // Track highest and lowest scores using finalScore (includes bonuses)
           const teamName = teams.find(t => t.id === innings.teamId)?.name || 'Unknown'
-          if ((innings.totalRuns || 0) > highestScore.runs) {
-            highestScore = { runs: innings.totalRuns || 0, team: teamName, match: match.matchNumber }
+          const inningsScore = innings.finalScore || innings.totalRuns || 0
+
+          if (inningsScore > highestScore.runs) {
+            highestScore = { runs: inningsScore, team: teamName, match: match.matchNumber }
           }
-          if ((innings.totalRuns || 0) < lowestScore.runs && (innings.totalRuns || 0) > 0) {
-            lowestScore = { runs: innings.totalRuns || 0, team: teamName, match: match.matchNumber }
+          if (inningsScore < lowestScore.runs && inningsScore > 0) {
+            lowestScore = { runs: inningsScore, team: teamName, match: match.matchNumber }
           }
 
           innings.overs?.forEach((over) => {
@@ -185,14 +187,14 @@ export default function SpectatorDashboardPage() {
       {/* Tournament Statistics Grid - THE MAIN SHOWCASE */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Runs */}
-        <Card className="border-0 bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+        <Card className="border-0 bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
                 <Target className="w-8 h-8 text-white" />
               </div>
-              <Sparkles className="w-5 h-5 text-emerald-200 group-hover:animate-spin" />
+              <Sparkles className="w-5 h-5 text-emerald-200" />
             </div>
             <p className="text-emerald-100 font-bold text-sm mb-2 tracking-wider">TOTAL RUNS</p>
             <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.totalRuns.toLocaleString()}</p>
@@ -204,14 +206,14 @@ export default function SpectatorDashboardPage() {
         </Card>
 
         {/* Total Wickets */}
-        <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+        <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
                 <Crosshair className="w-8 h-8 text-white" />
               </div>
-              <Flame className="w-5 h-5 text-rose-200 group-hover:animate-pulse" />
+              <Flame className="w-5 h-5 text-rose-200" />
             </div>
             <p className="text-rose-100 font-bold text-sm mb-2 tracking-wider">WICKETS TAKEN</p>
             <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.totalWickets}</p>
@@ -223,14 +225,14 @@ export default function SpectatorDashboardPage() {
         </Card>
 
         {/* Boundaries */}
-        <Card className="border-0 bg-gradient-to-br from-purple-500 to-indigo-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+        <Card className="border-0 bg-gradient-to-br from-purple-500 to-indigo-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
                 <Zap className="w-8 h-8 text-white" />
               </div>
-              <Award className="w-5 h-5 text-purple-200 group-hover:animate-bounce" />
+              <Award className="w-5 h-5 text-purple-200" />
             </div>
             <p className="text-purple-100 font-bold text-sm mb-2 tracking-wider">BOUNDARIES</p>
             <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.totalBoundaries}</p>
@@ -243,14 +245,14 @@ export default function SpectatorDashboardPage() {
         </Card>
 
         {/* Strike Rate */}
-        <Card className="border-0 bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden group">
+        <Card className="border-0 bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
                 <Activity className="w-8 h-8 text-white" />
               </div>
-              <TrendingUp className="w-5 h-5 text-amber-200 group-hover:animate-pulse" />
+              <TrendingUp className="w-5 h-5 text-amber-200" />
             </div>
             <p className="text-amber-100 font-bold text-sm mb-2 tracking-wider">STRIKE RATE</p>
             <p className="text-5xl font-black text-white mb-2 tracking-tight">{stats.strikeRate}</p>
@@ -462,29 +464,29 @@ export default function SpectatorDashboardPage() {
       )}
 
       {/* Quick Navigation */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Link href="/spectator/live" className="block">
-          <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group h-full">
+      <div className="grid md:grid-cols-3 gap-6 relative z-10">
+        <Link href="/spectator/live" className="block transform hover:scale-105 transition-transform duration-300">
+          <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
-              <Radio className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-pulse" />
+              <Radio className="w-12 h-12 text-white mx-auto mb-3" />
               <p className="text-white font-black text-xl">LIVE MATCHES</p>
               <p className="text-white/80 font-bold text-sm">Watch the action now!</p>
             </CardContent>
           </Card>
         </Link>
-        <Link href="/spectator/standings" className="block">
-          <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group h-full">
+        <Link href="/spectator/standings" className="block transform hover:scale-105 transition-transform duration-300">
+          <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
-              <Trophy className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-bounce" />
+              <Trophy className="w-12 h-12 text-white mx-auto mb-3" />
               <p className="text-white font-black text-xl">STANDINGS</p>
               <p className="text-white/80 font-bold text-sm">Full leaderboard</p>
             </CardContent>
           </Card>
         </Link>
-        <Link href="/spectator/groups" className="block">
-          <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group h-full">
+        <Link href="/spectator/groups" className="block transform hover:scale-105 transition-transform duration-300">
+          <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
-              <Shield className="w-12 h-12 text-white mx-auto mb-3 group-hover:animate-pulse" />
+              <Shield className="w-12 h-12 text-white mx-auto mb-3" />
               <p className="text-white font-black text-xl">GROUPS</p>
               <p className="text-white/80 font-bold text-sm">Group standings</p>
             </CardContent>
