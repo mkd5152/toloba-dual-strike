@@ -45,20 +45,9 @@ export default function SpectatorDashboardPage() {
   // Load detailed matches for statistics calculation
   const loadDetailedMatches = useCallback(async () => {
     try {
-      console.log("Dashboard: Loading detailed matches...")
       // Small delay to ensure DB transaction has committed
       await new Promise(resolve => setTimeout(resolve, 100))
       const detailed = await fetchMatchesWithDetails(tournament.id)
-      console.log("Dashboard: Loaded detailed matches:", detailed.length, "matches")
-
-      // Log sample ball data for debugging
-      if (detailed.length > 0 && detailed[0].innings?.length > 0) {
-        const firstInnings = detailed[0].innings[0]
-        const firstOver = firstInnings.overs?.[0]
-        console.log("Dashboard: Sample - First innings has", firstInnings.overs?.length || 0, "overs")
-        console.log("Dashboard: Sample - First over has", firstOver?.balls?.length || 0, "balls")
-      }
-
       setDetailedMatches(detailed)
     } catch (err) {
       console.error("Error loading detailed matches:", err)
@@ -82,7 +71,6 @@ export default function SpectatorDashboardPage() {
   // Reload detailed matches when regular matches change (real-time updates)
   useEffect(() => {
     if (hasLoaded.current && matches.length > 0) {
-      console.log("Dashboard: Matches changed, reloading detailed matches for stats")
       loadDetailedMatches()
     }
   }, [matches, loadDetailedMatches])
@@ -186,10 +174,6 @@ export default function SpectatorDashboardPage() {
 
   // Calculate real tournament statistics
   const stats = useMemo(() => {
-    console.log("Dashboard: Recalculating stats...")
-    console.log("Dashboard: detailedMatches.length =", detailedMatches.length)
-    console.log("Dashboard: matches.length =", matches.length)
-
     let totalRuns = 0
     let totalWickets = 0
     let totalBalls = 0
@@ -202,13 +186,11 @@ export default function SpectatorDashboardPage() {
     let highestScore = { runs: 0, team: '', match: 0 }
     let lowestScore = { runs: Infinity, team: '', match: 0 }
 
-    // Use detailed matches for statistics (already filtered to COMPLETED/LOCKED in API)
+    // Use detailed matches for statistics (already filtered to COMPLETED/LOCKED/IN_PROGRESS in API)
     // Fall back to regular matches if detailed matches haven't loaded yet
     const completedMatches = detailedMatches.length > 0
       ? detailedMatches
       : matches.filter(m => m.state === "COMPLETED" || m.state === "LOCKED")
-
-    console.log("Dashboard: Using", completedMatches.length, "completed matches for stats")
 
     completedMatches.forEach((match) => {
       // Use rankings for highest/lowest scores (includes bonuses)
@@ -239,14 +221,8 @@ export default function SpectatorDashboardPage() {
               totalBalls++
               const ballRuns = ball.effectiveRuns || 0
 
-              if (ball.runs === 4) {
-                total4s++
-                console.log("Dashboard: Found 4 - total4s now:", total4s)
-              }
-              if (ball.runs === 6) {
-                total6s++
-                console.log("Dashboard: Found 6 - total6s now:", total6s)
-              }
+              if (ball.runs === 4) total4s++
+              if (ball.runs === 6) total6s++
 
               if (isPowerplay) {
                 totalPowerplayRuns += ballRuns
@@ -264,8 +240,6 @@ export default function SpectatorDashboardPage() {
 
     const completedMatchesCount = completedMatches.length
     const liveMatches = matches.filter(m => m.state === "IN_PROGRESS")
-
-    console.log("Dashboard: Final stats calculated - total4s:", total4s, "total6s:", total6s, "totalBalls:", totalBalls)
 
     return {
       totalRuns,
