@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Eye, Radio, Trophy, Menu, X, Layers } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function SpectatorLayout({
   children,
@@ -67,7 +68,19 @@ export default function SpectatorLayout({
             </div>
 
             {/* Right side buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Sponsor Logo */}
+              <div className="hidden md:flex items-center justify-center bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
+                <Image
+                  src="/sponsors/dual-strike-logo.png"
+                  alt="Sponsor Logo"
+                  width={120}
+                  height={40}
+                  className="object-contain max-h-10"
+                  priority
+                />
+              </div>
+
               <Link
                 href="/auth/login"
                 className="text-xs md:text-sm bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold px-3 py-2 md:px-4 md:py-2 rounded-lg hover:opacity-90 transition-opacity shadow-lg"

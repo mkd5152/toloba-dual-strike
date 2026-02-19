@@ -12,6 +12,7 @@ import {
   Award, Crosshair, Shield, Sparkles, Radio, Crown
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import type { Match } from "@/lib/types"
 import LiveCricketNotifications from "@/components/spectator/live-cricket-notifications"
 
@@ -304,7 +305,21 @@ export default function SpectatorDashboardPage() {
   const podiumTeams = standings.slice(0, 3)
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 relative">
+      {/* Floating Sponsor Logo */}
+      <div className="fixed top-20 right-4 md:top-24 md:right-8 z-40 hidden lg:block">
+        <div className="bg-white/95 backdrop-blur-md p-3 rounded-xl shadow-2xl border-2 border-orange-200 hover:scale-105 transition-transform duration-300">
+          <Image
+            src="/sponsors/dual-strike-logo.png"
+            alt="Sponsor Logo"
+            width={150}
+            height={50}
+            className="object-contain"
+            priority
+          />
+        </div>
+      </div>
+
       {/* Live Cricket Notifications */}
       <LiveCricketNotifications notifications={notifications} />
 
