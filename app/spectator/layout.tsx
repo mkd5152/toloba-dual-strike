@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Eye, Radio, Trophy, Menu, X, Layers } from "lucide-react";
+import { Radio, Trophy, Menu, X, Layers } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useState } from "react";
 import Image from "next/image";
@@ -32,8 +32,15 @@ export default function SpectatorLayout({
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo - Always visible */}
             <Link href="/spectator/live" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-[#b71c1c] to-[#c62828] rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <Eye className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white/20 p-1">
+                <Image
+                  src="/logos/dual-strike-logo.png"
+                  alt="Dual Strike Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-sm md:text-lg font-black text-white tracking-tight">
@@ -72,7 +79,7 @@ export default function SpectatorLayout({
               {/* Sponsor Logo */}
               <div className="hidden md:flex items-center justify-center bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
                 <Image
-                  src="/sponsors/dual-strike-logo.png"
+                  src="/logos/sponsor.png"
                   alt="Sponsor Logo"
                   width={120}
                   height={40}
