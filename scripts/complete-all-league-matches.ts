@@ -61,7 +61,7 @@ function generateBallData(targetRuns: number, targetWickets: number, boundaryPct
   let totalRuns = 0
   let wickets = 0
   let ballsPlayed = 0
-  const maxBalls = 24 // 4 overs × 6 balls
+  const maxBalls = 12 // 2 overs × 6 balls (Dual Strike format)
 
   // Generate balls until we hit target runs or max balls
   while (ballsPlayed < maxBalls && totalRuns < targetRuns) {
