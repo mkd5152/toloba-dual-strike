@@ -75,16 +75,14 @@ export default function SpectatorLayout({
             {/* Right side buttons */}
             <div className="flex items-center gap-3">
               {/* Sponsor Logo */}
-              <div className="hidden md:flex items-center justify-center bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
-                <Image
-                  src="/logos/sponsor.png"
-                  alt="Sponsor Logo"
-                  width={120}
-                  height={40}
-                  className="object-contain max-h-10"
-                  priority
-                />
-              </div>
+              <Image
+                src="/logos/header-sponsor.png"
+                alt="Sponsor Logo"
+                width={50}
+                height={50}
+                className="hidden md:block object-contain w-12 h-12 md:w-14 md:h-14"
+                priority
+              />
 
               <Link
                 href="/auth/login"
