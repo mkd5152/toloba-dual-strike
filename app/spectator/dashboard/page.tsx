@@ -342,8 +342,8 @@ export default function SpectatorDashboardPage() {
           />
         </div>
 
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center justify-center text-center min-h-[300px]">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <div className="relative">
               <Trophy className="w-12 h-12 text-yellow-200 animate-bounce" />
               <div className="absolute -top-1 -right-1">
@@ -372,7 +372,7 @@ export default function SpectatorDashboardPage() {
             {tournament.tagline}
           </p>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <div className="backdrop-blur-md bg-white/10 border border-white/20 px-5 py-3 rounded-2xl shadow-xl">
               <p className="text-white/80 text-xs font-bold mb-1">Tournament Progress</p>
               <p className="text-white font-black text-lg">{stats.completedMatches} / {matches.length} Matches</p>
