@@ -65,7 +65,7 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
         .select("*")
         .eq("tournament_id", "tdst-season-1")
         .eq("stage", "SEMI")
-        .order("matchNumber")
+        .order("match_number")
 
       if (semiError) throw semiError
       setSemiMatches(semiData || [])
