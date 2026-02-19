@@ -43,16 +43,14 @@ export default function OrganizerLayout({
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo - Always visible */}
             <Link href="/organizer/dashboard" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white/20 p-1">
-                <Image
-                  src="/logos/dual-strike-logo.png"
-                  alt="Dual Strike Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                  priority
-                />
-              </div>
+              <Image
+                src="/logos/dual-strike-logo.png"
+                alt="Dual Strike Logo"
+                width={50}
+                height={50}
+                className="object-contain w-12 h-12 md:w-14 md:h-14 group-hover:scale-110 transition-transform"
+                priority
+              />
               <div className="hidden sm:block">
                 <h1 className="text-sm md:text-lg font-black text-white tracking-tight">
                   {TOURNAMENT_INFO.NAME}
