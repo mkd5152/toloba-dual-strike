@@ -318,14 +318,14 @@ export default function SpectatorDashboardPage() {
           <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
-        {/* Sponsor Logo - Top Right Corner */}
-        <div className="absolute top-4 right-4 md:top-8 md:right-8 z-20 hidden lg:block">
+        {/* Sponsor Logo - Full Height Right Corner */}
+        <div className="absolute top-0 right-0 bottom-0 z-20 hidden lg:flex items-center pr-8">
           <Image
             src="/logos/sponsor.png"
             alt="Sponsor Logo"
-            width={250}
-            height={200}
-            className="object-contain opacity-70 hover:opacity-90 transition-opacity"
+            width={400}
+            height={400}
+            className="object-contain h-full w-auto opacity-60 hover:opacity-80 transition-opacity"
             priority
           />
         </div>
