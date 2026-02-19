@@ -308,16 +308,14 @@ export default function SpectatorDashboardPage() {
     <div className="p-4 md:p-8 relative">
       {/* Floating Sponsor Logo */}
       <div className="fixed top-20 right-4 md:top-24 md:right-8 z-40 hidden lg:block">
-        <div className="bg-white/95 backdrop-blur-md p-3 rounded-xl shadow-2xl border-2 border-orange-200 hover:scale-105 transition-transform duration-300">
-          <Image
-            src="/logos/sponsor.png"
-            alt="Sponsor Logo"
-            width={150}
-            height={50}
-            className="object-contain"
-            priority
-          />
-        </div>
+        <Image
+          src="/logos/sponsor.png"
+          alt="Sponsor Logo"
+          width={200}
+          height={80}
+          className="object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
+          priority
+        />
       </div>
 
       {/* Live Cricket Notifications */}

@@ -77,13 +77,13 @@ export default function SpectatorLayout({
             {/* Right side buttons */}
             <div className="flex items-center gap-3">
               {/* Sponsor Logo */}
-              <div className="hidden md:flex items-center justify-center bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
+              <div className="hidden md:flex items-center justify-center">
                 <Image
                   src="/logos/sponsor.png"
                   alt="Sponsor Logo"
-                  width={120}
-                  height={40}
-                  className="object-contain max-h-10"
+                  width={140}
+                  height={50}
+                  className="object-contain opacity-90 hover:opacity-100 transition-opacity"
                   priority
                 />
               </div>
