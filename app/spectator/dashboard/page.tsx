@@ -303,7 +303,7 @@ export default function SpectatorDashboardPage() {
   const podiumTeams = standings.slice(0, 3)
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="p-4 md:p-8">
       {/* Live Cricket Notifications */}
       <LiveCricketNotifications notifications={notifications} />
 
