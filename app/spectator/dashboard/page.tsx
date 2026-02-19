@@ -319,7 +319,7 @@ export default function SpectatorDashboardPage() {
         </div>
 
         {/* Tournament Logo - Full Height Left Corner */}
-        <div className="absolute top-0 left-0 bottom-0 z-5 hidden lg:flex items-center pl-8">
+        <div className="absolute top-0 left-0 bottom-0 z-5 flex items-center pl-2 md:pl-8">
           <Image
             src="/logos/dual-strike-logo.png"
             alt="Tournament Logo"
@@ -331,7 +331,7 @@ export default function SpectatorDashboardPage() {
         </div>
 
         {/* Sponsor Logo - Full Height Right Corner */}
-        <div className="absolute top-0 right-0 bottom-0 z-5 hidden lg:flex items-center pr-8">
+        <div className="absolute top-0 right-0 bottom-0 z-5 flex items-center pr-2 md:pr-8">
           <Image
             src="/logos/sponsor.png"
             alt="Sponsor Logo"
