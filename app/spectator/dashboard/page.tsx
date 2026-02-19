@@ -325,7 +325,7 @@ export default function SpectatorDashboardPage() {
             alt="Sponsor Logo"
             width={400}
             height={400}
-            className="object-contain h-full w-auto opacity-60"
+            className="object-contain h-full w-auto"
             priority
           />
         </div>
