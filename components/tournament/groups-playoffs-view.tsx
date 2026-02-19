@@ -395,7 +395,7 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
                 <CardHeader className="p-4 pb-3">
                   <CardTitle className="text-white flex items-center gap-3 justify-center text-2xl">
                     <Trophy className="w-8 h-8 text-amber-500 flex-shrink-0" />
-                    <span>Grand Final</span>
+                    <span>Grand Finale</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
