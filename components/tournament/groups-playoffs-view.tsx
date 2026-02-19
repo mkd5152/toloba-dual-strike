@@ -358,25 +358,13 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {semiMatches.map((match, idx) => (
                 <Card key={match.id} className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-2 border-orange-500/30">
-                  <CardHeader className="p-4 pb-2">
+                  <CardHeader className="p-4 pb-3">
                     <CardTitle className="text-white flex items-center gap-2 text-lg">
                       <Target className="w-5 h-5 text-orange-500 flex-shrink-0" />
                       <span className="flex-1">Semi-Final {idx + 1}</span>
-                      <Badge className="bg-orange-500 text-white text-xs flex-shrink-0">
-                        Match {match.matchNumber}
-                      </Badge>
                     </CardTitle>
-                    <div className="text-sm text-white/70 mt-1">
-                      {match.state === "COMPLETED" || match.state === "LOCKED" ? (
-                        <span className="text-green-400 font-semibold">✓ Completed</span>
-                      ) : match.state === "IN_PROGRESS" ? (
-                        <span className="text-yellow-400 font-semibold">⚡ In Progress</span>
-                      ) : (
-                        <span className="text-white/50">Waiting to start</span>
-                      )}
-                    </div>
                   </CardHeader>
-                  <CardContent className="p-4 pt-2">
+                  <CardContent className="p-4 pt-0">
                     {renderMatchRankings(match)}
                   </CardContent>
                 </Card>
@@ -404,25 +392,13 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
           ) : (
             <div className="max-w-3xl mx-auto">
               <Card className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-2 border-amber-500/50">
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-white flex items-center gap-3 justify-center text-2xl flex-wrap">
+                <CardHeader className="p-4 pb-3">
+                  <CardTitle className="text-white flex items-center gap-3 justify-center text-2xl">
                     <Trophy className="w-8 h-8 text-amber-500 flex-shrink-0" />
                     <span>Grand Final</span>
-                    <Badge className="bg-amber-500 text-white text-sm">
-                      Match {finalMatch.matchNumber}
-                    </Badge>
                   </CardTitle>
-                  <div className="text-center text-sm text-white/70 mt-2">
-                    {finalMatch.state === "COMPLETED" || finalMatch.state === "LOCKED" ? (
-                      <span className="text-green-400 font-semibold text-lg">🏆 Tournament Champion Crowned!</span>
-                    ) : finalMatch.state === "IN_PROGRESS" ? (
-                      <span className="text-yellow-400 font-semibold text-lg">⚡ Championship Match In Progress</span>
-                    ) : (
-                      <span className="text-white/50">Championship match awaits</span>
-                    )}
-                  </div>
                 </CardHeader>
-                <CardContent className="p-4 pt-2">
+                <CardContent className="p-4 pt-0">
                   {renderMatchRankings(finalMatch)}
                 </CardContent>
               </Card>
