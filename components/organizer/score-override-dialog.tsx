@@ -80,6 +80,7 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
           totalRuns: score.runs,
           totalDismissals: score.wickets,
           points: score.points,
+          totalScore: score.points, // Total score equals points
           rank: 0, // Will be recalculated
         }))
         .sort((a, b) => {

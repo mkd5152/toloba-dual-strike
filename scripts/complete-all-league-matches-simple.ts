@@ -105,7 +105,7 @@ async function completeMatch(matchNumber: number) {
     }))
 
     console.log(`   Scores:`, rankings.map(r =>
-      `${r.totalScore} (R:${r.runs} W:${r.totalDismissals} Pts:${r.points})`
+      `${r.totalScore} (R:${r.totalRuns} W:${r.totalDismissals} Pts:${r.points})`
     ).join(' | '))
 
     // Update match with rankings and mark as completed
