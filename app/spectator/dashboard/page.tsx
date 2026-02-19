@@ -325,7 +325,7 @@ export default function SpectatorDashboardPage() {
             alt="Tournament Logo"
             width={400}
             height={400}
-            className="object-contain h-24 md:h-40 lg:h-full w-auto opacity-10 md:opacity-20 lg:opacity-100"
+            className="object-contain h-full w-auto"
             priority
           />
         </div>
@@ -337,7 +337,7 @@ export default function SpectatorDashboardPage() {
             alt="Sponsor Logo"
             width={400}
             height={400}
-            className="object-contain h-24 md:h-40 lg:h-full w-auto opacity-10 md:opacity-20 lg:opacity-100"
+            className="object-contain h-full w-auto"
             priority
           />
         </div>
