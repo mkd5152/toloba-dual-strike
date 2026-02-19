@@ -8,6 +8,7 @@ import { BallLog } from "@/components/umpire/ball-log";
 import { BattingOrderSelector } from "@/components/umpire/batting-order-selector";
 import { useMatchStore } from "@/lib/stores/match-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
+import { useAuthStore } from "@/lib/stores/auth-store";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export default function ScoringPage() {
 
   const { setCurrentMatch, currentMatch, currentInningsIndex } = useMatchStore();
   const { matches, teams, loadMatches, loadTeams, getTeam } = useTournamentStore();
+  const { profile } = useAuthStore();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -392,7 +394,13 @@ export default function ScoringPage() {
 
                 <div className="mt-6 flex gap-3 justify-center">
                   <Button
-                    onClick={() => router.push('/spectator/standings')}
+                    onClick={() => {
+                      // Route based on user role to prevent logout
+                      const standingsPath = profile?.role === 'organizer'
+                        ? '/organizer/standings'
+                        : '/spectator/standings';
+                      router.push(standingsPath);
+                    }}
                     className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold"
                   >
                     View Tournament Standings
