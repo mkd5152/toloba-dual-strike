@@ -235,11 +235,11 @@ async function completeMatch(matchNumber: number) {
           })
           .eq('id', inningsId)
       } else {
-        // Create new innings
+        // Create new innings with UUID
         const { data: newInnings, error: inningsError } = await supabase
           .from('innings')
           .insert({
-            id: `${match.id}-innings-${i + 1}`,
+            id: crypto.randomUUID(),
             match_id: match.id,
             team_id: teamId,
             bowling_team_id: teamIds[(i + 1) % teamIds.length],
@@ -286,7 +286,7 @@ async function completeMatch(matchNumber: number) {
           const { data: newOver, error: overError } = await supabase
             .from('overs')
             .insert({
-              id: `${inningsId}-over-${overNum}`,
+              id: crypto.randomUUID(),
               innings_id: inningsId,
               over_number: overNum,
               bowling_team_id: teamIds[(i + 1) % teamIds.length],
@@ -320,7 +320,7 @@ async function completeMatch(matchNumber: number) {
 
           if (!existingBall) {
             await supabase.from('balls').insert({
-              id: `${overId}-ball-${legalBalls + 1}`,
+              id: crypto.randomUUID(),
               over_id: overId,
               ball_number: legalBalls + 1,
               runs: ball.runs,
