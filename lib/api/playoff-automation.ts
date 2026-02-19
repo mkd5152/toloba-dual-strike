@@ -33,7 +33,7 @@ export async function getPlayoffStatus(tournamentId: string): Promise<PlayoffSta
 
     if (error) throw error
 
-    const matches = matchesData || []
+    const matches = (matchesData || []) as any[]
 
     // League matches (1-25)
     const leagueMatches = matches.filter(m => m.stage === "LEAGUE")
@@ -137,15 +137,10 @@ export async function generateSemiFinals(tournamentId: string): Promise<{ semi1:
       umpireName: null,
       teamIds: semi1Teams as [string, string, string, string],
       state: "CREATED",
+      stage: "SEMI",
       battingOrder: [],
       rankings: [],
     })
-
-    // Update stage to SEMI
-    await supabase
-      .from("matches")
-      .update({ stage: "SEMI" })
-      .eq("id", semi1.id)
 
     // Semi-Final 2: G1-2nd, G2-1st, G3-2nd, G4-1st
     const semi2Teams = [
@@ -164,15 +159,10 @@ export async function generateSemiFinals(tournamentId: string): Promise<{ semi1:
       umpireName: null,
       teamIds: semi2Teams as [string, string, string, string],
       state: "CREATED",
+      stage: "SEMI",
       battingOrder: [],
       rankings: [],
     })
-
-    // Update stage to SEMI
-    await supabase
-      .from("matches")
-      .update({ stage: "SEMI" })
-      .eq("id", semi2.id)
 
     // Refresh matches to get updated stage
     const { data: updatedSemi1, error: refresh1Error } = await supabase
@@ -248,17 +238,12 @@ export async function generateFinal(tournamentId: string): Promise<Match> {
       umpireName: null,
       teamIds: finalTeams as [string, string, string, string],
       state: "CREATED",
+      stage: "FINAL",
       battingOrder: [],
       rankings: [],
     })
 
-    // Update stage to FINAL
-    await supabase
-      .from("matches")
-      .update({ stage: "FINAL" })
-      .eq("id", final.id)
-
-    return { ...final, stage: "FINAL" } as any
+    return final
   } catch (err) {
     console.error("Error generating final:", err)
     throw new Error(`Failed to generate final: ${err instanceof Error ? err.message : "Unknown error"}`)
@@ -282,8 +267,9 @@ export async function getPlayoffBracket(tournamentId: string) {
 
     if (teamsError) throw teamsError
 
+    const teams = (teamsData || []) as any[]
     const getTeamName = (teamId: string) => {
-      return teamsData?.find((t: any) => t.id === teamId)?.name || teamId
+      return teams.find((t: any) => t.id === teamId)?.name || teamId
     }
 
     return {

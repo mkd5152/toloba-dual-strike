@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Eye, Radio, Trophy, BarChart3, Menu, X } from "lucide-react";
+import { Eye, Radio, Trophy, Menu, X, Layers } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useState } from "react";
 
@@ -15,10 +15,9 @@ export default function SpectatorLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { href: "/spectator/dashboard", label: "Dashboard", icon: BarChart3 },
+    { href: "/spectator/dashboard", label: "Dashboard", icon: Trophy },
     { href: "/spectator/live", label: "Live", icon: Radio },
-    { href: "/spectator/groups", label: "Groups", icon: Trophy },
-    { href: "/spectator/standings", label: "Standings", icon: BarChart3 },
+    { href: "/spectator/groups", label: "Groups", icon: Layers },
   ];
 
   return (

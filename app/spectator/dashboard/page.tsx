@@ -110,7 +110,8 @@ export default function SpectatorDashboardPage() {
           loadMatches()
           loadDetailedMatches()
           // Reload standings when match completes
-          if (payload.new?.state === "COMPLETED" || payload.new?.state === "LOCKED") {
+          const newMatch = payload.new as any
+          if (newMatch?.state === "COMPLETED" || newMatch?.state === "LOCKED") {
             loadStandings()
           }
         }
