@@ -78,9 +78,9 @@ export default function SpectatorLayout({
               <Image
                 src="/logos/header-sponsor.png"
                 alt="Sponsor Logo"
-                width={70}
-                height={70}
-                className="object-contain w-14 h-14 md:w-16 md:h-16 lg:w-18 lg:h-18"
+                width={100}
+                height={100}
+                className="object-contain w-20 h-20 md:w-24 md:h-24"
                 priority
               />
 
