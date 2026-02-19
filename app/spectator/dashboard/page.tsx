@@ -318,8 +318,8 @@ export default function SpectatorDashboardPage() {
           <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
-        {/* Tournament Logo - Full Height Left Corner */}
-        <div className="absolute top-0 left-0 bottom-0 z-5 flex items-center pl-2 md:pl-8">
+        {/* Tournament Logo - Full Height Left Corner (Desktop Only) */}
+        <div className="absolute top-0 left-0 bottom-0 z-5 hidden xl:flex items-center pl-8">
           <Image
             src="/logos/dual-strike-logo.png"
             alt="Tournament Logo"
@@ -330,8 +330,8 @@ export default function SpectatorDashboardPage() {
           />
         </div>
 
-        {/* Sponsor Logo - Full Height Right Corner */}
-        <div className="absolute top-0 right-0 bottom-0 z-5 flex items-center pr-2 md:pr-8">
+        {/* Sponsor Logo - Full Height Right Corner (Desktop Only) */}
+        <div className="absolute top-0 right-0 bottom-0 z-5 hidden xl:flex items-center pr-8">
           <Image
             src="/logos/sponsor.png"
             alt="Sponsor Logo"
