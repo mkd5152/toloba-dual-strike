@@ -395,20 +395,13 @@ export default function ScoringPage() {
                 <div className="mt-6 flex gap-3 justify-center">
                   <Button
                     onClick={() => {
-                      // Route based on user role to prevent logout
-                      const standingsPath = profile?.role === 'organizer'
-                        ? '/organizer/standings'
-                        : '/spectator/standings';
-                      router.push(standingsPath);
+                      // Route to matches page based on user role
+                      const matchesPath = profile?.role === 'organizer'
+                        ? '/organizer/matches'
+                        : '/umpire/matches';
+                      router.push(matchesPath);
                     }}
                     className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold"
-                  >
-                    View Tournament Standings
-                  </Button>
-                  <Button
-                    onClick={() => router.back()}
-                    variant="outline"
-                    className="border-2 border-[#0d3944]"
                   >
                     Back to Matches
                   </Button>
