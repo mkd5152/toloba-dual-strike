@@ -124,6 +124,14 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       isPowerplay
     );
 
+    console.log('🏏 Ball recorded:', {
+      runs: ballWithEffective.runs,
+      isWicket: ballWithEffective.isWicket,
+      wicketType: ballWithEffective.wicketType,
+      effectiveRuns: ballWithEffective.effectiveRuns,
+      isPowerplay,
+    });
+
     const updatedOver: Over = {
       ...over,
       balls: [...over.balls, ballWithEffective],
@@ -256,14 +264,24 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     }
 
     // Update innings totals in database
+    console.log('🔄 Updating innings totals in DB:', {
+      inningsId: innings.id,
+      totalRuns: updatedInnings.totalRuns,
+      totalWickets: updatedInnings.totalWickets,
+      finalScore: updatedInnings.finalScore,
+    });
     updateInningsTotals(innings.id, {
       totalRuns: updatedInnings.totalRuns,
       totalWickets: updatedInnings.totalWickets,
       noWicketBonus: updatedInnings.noWicketBonus,
       finalScore: updatedInnings.finalScore,
-    }).catch((err) => {
-      console.error("Failed to update innings totals:", err);
-    });
+    })
+      .then(() => {
+        console.log('✅ Innings totals updated successfully');
+      })
+      .catch((err) => {
+        console.error("❌ Failed to update innings totals:", err);
+      });
 
     // Update match state in database (for rankings when completed)
     if (updatedMatch.state === "COMPLETED" && updatedMatch.rankings) {
