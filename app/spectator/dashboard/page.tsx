@@ -161,7 +161,10 @@ export default function SpectatorDashboardPage() {
             }
           }
 
-          loadDetailedMatches()
+          // Add delay to ensure innings totals are updated in DB first
+          setTimeout(() => {
+            loadDetailedMatches()
+          }, 300)
         }
       )
       // Listen to ball deletes (undo)
@@ -174,7 +177,10 @@ export default function SpectatorDashboardPage() {
         },
         (payload) => {
           console.log("Dashboard: Ball deleted via realtime", payload)
-          loadDetailedMatches()
+          // Add delay to ensure innings totals are updated after undo
+          setTimeout(() => {
+            loadDetailedMatches()
+          }, 300)
         }
       )
       .subscribe((status) => {
