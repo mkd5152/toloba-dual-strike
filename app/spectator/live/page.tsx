@@ -121,7 +121,10 @@ export default function SpectatorLivePage() {
           setLiveEvents(prev => [newEvent, ...prev].slice(0, 10)); // Keep latest 10
 
           // Reload matches to update scores in match cards
-          loadMatches();
+          // Add a small delay to ensure innings totals have been updated in DB
+          setTimeout(() => {
+            loadMatches();
+          }, 300);
         }
       )
       .subscribe();
