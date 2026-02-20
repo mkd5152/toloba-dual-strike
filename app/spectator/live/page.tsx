@@ -46,7 +46,7 @@ export default function SpectatorLivePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
-  // Subscribe to real-time ball events
+  // Subscribe to real-time ball and innings events
   useEffect(() => {
     const channel = supabase
       .channel('live-balls-feed')
@@ -119,12 +119,20 @@ export default function SpectatorLivePage() {
           };
 
           setLiveEvents(prev => [newEvent, ...prev].slice(0, 10)); // Keep latest 10
-
-          // Reload matches to update scores in match cards
-          // Add a small delay to ensure innings totals have been updated in DB
-          setTimeout(() => {
-            loadMatches();
-          }, 300);
+        }
+      )
+      // Listen to innings updates (totals) for score updates
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'innings',
+        },
+        (payload) => {
+          console.log('Live: Innings updated', payload);
+          // Reload matches when innings totals are updated
+          loadMatches();
         }
       )
       .subscribe();
