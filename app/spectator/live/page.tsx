@@ -48,6 +48,7 @@ export default function SpectatorLivePage() {
 
   // Subscribe to real-time ball and innings events
   useEffect(() => {
+    console.log('🔴 Setting up live-balls-feed subscription');
     const channel = supabase
       .channel('live-balls-feed')
       .on(
@@ -58,7 +59,7 @@ export default function SpectatorLivePage() {
           table: 'balls',
         },
         async (payload) => {
-          console.log('Live ball recorded:', payload);
+          console.log('🏏 Live ball recorded:', payload);
 
           // Get the ball data
           const ball = payload.new as any;
@@ -72,12 +73,15 @@ export default function SpectatorLivePage() {
 
           if (!inningsData) return;
 
+          // Get current matches and teams from store
+          const { matches: currentMatches, getTeam: getCurrentTeam } = useTournamentStore.getState();
+
           // Find the match
-          const match = matches.find((m: any) => m.id === inningsData.match_id);
+          const match = currentMatches.find((m: any) => m.id === inningsData.match_id);
           if (!match || match.state !== 'IN_PROGRESS') return;
 
           // Get the team
-          const team = getTeam(inningsData.team_id);
+          const team = getCurrentTeam(inningsData.team_id);
           if (!team) return;
 
           // Determine event type and icon
@@ -130,17 +134,23 @@ export default function SpectatorLivePage() {
           table: 'innings',
         },
         (payload) => {
-          console.log('Live: Innings updated', payload);
+          console.log('📊 Live: Innings updated', payload);
           // Reload matches when innings totals are updated
-          loadMatches();
+          useTournamentStore.getState().loadMatches();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔴 Live page balls/innings subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to balls and innings changes');
+        }
+      });
 
     return () => {
+      console.log('🔴 Unsubscribing from live-balls-feed channel');
       supabase.removeChannel(channel);
     };
-  }, [matches, getTeam, loadMatches]);
+  }, []); // Empty deps - subscribe once and never recreate
 
   const liveMatches = matches.filter((m) => m.state === "IN_PROGRESS");
   const upcomingMatches = matches.filter(
