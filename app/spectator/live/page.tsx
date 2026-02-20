@@ -119,6 +119,9 @@ export default function SpectatorLivePage() {
           };
 
           setLiveEvents(prev => [newEvent, ...prev].slice(0, 10)); // Keep latest 10
+
+          // Reload matches to update scores in match cards
+          loadMatches();
         }
       )
       .subscribe();
@@ -126,7 +129,7 @@ export default function SpectatorLivePage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [matches, getTeam]);
+  }, [matches, getTeam, loadMatches]);
 
   const liveMatches = matches.filter((m) => m.state === "IN_PROGRESS");
   const upcomingMatches = matches.filter(
