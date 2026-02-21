@@ -53,7 +53,7 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
 
       const { data: teamsData, error: teamsError } = await supabase
         .from("teams")
-        .select("*")
+        .select("*, players(*)")
         .eq("tournament_id", "tdst-season-1")
 
       if (teamsError) throw teamsError
@@ -298,6 +298,15 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
                                     <Badge className="bg-green-600 text-white text-xs flex-shrink-0">Q</Badge>
                                   )}
                                 </div>
+                                {/* Player Names */}
+                                {(() => {
+                                  const fullTeam = teams.find(t => t.id === team.teamId)
+                                  return fullTeam?.players && fullTeam.players.length > 0 && (
+                                    <p className="text-xs text-white/60 font-medium mt-0.5 truncate">
+                                      {fullTeam.players.map((p: any) => p.name).join(" • ")}
+                                    </p>
+                                  )
+                                })()}
                               </div>
                             </div>
                             <div className="flex items-center gap-4 flex-shrink-0">
