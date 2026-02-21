@@ -161,10 +161,10 @@ export default function SpectatorLivePage() {
       {/* Page Header */}
       <div className="mb-8">
         <div className="inline-block px-3 py-1 mb-2 rounded-full bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] text-xs font-bold uppercase tracking-wide">
-          Cricket Central
+          Match Center
         </div>
-        <h1 className="text-4xl font-black text-white drop-shadow-lg">Live & Schedule</h1>
-        <p className="text-white/70 mt-2">Real-time scores and complete tournament schedule</p>
+        <h1 className="text-4xl font-black text-white drop-shadow-lg">Live • Schedule • Results</h1>
+        <p className="text-white/70 mt-2">Complete tournament coverage in one place</p>
       </div>
 
       {/* Live Events Ticker - Real Data */}
