@@ -514,7 +514,7 @@ export default function SpectatorDashboardPage() {
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"
-                    style={{ width: `${(stats.totalPowerplayRuns / stats.totalRuns) * 100}%` }}
+                    style={{ width: `${stats.totalRuns > 0 ? (stats.totalPowerplayRuns / stats.totalRuns) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>
@@ -524,14 +524,14 @@ export default function SpectatorDashboardPage() {
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full"
-                    style={{ width: `${(stats.totalNormalRuns / stats.totalRuns) * 100}%` }}
+                    style={{ width: `${stats.totalRuns > 0 ? (stats.totalNormalRuns / stats.totalRuns) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>
             </div>
             <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/20">
               <p className="text-slate-300 font-bold text-sm">
-                ⚡ Powerplay contributed <span className="text-cyan-400 text-lg font-black">{((stats.totalPowerplayRuns / stats.totalRuns) * 100).toFixed(1)}%</span> of total runs
+                ⚡ Powerplay contributed <span className="text-cyan-400 text-lg font-black">{stats.totalRuns > 0 ? ((stats.totalPowerplayRuns / stats.totalRuns) * 100).toFixed(1) : '0'}%</span> of total runs
               </p>
             </div>
           </CardContent>
@@ -562,7 +562,7 @@ export default function SpectatorDashboardPage() {
             </div>
             <div className="p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl border border-orange-500/20">
               <p className="text-slate-300 font-bold text-sm">
-                🏏 Boundaries scored <span className="text-orange-400 text-lg font-black">{stats.boundaryRuns}</span> runs (<span className="text-orange-400 font-black">{((stats.boundaryRuns / stats.totalRuns) * 100).toFixed(1)}%</span> of total)
+                🏏 Boundaries scored <span className="text-orange-400 text-lg font-black">{stats.boundaryRuns}</span> runs (<span className="text-orange-400 font-black">{stats.totalRuns > 0 ? ((stats.boundaryRuns / stats.totalRuns) * 100).toFixed(1) : '0'}%</span> of total)
               </p>
             </div>
           </CardContent>
