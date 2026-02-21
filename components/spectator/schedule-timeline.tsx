@@ -188,8 +188,14 @@ export function ScheduleTimeline({ matches, showCompleted = true }: ScheduleTime
                                     <Trophy className="inline-block w-5 h-5 ml-2 text-yellow-600" />
                                   )}
                                 </p>
+                                {/* Player Names */}
+                                {team.players && team.players.length > 0 && (
+                                  <p className="text-xs text-gray-600 font-medium mt-0.5">
+                                    {team.players.map((p) => p.name).join(" • ")}
+                                  </p>
+                                )}
                                 {ranking && (
-                                  <p className="text-xs text-gray-500 font-semibold">
+                                  <p className="text-xs text-gray-500 font-semibold mt-1">
                                     Position: {idx + 1}
                                   </p>
                                 )}
