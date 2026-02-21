@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { MatchScheduleTable } from "@/components/organizer/match-schedule-table";
@@ -8,22 +8,16 @@ import { GenerateMatchesDialog } from "@/components/organizer/generate-matches-d
 
 export default function SchedulePage() {
   const { matches, loadTeams, loadMatches, loadingMatches } = useTournamentStore();
-  const hasLoaded = useRef(false);
 
+  // Fetch data every time component mounts
   useEffect(() => {
-    // Always reload matches when navigating to this page
-    // This ensures fresh data after scoring or other updates
     const loadData = async () => {
-      if (!hasLoaded.current) {
-        hasLoaded.current = true;
-        await loadTeams();
-      }
-      // Always reload matches to get latest updates
+      await loadTeams();
       await loadMatches();
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []);
 
   return (
     <div className="p-4 md:p-8">

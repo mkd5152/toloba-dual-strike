@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { CompletedMatchesTable } from "@/components/organizer/completed-matches-table";
@@ -10,22 +10,17 @@ import { Button } from "@/components/ui/button";
 export default function OrganizerMatchesPage() {
   const { matches, teams, loadTeams, loadMatches, loading } = useTournamentStore();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const hasLoaded = useRef(false);
 
+  // Fetch data every time component mounts
   useEffect(() => {
-    // Always reload matches when navigating to this page
     const loadData = async () => {
-      if (!hasLoaded.current) {
-        hasLoaded.current = true;
-        await loadTeams();
-      }
-      // Always reload matches to get latest results
+      await loadTeams();
       await loadMatches();
       setInitialLoadComplete(true);
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run on mount
+  }, []);
 
   const completedMatches = matches.filter(
     (m) => m.state === "COMPLETED" || m.state === "LOCKED"

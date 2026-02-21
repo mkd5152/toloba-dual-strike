@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,7 +37,6 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
   const [teams, setTeams] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const hasLoaded = useRef(false)
 
   useEffect(() => {
     loadAllData()
@@ -270,7 +269,8 @@ export function GroupsPlayoffsView({ branding, showPlayoffLink = false }: Groups
                   <CardContent className="p-4 pt-2">
                     <div className="space-y-2">
                       {standings.map((team, idx) => {
-                        const isQualified = idx < 2
+                        // Only mark as qualified if in top 2 AND has played at least one match
+                        const isQualified = idx < 2 && (team.matchesPlayed > 0 || team.points > 0)
 
                         return (
                           <div

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Match } from "@/lib/types";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
-import { format } from "date-fns";
+import { formatDubaiTime } from "@/lib/utils/date-utils";
 import { Trophy, Download } from "lucide-react";
 
 interface CompletedMatchesTableProps {
@@ -38,7 +38,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
         match.matchNumber.toString(),
         match.court,
         match.stage,
-        format(match.startTime, "yyyy-MM-dd HH:mm"),
+        formatDubaiTime(match.startTime, "yyyy-MM-dd HH:mm"),
         (index + 1).toString(),
         team?.name || "Unknown",
         (ranking.totalScore || ranking.totalRuns).toString(),
@@ -106,7 +106,7 @@ export function CompletedMatchesTable({ matches }: CompletedMatchesTableProps) {
               </TableCell>
               <TableCell className="font-medium">{match.court}</TableCell>
               <TableCell className="text-sm text-gray-600">
-                {format(match.startTime, "MMM d, HH:mm")}
+                {formatDubaiTime(match.startTime, "MMM d, HH:mm")}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
