@@ -74,14 +74,30 @@ export default function SpectatorLayout({
 
             {/* Right side buttons */}
             <div className="flex items-center gap-3">
-              {/* Sponsor Logo - Diamond shaped, needs proper sizing */}
-              <div className="flex items-center justify-center">
+              {/* Sponsor Logos */}
+              {/* Mobile: Show all 6 logos in horizontal scroll */}
+              <div className="md:hidden flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-[200px]">
+                {[1, 2, 3, 4, 5, 6].map((num) => (
+                  <div key={num} className="flex-shrink-0">
+                    <Image
+                      src={`/logos/header-sponsor-${num}.png`}
+                      alt={`Sponsor ${num}`}
+                      width={40}
+                      height={40}
+                      className="object-contain w-8 h-8"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: Show only SFB logo */}
+              <div className="hidden md:flex items-center justify-center">
                 <Image
-                  src="/logos/header-sponsor.png"
-                  alt="Sponsor Logo"
+                  src="/logos/header-sponsor-6.png"
+                  alt="SFB Group of Companies"
                   width={80}
                   height={80}
-                  className="object-contain w-12 h-12 md:w-16 md:h-16"
+                  className="object-contain w-16 h-16"
                   priority
                 />
               </div>
