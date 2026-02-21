@@ -41,7 +41,14 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                   className="w-8 h-8 rounded-full shrink-0"
                   style={{ backgroundColor: team?.color }}
                 />
-                <span className="font-medium">{team?.name ?? "—"}</span>
+                <div>
+                  <span className="font-medium">{team?.name ?? "—"}</span>
+                  {team?.players && team.players.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {team.players.map((p) => p.name).join(" • ")}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 {innings ? (

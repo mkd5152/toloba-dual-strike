@@ -121,16 +121,21 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
                   {teams.map(
                     (t) =>
                       t && (
-                        <span
+                        <div
                           key={t.id}
-                          className="text-xs px-2 py-0.5 rounded"
+                          className="text-xs px-2 py-1 rounded inline-block"
                           style={{
                             backgroundColor: `${t.color}20`,
                             color: t.color,
                           }}
                         >
-                          {t.name}
-                        </span>
+                          <div className="font-semibold">{t.name}</div>
+                          {t.players && t.players.length > 0 && (
+                            <div className="text-[10px] opacity-70 mt-0.5">
+                              {t.players.map((p) => p.name).join(" • ")}
+                            </div>
+                          )}
+                        </div>
                       )
                   )}
                 </div>
