@@ -428,7 +428,7 @@ export default function SpectatorDashboardPage() {
 
       {/* Live Match Alert */}
       {stats.liveMatches.length > 0 && (
-        <Link href="/spectator/live">
+        <Link href="/spectator/match-center">
           <div className="mb-8 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             <div className="relative flex items-center justify-between">
@@ -730,12 +730,12 @@ export default function SpectatorDashboardPage() {
 
       {/* Quick Navigation */}
       <div className="grid md:grid-cols-3 gap-6 relative z-10">
-        <Link href="/spectator/live" className="block transform hover:scale-105 transition-transform duration-300">
+        <Link href="/spectator/match-center" className="block transform hover:scale-105 transition-transform duration-300">
           <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
-              <Radio className="w-12 h-12 text-white mx-auto mb-3" />
-              <p className="text-white font-black text-xl">LIVE MATCHES</p>
-              <p className="text-white/80 font-bold text-sm">Watch the action now!</p>
+              <Activity className="w-12 h-12 text-white mx-auto mb-3" />
+              <p className="text-white font-black text-xl">MATCH CENTER</p>
+              <p className="text-white/80 font-bold text-sm">Live, upcoming & schedule</p>
             </CardContent>
           </Card>
         </Link>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Radio, Trophy, Menu, X, Layers } from "lucide-react";
+import { Activity, Trophy, Menu, X, Layers } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useState } from "react";
 import Image from "next/image";
@@ -17,7 +17,7 @@ export default function SpectatorLayout({
 
   const navItems = [
     { href: "/spectator/dashboard", label: "Dashboard", icon: Trophy },
-    { href: "/spectator/live", label: "Live", icon: Radio },
+    { href: "/spectator/match-center", label: "Match Center", icon: Activity },
     { href: "/spectator/groups", label: "Groups", icon: Layers },
   ];
 
@@ -31,7 +31,7 @@ export default function SpectatorLayout({
           {/* Desktop Navigation */}
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo - Always visible */}
-            <Link href="/spectator/live" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
+            <Link href="/spectator/match-center" className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
               <Image
                 src="/logos/dual-strike-logo.png"
                 alt="Dual Strike Logo"
