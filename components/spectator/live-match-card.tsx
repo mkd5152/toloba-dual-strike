@@ -12,6 +12,26 @@ interface LiveMatchCardProps {
 export function LiveMatchCard({ match }: LiveMatchCardProps) {
   const { getTeam } = useTournamentStore();
 
+  // Map match state to user-friendly labels
+  const getStateLabel = (state: string) => {
+    switch (state) {
+      case "CREATED":
+        return "UPCOMING";
+      case "READY":
+        return "READY";
+      case "TOSS":
+        return "READY";
+      case "IN_PROGRESS":
+        return "LIVE";
+      case "COMPLETED":
+        return "COMPLETED";
+      case "LOCKED":
+        return "FINAL";
+      default:
+        return state;
+    }
+  };
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -22,7 +42,7 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
         <Badge
           variant={match.state === "IN_PROGRESS" ? "default" : "secondary"}
         >
-          {match.state === "IN_PROGRESS" ? "LIVE" : match.state}
+          {getStateLabel(match.state)}
         </Badge>
       </div>
 
