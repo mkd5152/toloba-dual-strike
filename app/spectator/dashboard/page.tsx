@@ -355,26 +355,26 @@ export default function SpectatorDashboardPage() {
           <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
-        {/* Tournament Logo - Responsive sizing to prevent overlap */}
-        <div className="absolute top-0 left-0 bottom-0 z-5 flex items-center pl-2 md:pl-4 lg:pl-6 xl:pl-8">
+        {/* Tournament Logo - Hidden on mobile, visible on md and up */}
+        <div className="hidden md:flex absolute top-0 left-0 bottom-0 z-5 items-center pl-4 lg:pl-6 xl:pl-8">
           <Image
             src="/logos/dual-strike-logo.png"
             alt="Tournament Logo"
             width={400}
             height={400}
-            className="object-contain h-12 sm:h-16 md:h-20 lg:h-24 xl:h-40 2xl:h-full w-auto"
+            className="object-contain h-20 lg:h-24 xl:h-40 2xl:h-full w-auto"
             priority
           />
         </div>
 
-        {/* Sponsor Logo - Responsive sizing to prevent overlap */}
-        <div className="absolute top-0 right-0 bottom-0 z-5 flex items-center pr-2 md:pr-4 lg:pr-6 xl:pr-8">
+        {/* Sponsor Logo - Hidden on mobile, visible on md and up */}
+        <div className="hidden md:flex absolute top-0 right-0 bottom-0 z-5 items-center pr-4 lg:pr-6 xl:pr-8">
           <Image
             src="/logos/sponsor.png"
             alt="Sponsor Logo"
             width={400}
             height={400}
-            className="object-contain h-12 sm:h-16 md:h-20 lg:h-24 xl:h-40 2xl:h-full w-auto"
+            className="object-contain h-20 lg:h-24 xl:h-40 2xl:h-full w-auto"
             priority
           />
         </div>
