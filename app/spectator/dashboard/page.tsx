@@ -729,22 +729,13 @@ export default function SpectatorDashboardPage() {
       )}
 
       {/* Quick Navigation */}
-      <div className="grid md:grid-cols-3 gap-6 relative z-10">
+      <div className="grid md:grid-cols-2 gap-6 relative z-10 max-w-3xl mx-auto">
         <Link href="/spectator/match-center" className="block transform hover:scale-105 transition-transform duration-300">
           <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
               <Activity className="w-12 h-12 text-white mx-auto mb-3" />
               <p className="text-white font-black text-xl">MATCH CENTER</p>
               <p className="text-white/80 font-bold text-sm">Live, upcoming & schedule</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/spectator/standings" className="block transform hover:scale-105 transition-transform duration-300">
-          <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
-            <CardContent className="p-6 text-center">
-              <Trophy className="w-12 h-12 text-white mx-auto mb-3" />
-              <p className="text-white font-black text-xl">STANDINGS</p>
-              <p className="text-white/80 font-bold text-sm">Full leaderboard</p>
             </CardContent>
           </Card>
         </Link>
