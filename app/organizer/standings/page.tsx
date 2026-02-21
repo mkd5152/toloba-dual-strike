@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useStandingsStore } from "@/lib/stores/standings-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
@@ -9,22 +9,17 @@ import { StandingsTable } from "@/components/spectator/standings-table";
 export default function OrganizerStandingsPage() {
   const { standings, loadStandings, loading } = useStandingsStore();
   const { loadTeams, loadMatches } = useTournamentStore();
-  const hasLoaded = useRef(false);
 
+  // Fetch data every time component mounts
   useEffect(() => {
-    // Always reload standings when navigating to this page
     const loadData = async () => {
-      if (!hasLoaded.current) {
-        hasLoaded.current = true;
-        await loadTeams();
-        await loadMatches();
-      }
-      // Always reload standings to get latest data
+      await loadTeams();
+      await loadMatches();
       await loadStandings();
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run on mount
+  }, []);
 
   return (
     <div className="p-4 md:p-8">

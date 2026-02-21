@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, Calendar, Trophy, LogOut, Menu, X, Layers, Award } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -28,8 +27,14 @@ export default function OrganizerLayout({
   ];
 
   const handleLogout = async () => {
-    await signOut();
-    window.location.href = "/spectator/dashboard";
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Always redirect to clear local state
+      window.location.href = "/spectator/dashboard";
+    }
   };
 
   return (
@@ -90,15 +95,13 @@ export default function OrganizerLayout({
                   {profile.full_name || profile.email}
                 </span>
               )}
-              <Button
+              <button
                 onClick={handleLogout}
-                variant="ghost"
-                className="hidden md:flex text-white/70 hover:text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4"
-                size="sm"
+                className="hidden md:flex items-center text-white/70 hover:text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4 py-2 rounded-md transition-colors"
               >
                 <LogOut className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                 <span className="hidden md:inline">Logout</span>
-              </Button>
+              </button>
 
               {/* Mobile menu button */}
               <button

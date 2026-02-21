@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useStandingsStore } from "@/lib/stores/standings-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
@@ -11,7 +11,6 @@ import { Radio } from "lucide-react";
 export default function StandingsPage() {
   const { standings, loadStandings, loading } = useStandingsStore();
   const { loadTeams, loadMatches, tournament } = useTournamentStore();
-  const hasLoaded = useRef(false);
 
   // Enable real-time standings updates when matches complete
   const { isStandingsSubscribed } = useRealtimeTournament({
@@ -21,20 +20,16 @@ export default function StandingsPage() {
     watchStandings: true,
   });
 
+  // Fetch data every time component mounts
   useEffect(() => {
-    // Always reload standings when navigating to this page
     const loadData = async () => {
-      if (!hasLoaded.current) {
-        hasLoaded.current = true;
-        await loadTeams();
-        await loadMatches();
-      }
-      // Always reload standings to get latest updates
+      await loadTeams();
+      await loadMatches();
       await loadStandings();
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []);
 
   return (
     <div className="p-4 md:p-8">

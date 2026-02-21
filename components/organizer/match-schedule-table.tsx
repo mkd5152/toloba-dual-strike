@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Match } from "@/lib/types";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
-import { format } from "date-fns";
+import { formatDubaiTime } from "@/lib/utils/date-utils";
 import Link from "next/link";
 import { AssignUmpireDialog } from "./assign-umpire-dialog";
 import { ScoreOverrideDialog } from "./score-override-dialog";
@@ -115,7 +115,7 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
                 </Badge>
               </TableCell>
               <TableCell>{match.court}</TableCell>
-              <TableCell>{format(match.startTime, "MMM d, HH:mm")}</TableCell>
+              <TableCell>{formatDubaiTime(match.startTime, "MMM d, HH:mm")}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {teams.map(

@@ -461,12 +461,18 @@ export async function deleteMatch(matchId: string): Promise<void> {
  * Transform database row to Match type
  */
 function transformMatchRow(row: any): Match {
+  // Ensure timestamp is parsed as UTC by appending 'Z' if no timezone info
+  const startTimeStr = row.start_time
+  const startTime = startTimeStr.endsWith('Z') || startTimeStr.includes('+') || startTimeStr.includes('-')
+    ? new Date(startTimeStr)
+    : new Date(startTimeStr + 'Z') // Append Z to treat as UTC
+
   return {
     id: row.id,
     tournamentId: row.tournament_id,
     matchNumber: row.match_number,
     court: row.court,
-    startTime: new Date(row.start_time),
+    startTime,
     umpireId: row.umpire_id,
     umpireName: row.umpire_name,
     teamIds: row.team_ids as [string, string, string, string],

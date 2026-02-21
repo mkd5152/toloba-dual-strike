@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useMemo, useState, useCallback } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import { useTournamentStore } from "@/lib/stores/tournament-store"
 import { useStandingsStore } from "@/lib/stores/standings-store"
 import { supabase } from "@/lib/supabase/client"
@@ -23,7 +23,6 @@ export default function SpectatorDashboardPage() {
   const { standings, loadStandings } = useStandingsStore()
   const [detailedMatches, setDetailedMatches] = useState<Match[]>([])
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false)
-  const hasLoaded = useRef(false)
 
   // Cricket notifications state
   const [notifications, setNotifications] = useState<Array<{
@@ -70,30 +69,29 @@ export default function SpectatorDashboardPage() {
     }
   }, [tournament.id])
 
-  // Initial load
+  // Initial load - fetch data every time component mounts
   useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      const loadData = async () => {
-        await loadTeams()
-        await loadMatches()
-        await loadStandings()
-        await loadDetailedMatches()
-      }
-      loadData()
+    const loadData = async () => {
+      await loadTeams()
+      await loadMatches()
+      await loadStandings()
+      await loadDetailedMatches()
     }
-  }, [loadTeams, loadMatches, loadStandings, loadDetailedMatches])
+    loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Reload detailed matches when regular matches change (real-time updates)
   useEffect(() => {
-    if (hasLoaded.current && matches.length > 0) {
+    if (matches.length > 0) {
       loadDetailedMatches()
     }
-  }, [matches, loadDetailedMatches])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matches])
 
   // Enable real-time updates with custom handler
   useEffect(() => {
-    if (!hasLoaded.current || !tournament.id) return
+    if (!tournament.id) return
 
     const channelMatches = supabase
       .channel(`dashboard:${tournament.id}`)
@@ -198,7 +196,8 @@ export default function SpectatorDashboardPage() {
       setIsRealtimeConnected(false)
       supabase.removeChannel(channelMatches)
     }
-  }, [tournament.id, loadMatches, loadDetailedMatches, loadStandings, hasLoaded])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournament.id])
 
   // Calculate real tournament statistics
   const stats = useMemo(() => {

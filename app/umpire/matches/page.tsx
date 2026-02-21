@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { supabase } from "@/lib/supabase/client";
-import { format } from "date-fns";
+import { formatDubaiTime } from "@/lib/utils/date-utils";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import type { Database } from "@/lib/types/database";
@@ -102,7 +102,7 @@ export default function UmpireMatchesPage() {
                       Match {match.match_number}
                     </span>
                     <span className="text-gray-600 ml-2 font-medium">
-                      {match.court} • {format(new Date(match.start_time), "MMM d, HH:mm")}
+                      {match.court} • {formatDubaiTime(new Date(match.start_time), "MMM d, HH:mm")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { CreateUmpireDialog } from "@/components/organizer/create-umpire-dialog";
@@ -8,20 +8,16 @@ import { Users, Calendar, Trophy, CheckCircle } from "lucide-react";
 
 export default function OrganizerDashboard() {
   const { tournament, teams, matches, loadTeams, loadMatches, loading } = useTournamentStore();
-  const hasLoaded = useRef(false);
 
+  // Fetch data every time component mounts
   useEffect(() => {
-    // Always reload data when navigating to dashboard
     const loadData = async () => {
-      if (!hasLoaded.current) {
-        hasLoaded.current = true;
-      }
       await loadTeams();
       await loadMatches();
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []);
 
   const completedMatches = matches.filter(
     (m) => m.state === "COMPLETED" || m.state === "LOCKED"

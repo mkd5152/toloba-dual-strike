@@ -6,11 +6,11 @@ export default function OrganizerGroupsPage() {
   return (
     <GroupsPlayoffsView
       branding={{
-        primary: "#b71c1c",
-        secondary: "#c62828",
-        primaryLight: "from-[#b71c1c]/10 to-[#c62828]/10",
-        primaryBorder: "border-[#b71c1c]/30",
-        textColor: "text-white",
+        primary: "#ff9800",
+        secondary: "#ffb300",
+        primaryLight: "from-[#ff9800]/10 to-[#ffb300]/10",
+        primaryBorder: "border-[#ff9800]/30",
+        textColor: "text-[#0d3944]",
       }}
       showPlayoffLink={true}
     />
