@@ -19,7 +19,7 @@ interface MatchStore {
   // Actions
   setCurrentMatch: (match: Match) => void;
   recordBall: (ballData: Omit<Ball, "effectiveRuns" | "timestamp">) => void;
-  selectPowerplay: (overNumber: number) => void;
+  selectPowerplay: (overNumber: number) => Promise<void>;
   setBowlingTeamsForInnings: (bowlingTeamIds: [string, string, string]) => void;
   completeInnings: () => void;
   completeMatch: () => void;
@@ -306,33 +306,41 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     }
   },
 
-  selectPowerplay: (overNumber) => {
+  selectPowerplay: async (overNumber) => {
     const { currentMatch, currentInningsIndex } = get();
     if (!currentMatch) return;
 
     const innings = currentMatch.innings[currentInningsIndex];
     if (!innings) return;
 
-    const updatedInnings: Innings = {
-      ...innings,
-      powerplayOver: overNumber,
-      overs: innings.overs.map((o) => ({
-        ...o,
-        isPowerplay: o.overNumber === overNumber,
-      })),
-    };
+    try {
+      // CRITICAL: Save powerplay selection to database
+      const { setPowerplayOver } = await import("@/lib/api/innings");
+      await setPowerplayOver(innings.id, overNumber as 0 | 1 | 2);
 
-    const updatedMatch: Match = {
-      ...currentMatch,
-      innings: currentMatch.innings.map((inn, i) =>
-        i === currentInningsIndex ? updatedInnings : inn
-      ),
-    };
+      const updatedInnings: Innings = {
+        ...innings,
+        powerplayOver: overNumber,
+        overs: innings.overs.map((o) => ({
+          ...o,
+          isPowerplay: o.overNumber === overNumber,
+        })),
+      };
 
-    set({ currentMatch: updatedMatch });
-    useTournamentStore.getState().updateMatch(currentMatch.id, {
-      innings: updatedMatch.innings,
-    });
+      const updatedMatch: Match = {
+        ...currentMatch,
+        innings: currentMatch.innings.map((inn, i) =>
+          i === currentInningsIndex ? updatedInnings : inn
+        ),
+      };
+
+      set({ currentMatch: updatedMatch });
+      useTournamentStore.getState().updateMatch(currentMatch.id, {
+        innings: updatedMatch.innings,
+      });
+    } catch (err) {
+      console.error("Error setting powerplay:", err);
+    }
   },
 
   setBowlingTeamsForInnings: (bowlingTeamIds) => {

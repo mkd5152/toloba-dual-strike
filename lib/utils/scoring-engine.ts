@@ -74,6 +74,11 @@ export function checkConsecutiveDotBallViolation(
   let dotBallCount = 0;
 
   for (const ball of allPreviousBalls) {
+    // If we hit a wicket, stop counting - the sequence is broken
+    if (ball.isWicket) {
+      break;
+    }
+
     // Only count legal dot balls (0 runs, not noball, not wide)
     if (ball.runs === 0 && !ball.isNoball && !ball.isWide) {
       dotBallCount++;

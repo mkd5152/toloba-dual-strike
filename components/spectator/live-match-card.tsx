@@ -47,7 +47,8 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
       </div>
 
       <div className="space-y-3">
-        {match.teamIds.map((teamId) => {
+        {/* Display teams in batting order (umpire-selected sequence) */}
+        {(match.battingOrder && match.battingOrder.length > 0 ? match.battingOrder : match.teamIds).map((teamId) => {
           const team = getTeam(teamId);
           const innings = match.innings.find((i) => i.teamId === teamId);
 

@@ -17,7 +17,8 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 import type { Team } from "@/lib/types";
 import { fetchPlayersByTeams } from "@/lib/api/players";
 import { initializeMatchInnings, fetchMatchInnings } from "@/lib/api/innings";
-import { updateMatch } from "@/lib/api/matches";
+import { updateMatch, fetchMatch } from "@/lib/api/matches";
+import { fetchTeams } from "@/lib/api/teams";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -53,19 +54,8 @@ export default function ScoringPage() {
       setLoading(true);
       setError(null);
 
-      // Load all matches and teams if not already loaded
-      if (matches.length === 0) {
-        await loadMatches();
-      }
-      if (teams.length === 0) {
-        await loadTeams();
-      }
-
-      // Wait a moment for state to update
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Get the specific match
-      const match = useTournamentStore.getState().getMatch(matchId);
+      console.log('🔍 Fetching match data...');
+      const match = await fetchMatch(matchId);
 
       if (!match) {
         setError(`Match not found: ${matchId}`);
@@ -73,18 +63,25 @@ export default function ScoringPage() {
         return;
       }
 
+      console.log('🔍 Fetching teams...');
+      const tournamentId = match.tournamentId;
+      const allTeams = await fetchTeams(tournamentId);
 
-      // Get teams for this match
-      const allTeams = useTournamentStore.getState().teams;
-      const teamsInMatch = allTeams.filter(t => match.teamIds.includes(t.id));
+      const teamsInMatch = allTeams.filter((t: any) => match.teamIds.includes(t.id));
       setMatchTeams(teamsInMatch);
 
-      // CRITICAL: Check if innings exist in database FIRST
-      // This is the source of truth - if innings exist, use them
+      if (matches.length === 0) {
+        loadMatches().catch(console.error);
+      }
+      if (teams.length === 0) {
+        loadTeams().catch(console.error);
+      }
+
+      console.log('🔍 Checking for existing innings...');
       const innings = await fetchMatchInnings(matchId);
 
       if (innings && innings.length > 0) {
-        // Innings exist - match is already initialized
+        console.log('✅ Match already initialized');
         const matchWithInnings = {
           ...match,
           innings,
@@ -94,13 +91,12 @@ export default function ScoringPage() {
         return;
       }
 
-      // No innings found - need to initialize
-      // Show batting order selector ONLY if not already shown
+      console.log('✅ No innings, showing selector');
       setShowBattingOrderSelector(true);
       setCurrentMatch(match);
       setLoading(false);
     } catch (err: any) {
-      console.error('Error loading match:', err);
+      console.error('❌ Error loading match:', err);
       setError(err.message || 'Failed to load match');
       setLoading(false);
     }
@@ -395,15 +391,15 @@ export default function ScoringPage() {
                 <div className="mt-6 flex gap-3 justify-center">
                   <Button
                     onClick={() => {
-                      // Route to matches page based on user role
-                      const matchesPath = profile?.role === 'organizer'
-                        ? '/organizer/matches'
+                      // Route to schedule page based on user role
+                      const schedulePath = profile?.role === 'organizer'
+                        ? '/organizer/schedule'
                         : '/umpire/matches';
-                      router.push(matchesPath);
+                      router.push(schedulePath);
                     }}
                     className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] font-bold"
                   >
-                    Back to Matches
+                    Back to Schedule
                   </Button>
                 </div>
               </Card>

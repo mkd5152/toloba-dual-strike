@@ -136,7 +136,7 @@ export default function SpectatorDashboardPage() {
           schema: "public",
           table: "balls",
         },
-        (payload) => {
+        async (payload) => {
           console.log("🏏 Dashboard: Ball INSERT event received!", payload)
 
           // Trigger cricket notifications for boundaries and wickets
@@ -144,18 +144,65 @@ export default function SpectatorDashboardPage() {
           if (ball) {
             console.log("Ball data:", { runs: ball.runs, isWicket: ball.is_wicket, wicketType: ball.wicket_type })
 
-            if (ball.runs === 6) {
-              console.log("Triggering SIX notification")
-              triggerNotification("SIX", undefined, "Maximum!")
-            } else if (ball.runs === 4) {
-              console.log("Triggering FOUR notification")
-              triggerNotification("FOUR", undefined, "Boundary!")
-            }
+            // Fetch innings, match, and team data for context
+            const { data: overData } = await supabase
+              .from('overs')
+              .select('innings_id')
+              .eq('id', ball.over_id)
+              .single() as any
 
-            if (ball.is_wicket) {
-              const wicketType = ball.wicket_type?.replace(/_/g, ' ') || "Out"
-              console.log("Triggering WICKET notification:", wicketType)
-              triggerNotification("WICKET", undefined, wicketType)
+            if (overData) {
+              const { data: inningsData } = await supabase
+                .from('innings')
+                .select('team_id, match_id')
+                .eq('id', overData.innings_id)
+                .single() as any
+
+              if (inningsData) {
+                const { data: matchData } = await supabase
+                  .from('matches')
+                  .select('team_ids, match_number')
+                  .eq('id', inningsData.match_id)
+                  .single() as any
+
+                // Fetch team data directly from database (don't rely on state)
+                const { data: battingTeamData } = await supabase
+                  .from('teams')
+                  .select('id, name')
+                  .eq('id', inningsData.team_id)
+                  .single() as any
+
+                const { data: allMatchTeams } = await supabase
+                  .from('teams')
+                  .select('id, name')
+                  .in('id', matchData?.team_ids || []) as any
+
+                const opposingTeams = allMatchTeams?.filter((t: any) => t.id !== inningsData.team_id) || []
+                const vsTeams = opposingTeams.map((t: any) => t.name).filter(Boolean).join(', ')
+
+                const contextMessage = vsTeams ? `${battingTeamData?.name} vs ${vsTeams}` : battingTeamData?.name
+
+                console.log("🎯 Notification data:", {
+                  battingTeamId: inningsData.team_id,
+                  battingTeamName: battingTeamData?.name,
+                  vsTeams,
+                  contextMessage
+                })
+
+                if (ball.runs === 6) {
+                  console.log("Triggering SIX notification with team:", battingTeamData?.name)
+                  triggerNotification("SIX", battingTeamData?.name || "Unknown Team", contextMessage || `Match ${matchData.match_number}`)
+                } else if (ball.runs === 4) {
+                  console.log("Triggering FOUR notification")
+                  triggerNotification("FOUR", battingTeamData?.name || "Unknown Team", contextMessage || `Match ${matchData.match_number}`)
+                }
+
+                if (ball.is_wicket) {
+                  const wicketType = ball.wicket_type?.replace(/_/g, ' ') || "Out"
+                  console.log("Triggering WICKET notification:", wicketType)
+                  triggerNotification("WICKET", battingTeamData?.name || "Unknown Team", `${contextMessage || `Match ${matchData.match_number}`} • ${wicketType}`)
+                }
+              }
             }
           }
 
@@ -331,14 +378,14 @@ export default function SpectatorDashboardPage() {
       {/* Animated Hero Section with Glassmorphism */}
       <div className="mb-8 relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 p-8 md:p-12 shadow-2xl">
         {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
           <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
 
         {/* Tournament Logo - Hidden on mobile, visible on md and up */}
-        <div className="hidden md:flex absolute top-0 left-0 bottom-0 z-5 items-center pl-4 lg:pl-6 xl:pl-8">
+        <div className="hidden md:flex absolute top-0 left-0 bottom-0 z-5 items-center pl-4 lg:pl-6 xl:pl-8 pointer-events-none">
           <Image
             src="/logos/dual-strike-logo.png"
             alt="Tournament Logo"
@@ -350,7 +397,7 @@ export default function SpectatorDashboardPage() {
         </div>
 
         {/* Sponsor Logo - Hidden on mobile, visible on md and up */}
-        <div className="hidden md:flex absolute top-0 right-0 bottom-0 z-5 items-center pr-4 lg:pr-6 xl:pr-8">
+        <div className="hidden md:flex absolute top-0 right-0 bottom-0 z-5 items-center pr-4 lg:pr-6 xl:pr-8 pointer-events-none">
           <Image
             src="/logos/sponsor.png"
             alt="Sponsor Logo"
@@ -410,29 +457,32 @@ export default function SpectatorDashboardPage() {
 
       {/* Live Match Alert */}
       {stats.liveMatches.length > 0 && (
-        <Link href="/spectator/match-center">
-          <div className="mb-8 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-4">
+        <a
+          href="/spectator/match-center"
+          className="block mb-8 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all cursor-pointer"
+          style={{ textDecoration: 'none', color: 'white' }}
+        >
+          <div className="flex items-center justify-between" style={{ pointerEvents: 'none' }}>
+            <div className="flex items-center gap-4">
+              <div className="relative">
                 <div className="w-3 h-3 bg-white rounded-full animate-ping absolute"></div>
                 <div className="w-3 h-3 bg-white rounded-full"></div>
-                <div>
-                  <h2 className="text-2xl font-black text-white drop-shadow-lg">🔥 LIVE ACTION</h2>
-                  <p className="text-white/90 font-bold">{stats.liveMatches.length} match{stats.liveMatches.length > 1 ? 'es' : ''} in progress • Click to watch!</p>
-                </div>
               </div>
-              <Zap className="w-8 h-8 text-yellow-200 animate-pulse" />
+              <div>
+                <h2 className="text-2xl font-black text-white drop-shadow-lg">🔥 LIVE ACTION</h2>
+                <p className="text-white/90 font-bold">{stats.liveMatches.length} match{stats.liveMatches.length > 1 ? 'es' : ''} in progress • Click to watch!</p>
+              </div>
             </div>
+            <Zap className="w-8 h-8 text-yellow-200 animate-pulse" />
           </div>
-        </Link>
+        </a>
       )}
 
       {/* Tournament Statistics Grid - THE MAIN SHOWCASE */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Runs */}
         <Card className="border-0 bg-gradient-to-br from-emerald-500 to-teal-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
@@ -451,7 +501,7 @@ export default function SpectatorDashboardPage() {
 
         {/* Total Wickets */}
         <Card className="border-0 bg-gradient-to-br from-red-500 to-rose-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
@@ -470,7 +520,7 @@ export default function SpectatorDashboardPage() {
 
         {/* Boundaries */}
         <Card className="border-0 bg-gradient-to-br from-purple-500 to-indigo-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
@@ -490,7 +540,7 @@ export default function SpectatorDashboardPage() {
 
         {/* Strike Rate */}
         <Card className="border-0 bg-gradient-to-br from-amber-500 to-orange-600 shadow-2xl hover:shadow-3xl transition-shadow duration-300 overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
           <CardContent className="p-6 relative">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
