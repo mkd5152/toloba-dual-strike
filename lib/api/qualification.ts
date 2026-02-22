@@ -7,7 +7,83 @@ import { supabase } from "@/lib/supabase/client"
 import type { StandingsEntry } from "@/lib/types"
 
 /**
+ * Get overall standings for all teams (ignoring groups)
+ * Used for new playoff qualification system
+ */
+export async function getOverallStandingsForPlayoffs(tournamentId: string): Promise<StandingsEntry[]> {
+  try {
+    // Fetch all completed league matches
+    const { data: matchesData, error: matchesError } = await supabase
+      .from("matches")
+      .select("*")
+      .eq("tournament_id", tournamentId)
+      .eq("stage", "LEAGUE")
+      .in("state", ["COMPLETED", "LOCKED"])
+
+    if (matchesError) throw matchesError
+
+    // Fetch all teams
+    const { data: teamsData, error: teamsError } = await supabase
+      .from("teams")
+      .select("id, name")
+      .eq("tournament_id", tournamentId)
+
+    if (teamsError) throw teamsError
+
+    const standingsMap = new Map<string, StandingsEntry>()
+
+    // Initialize standings for all teams
+    teamsData?.forEach((team: any) => {
+      standingsMap.set(team.id, {
+        teamId: team.id,
+        teamName: team.name,
+        matchesPlayed: 0,
+        points: 0,
+        totalRuns: 0,
+        totalDismissals: 0,
+        rank: 0,
+      })
+    })
+
+    // Process league matches to calculate standings
+    matchesData?.forEach((match: any) => {
+      const rankings = match.rankings as any[] || []
+
+      rankings.forEach((ranking: any) => {
+        const standing = standingsMap.get(ranking.teamId)
+        if (standing) {
+          standing.matchesPlayed++
+          standing.points += ranking.points || 0
+          standing.totalRuns += ranking.totalScore || ranking.totalRuns || 0
+          standing.totalDismissals += ranking.totalDismissals || 0
+        }
+      })
+    })
+
+    // Sort all teams by points, then runs, then name
+    return Array.from(standingsMap.values())
+      .sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points
+        if (b.totalRuns !== a.totalRuns) return b.totalRuns - a.totalRuns
+        return a.teamName.localeCompare(b.teamName)
+      })
+      .map((standing, index) => ({
+        ...standing,
+        rank: index + 1,
+      }))
+  } catch (err) {
+    // Silently ignore abort errors
+    if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
+      return []
+    }
+    console.error("Error calculating overall standings:", err)
+    throw new Error(`Failed to get overall standings: ${err instanceof Error ? err.message : String(err)}`)
+  }
+}
+
+/**
  * Get top 2 teams from each group for semifinals
+ * @deprecated Use getOverallStandingsForPlayoffs instead
  */
 export async function getQualifiedTeamsForSemis(tournamentId: string): Promise<{
   group1: StandingsEntry[]

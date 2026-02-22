@@ -8,10 +8,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import {
   Trophy, Users, ChevronRight, CheckCircle2, Circle,
-  AlertCircle, Loader2, Sparkles
+  AlertCircle, Loader2, Sparkles, Zap
 } from "lucide-react"
 import {
   getPlayoffStatus,
+  generateQuarterFinals,
   generateSemiFinals,
   generateFinal,
   getPlayoffBracket
@@ -21,6 +22,7 @@ export default function PlayoffManagerPage() {
   const { tournament, teams } = useTournamentStore()
   const [status, setStatus] = useState<any>(null)
   const [bracket, setBracket] = useState<any>(null)
+  const [isGeneratingQFs, setIsGeneratingQFs] = useState(false)
   const [isGeneratingSemis, setIsGeneratingSemis] = useState(false)
   const [isGeneratingFinal, setIsGeneratingFinal] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +46,24 @@ export default function PlayoffManagerPage() {
     }
   }
 
+  const handleGenerateQFs = async () => {
+    try {
+      setError(null)
+      setSuccess(null)
+      setIsGeneratingQFs(true)
+
+      const result = await generateQuarterFinals(tournament.id)
+      setSuccess(`Quarter-finals created successfully! Matches 26 (QF1) and 27 (QF2) are ready.`)
+
+      // Reload data
+      await loadData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate quarter-finals")
+    } finally {
+      setIsGeneratingQFs(false)
+    }
+  }
+
   const handleGenerateSemis = async () => {
     try {
       setError(null)
@@ -51,7 +71,7 @@ export default function PlayoffManagerPage() {
       setIsGeneratingSemis(true)
 
       const result = await generateSemiFinals(tournament.id)
-      setSuccess(`Semi-finals created successfully! Matches 26 and 27 are ready.`)
+      setSuccess(`Semi-finals created successfully! Matches 28 and 29 are ready.`)
 
       // Reload data
       await loadData()
@@ -69,7 +89,7 @@ export default function PlayoffManagerPage() {
       setIsGeneratingFinal(true)
 
       const result = await generateFinal(tournament.id)
-      setSuccess(`Final created successfully! Match 28 is ready.`)
+      setSuccess(`Final created successfully! Match 30 is ready.`)
 
       // Reload data
       await loadData()
@@ -97,7 +117,7 @@ export default function PlayoffManagerPage() {
           <h1 className="text-4xl font-bold text-white">Playoff Manager</h1>
         </div>
         <p className="text-slate-400">
-          Automatically generate semi-finals and finals with qualified teams
+          Automatically generate quarter-finals, semi-finals, and finals with qualified teams
         </p>
       </div>
 
@@ -117,7 +137,7 @@ export default function PlayoffManagerPage() {
       )}
 
       {/* Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -132,6 +152,27 @@ export default function PlayoffManagerPage() {
           <CardContent>
             <div className="text-3xl font-bold text-white mb-2">
               {status.leagueProgress.completed}/{status.leagueProgress.total}
+            </div>
+            <p className="text-sm text-slate-400">Matches Completed</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              {status.quarterFinalsCompleted ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              ) : status.quarterFinalsCreated ? (
+                <Circle className="w-5 h-5 text-orange-500" />
+              ) : (
+                <Circle className="w-5 h-5 text-slate-500" />
+              )}
+              Quarter-Finals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-white mb-2">
+              {status.qfProgress.completed}/{status.qfProgress.total}
             </div>
             <p className="text-sm text-slate-400">Matches Completed</p>
           </CardContent>
@@ -181,12 +222,48 @@ export default function PlayoffManagerPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+          <CardHeader>
+            <CardTitle className="text-white">Generate Quarter-Finals</CardTitle>
+            <CardDescription className="text-slate-300">
+              Create matches 26 & 27: QF1 (5,6,11,12) and QF2 (7,8,9,10)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={handleGenerateQFs}
+              disabled={!status.canGenerateQFs || isGeneratingQFs}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+            >
+              {isGeneratingQFs ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 mr-2" />
+                  Generate QFs
+                </>
+              )}
+            </Button>
+            {!status.canGenerateQFs && status.quarterFinalsCreated && (
+              <p className="text-sm text-green-400 mt-2">✓ Quarter-finals already created</p>
+            )}
+            {!status.canGenerateQFs && !status.leagueCompleted && (
+              <p className="text-sm text-amber-400 mt-2">
+                Complete all 25 league matches first
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
         <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
           <CardHeader>
             <CardTitle className="text-white">Generate Semi-Finals</CardTitle>
             <CardDescription className="text-slate-300">
-              Create matches 26 & 27 with top 2 teams from each group
+              Create matches 28 & 29 with QF winners + top 4 overall
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -203,16 +280,16 @@ export default function PlayoffManagerPage() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Semi-Finals
+                  Generate SFs
                 </>
               )}
             </Button>
             {!status.canGenerateSemis && status.semiFinalsCreated && (
               <p className="text-sm text-green-400 mt-2">✓ Semi-finals already created</p>
             )}
-            {!status.canGenerateSemis && !status.leagueCompleted && (
+            {!status.canGenerateSemis && !status.quarterFinalsCompleted && (
               <p className="text-sm text-amber-400 mt-2">
-                Complete all 25 league matches first
+                Complete both quarter-finals first
               </p>
             )}
           </CardContent>
@@ -222,7 +299,7 @@ export default function PlayoffManagerPage() {
           <CardHeader>
             <CardTitle className="text-white">Generate Final</CardTitle>
             <CardDescription className="text-slate-300">
-              Create match 28 with top 2 teams from each semi-final
+              Create match 30 with top 2 from each semi-final
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -270,31 +347,100 @@ export default function PlayoffManagerPage() {
           <div className="space-y-8">
             {/* League Stage */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">League Stage - Top 2 Qualified</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map(groupNum => {
-                  const groupKey = `group${groupNum}` as keyof typeof bracket.league
-                  const groupTeams = bracket.league[groupKey] || []
+              <h3 className="text-lg font-semibold text-white mb-4">League Stage - Overall Standings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Top 4 - Direct to Semis */}
+                <div className="space-y-2">
+                  <Badge variant="outline" className="bg-green-700 text-white mb-2">
+                    Top 4 - Direct to Semis
+                  </Badge>
+                  {bracket.league.topFour.map((team: any) => (
+                    <div
+                      key={team.id}
+                      className="bg-green-900/30 p-3 rounded-lg border border-green-500/50 flex items-center gap-2"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
+                        {team.rank}
+                      </div>
+                      <span className="text-white text-sm flex-1">{team.name}</span>
+                      <span className="text-green-400 text-xs font-bold">{team.points}pts</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* QF1 Teams */}
+                <div className="space-y-2">
+                  <Badge variant="outline" className="bg-purple-700 text-white mb-2">
+                    QF1 Teams (5,6,11,12)
+                  </Badge>
+                  {bracket.league.qf1Teams.map((team: any) => (
+                    <div
+                      key={team.id}
+                      className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50 flex items-center gap-2"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold">
+                        {team.rank}
+                      </div>
+                      <span className="text-white text-sm flex-1">{team.name}</span>
+                      <span className="text-purple-400 text-xs font-bold">{team.points}pts</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* QF2 Teams */}
+                <div className="space-y-2">
+                  <Badge variant="outline" className="bg-blue-700 text-white mb-2">
+                    QF2 Teams (7,8,9,10)
+                  </Badge>
+                  {bracket.league.qf2Teams.map((team: any) => (
+                    <div
+                      key={team.id}
+                      className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50 flex items-center gap-2"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">
+                        {team.rank}
+                      </div>
+                      <span className="text-white text-sm flex-1">{team.name}</span>
+                      <span className="text-blue-400 text-xs font-bold">{team.points}pts</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <ChevronRight className="w-6 h-6 text-purple-500 mx-auto" />
+
+            {/* Quarter-Finals */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Quarter-Finals - Top 2 Advance</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {["qf1", "qf2"].map((qfKey, qfIdx) => {
+                  const qfTeams = bracket.quarterFinals[qfKey as keyof typeof bracket.quarterFinals] || []
 
                   return (
-                    <div key={groupNum} className="space-y-2">
-                      <Badge variant="outline" className="bg-slate-700 text-white mb-2">
-                        Group {groupNum}
+                    <div key={qfKey} className="space-y-2">
+                      <Badge variant="outline" className="bg-purple-600 text-white mb-2">
+                        Quarter-Final {qfIdx + 1}
                       </Badge>
-                      {groupTeams.map((team: any, idx: number) => (
+                      {qfTeams.map((team: any, idx: number) => (
                         <div
                           key={team.id}
-                          className="bg-slate-700/50 p-3 rounded-lg border border-slate-600 flex items-center gap-2"
+                          className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50 flex items-center gap-2"
                         >
-                          <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold">
+                          <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold">
                             {idx + 1}
                           </div>
                           <span className="text-white text-sm">{team.name}</span>
                         </div>
                       ))}
-                      {groupTeams.length === 0 && (
+                      {qfTeams.length === 0 && !status.quarterFinalsCreated && (
                         <div className="bg-slate-700/30 p-3 rounded-lg border border-slate-600/50 text-slate-500 text-sm">
-                          TBD - Complete league matches
+                          Generate quarter-finals first
+                        </div>
+                      )}
+                      {qfTeams.length === 0 && status.quarterFinalsCreated && (
+                        <div className="bg-slate-700/30 p-3 rounded-lg border border-slate-600/50 text-slate-500 text-sm">
+                          TBD - Complete this quarter-final
                         </div>
                       )}
                     </div>

@@ -306,40 +306,22 @@ export default function SpectatorDashboardPage() {
     }
   }, [matches, teams, detailedMatches])
 
-  // Top team from each group for podium (Groups 1, 2, 3)
+  // Top 3 teams overall for podium
   const podiumTeams = useMemo(() => {
     // Only show podium if there are completed matches
     const hasCompletedMatches = standings.some(s => s.matchesPlayed > 0)
     if (!hasCompletedMatches) return []
 
-    // Get top team from each group
-    const groupLeaders: Array<{ teamName: string; points: number; group: number }> = []
-
-    for (let groupNum = 1; groupNum <= 4; groupNum++) {
-      const groupTeams = standings
-        .filter(s => {
-          const team = teams.find(t => t.id === s.teamId)
-          return team?.group === groupNum && s.matchesPlayed > 0
-        })
-        .sort((a, b) => {
-          if (b.points !== a.points) return b.points - a.points
-          if (b.totalRuns !== a.totalRuns) return b.totalRuns - a.totalRuns
-          return a.totalDismissals - b.totalDismissals
-        })
-
-      if (groupTeams.length > 0) {
-        const topTeam = groupTeams[0]
-        groupLeaders.push({
-          teamName: topTeam.teamName,
-          points: topTeam.points,
-          group: groupNum
-        })
-      }
-    }
-
-    // Return only first 3 groups to fit in the podium
-    return groupLeaders.slice(0, 3)
-  }, [standings, teams])
+    // Get top 3 overall teams
+    return standings
+      .filter(s => s.matchesPlayed > 0)
+      .slice(0, 3)
+      .map((s, index) => ({
+        teamName: s.teamName,
+        points: s.points,
+        rank: index + 1 // 1st, 2nd, 3rd
+      }))
+  }, [standings])
 
   return (
     <div className="p-4 md:p-8 relative">
@@ -671,19 +653,19 @@ export default function SpectatorDashboardPage() {
           <CardHeader className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500">
             <CardTitle className="text-white font-black text-2xl flex items-center gap-3 justify-center">
               <Crown className="w-8 h-8 text-yellow-200 animate-bounce" />
-              GROUP LEADERS
+              TOP 3 TEAMS
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-8">
             <div className="flex flex-col md:flex-row items-end justify-center gap-3 md:gap-4 mb-4 md:mb-8">
-              {/* Group 1 Leader - Show first on mobile, center on desktop */}
+              {/* 1st Place - Show first on mobile, center on desktop */}
               {podiumTeams[0] && (
                 <div className="w-full md:flex-1 md:max-w-xs md:order-2">
                   <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-t-3xl p-6 md:p-8 text-center border-4 border-yellow-300 relative shadow-2xl">
                     <div className="absolute -top-6 md:-top-8 left-1/2 transform -translate-x-1/2 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-2xl">
-                      <span className="text-xl md:text-2xl font-black text-yellow-800">G{podiumTeams[0].group}</span>
+                      <span className="text-2xl md:text-3xl font-black text-yellow-800">🥇</span>
                     </div>
-                    <p className="text-xs md:text-sm font-bold text-yellow-800 mt-4 md:mt-6 mb-1">GROUP {podiumTeams[0].group} LEADER</p>
+                    <p className="text-xs md:text-sm font-bold text-yellow-800 mt-4 md:mt-6 mb-1">1ST PLACE</p>
                     <p className="text-xl md:text-3xl font-black text-yellow-900 mb-2">{podiumTeams[0].teamName}</p>
                     <p className="text-4xl md:text-6xl font-black text-yellow-900 mb-1">{podiumTeams[0].points}</p>
                     <p className="text-yellow-800 font-bold text-sm md:text-base">POINTS</p>
@@ -692,14 +674,14 @@ export default function SpectatorDashboardPage() {
                 </div>
               )}
 
-              {/* Group 2 Leader */}
+              {/* 2nd Place */}
               {podiumTeams[1] && (
                 <div className="w-full md:flex-1 md:max-w-xs md:order-1">
                   <div className="bg-gradient-to-br from-slate-600 to-slate-700 rounded-t-3xl p-4 md:p-6 text-center border-4 border-slate-400 relative">
                     <div className="absolute -top-4 md:-top-6 left-1/2 transform -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-slate-300 to-slate-400 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
-                      <span className="text-xl md:text-2xl font-black text-slate-700">G{podiumTeams[1].group}</span>
+                      <span className="text-xl md:text-2xl font-black text-slate-700">🥈</span>
                     </div>
-                    <p className="text-xs md:text-sm font-bold text-slate-300 mt-3 md:mt-4 mb-1">GROUP {podiumTeams[1].group} LEADER</p>
+                    <p className="text-xs md:text-sm font-bold text-slate-300 mt-3 md:mt-4 mb-1">2ND PLACE</p>
                     <p className="text-lg md:text-2xl font-black text-white mb-2">{podiumTeams[1].teamName}</p>
                     <p className="text-3xl md:text-5xl font-black text-slate-300 mb-1">{podiumTeams[1].points}</p>
                     <p className="text-slate-400 font-bold text-xs md:text-sm">POINTS</p>
@@ -708,14 +690,14 @@ export default function SpectatorDashboardPage() {
                 </div>
               )}
 
-              {/* Group 3 Leader */}
+              {/* 3rd Place */}
               {podiumTeams[2] && (
                 <div className="w-full md:flex-1 md:max-w-xs md:order-3">
                   <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-t-3xl p-4 md:p-6 text-center border-4 border-orange-400 relative">
                     <div className="absolute -top-4 md:-top-6 left-1/2 transform -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
-                      <span className="text-xl md:text-2xl font-black text-orange-900">G{podiumTeams[2].group}</span>
+                      <span className="text-xl md:text-2xl font-black text-orange-900">🥉</span>
                     </div>
-                    <p className="text-xs md:text-sm font-bold text-orange-300 mt-3 md:mt-4 mb-1">GROUP {podiumTeams[2].group} LEADER</p>
+                    <p className="text-xs md:text-sm font-bold text-orange-300 mt-3 md:mt-4 mb-1">3RD PLACE</p>
                     <p className="text-lg md:text-2xl font-black text-white mb-2">{podiumTeams[2].teamName}</p>
                     <p className="text-3xl md:text-5xl font-black text-orange-200 mb-1">{podiumTeams[2].points}</p>
                     <p className="text-orange-300 font-bold text-xs md:text-sm">POINTS</p>
@@ -739,12 +721,12 @@ export default function SpectatorDashboardPage() {
             </CardContent>
           </Card>
         </Link>
-        <Link href="/spectator/groups" className="block transform hover:scale-105 transition-transform duration-300">
+        <Link href="/spectator/standings" className="block transform hover:scale-105 transition-transform duration-300">
           <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer group h-full">
             <CardContent className="p-6 text-center">
               <Shield className="w-12 h-12 text-white mx-auto mb-3" />
-              <p className="text-white font-black text-xl">GROUPS</p>
-              <p className="text-white/80 font-bold text-sm">Group standings</p>
+              <p className="text-white font-black text-xl">STANDINGS</p>
+              <p className="text-white/80 font-bold text-sm">Overall tournament standings</p>
             </CardContent>
           </Card>
         </Link>

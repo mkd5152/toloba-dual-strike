@@ -6,7 +6,7 @@ export type MatchState =
   | "IN_PROGRESS"
   | "COMPLETED"
   | "LOCKED";
-export type MatchStage = "LEAGUE" | "SEMI" | "FINAL";
+export type MatchStage = "LEAGUE" | "QF" | "SEMI" | "FINAL";
 export type InningsState = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
 export type WicketType = "NORMAL" | "BOWLING_TEAM" | "CATCH_OUT" | "RUN_OUT" | null;
 
