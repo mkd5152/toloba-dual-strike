@@ -319,6 +319,7 @@ export async function createMatch(match: Omit<Match, "id" | "innings" | "lockedA
       umpire_name: match.umpireName,
       team_ids: match.teamIds,
       state: match.state,
+      stage: match.stage || 'LEAGUE', // Include stage parameter
       batting_order: match.battingOrder,
       rankings: match.rankings as any,
       locked_at: null,

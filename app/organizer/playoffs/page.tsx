@@ -46,6 +46,11 @@ export default function PlayoffManagerPage() {
     }
   }
 
+  const getTeamPlayers = (teamId: string) => {
+    const team = teams.find((t) => t.id === teamId)
+    return team?.players || []
+  }
+
   const handleGenerateQFs = async () => {
     try {
       setError(null)
@@ -354,18 +359,28 @@ export default function PlayoffManagerPage() {
                   <Badge variant="outline" className="bg-green-700 text-white mb-2">
                     Top 4 - Direct to Semis
                   </Badge>
-                  {bracket.league.topFour.map((team: any) => (
-                    <div
-                      key={team.id}
-                      className="bg-green-900/30 p-3 rounded-lg border border-green-500/50 flex items-center gap-2"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
-                        {team.rank}
+                  {bracket.league.topFour.map((team: any) => {
+                    const players = getTeamPlayers(team.id)
+                    return (
+                      <div
+                        key={team.id}
+                        className="bg-green-900/30 p-3 rounded-lg border border-green-500/50"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {team.rank}
+                          </div>
+                          <span className="text-white text-sm flex-1 font-semibold">{team.name}</span>
+                          <span className="text-green-400 text-xs font-bold">{team.points}pts</span>
+                        </div>
+                        {players.length > 0 && (
+                          <div className="ml-8 text-[10px] text-white/60 truncate">
+                            {players.map((p: any) => p.name).join(" • ")}
+                          </div>
+                        )}
                       </div>
-                      <span className="text-white text-sm flex-1">{team.name}</span>
-                      <span className="text-green-400 text-xs font-bold">{team.points}pts</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* QF1 Teams */}
@@ -373,18 +388,28 @@ export default function PlayoffManagerPage() {
                   <Badge variant="outline" className="bg-purple-700 text-white mb-2">
                     QF1 Teams (5,6,11,12)
                   </Badge>
-                  {bracket.league.qf1Teams.map((team: any) => (
-                    <div
-                      key={team.id}
-                      className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50 flex items-center gap-2"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold">
-                        {team.rank}
+                  {bracket.league.qf1Teams.map((team: any) => {
+                    const players = getTeamPlayers(team.id)
+                    return (
+                      <div
+                        key={team.id}
+                        className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {team.rank}
+                          </div>
+                          <span className="text-white text-sm flex-1 font-semibold">{team.name}</span>
+                          <span className="text-purple-400 text-xs font-bold">{team.points}pts</span>
+                        </div>
+                        {players.length > 0 && (
+                          <div className="ml-8 text-[10px] text-white/60 truncate">
+                            {players.map((p: any) => p.name).join(" • ")}
+                          </div>
+                        )}
                       </div>
-                      <span className="text-white text-sm flex-1">{team.name}</span>
-                      <span className="text-purple-400 text-xs font-bold">{team.points}pts</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* QF2 Teams */}
@@ -392,18 +417,28 @@ export default function PlayoffManagerPage() {
                   <Badge variant="outline" className="bg-blue-700 text-white mb-2">
                     QF2 Teams (7,8,9,10)
                   </Badge>
-                  {bracket.league.qf2Teams.map((team: any) => (
-                    <div
-                      key={team.id}
-                      className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50 flex items-center gap-2"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">
-                        {team.rank}
+                  {bracket.league.qf2Teams.map((team: any) => {
+                    const players = getTeamPlayers(team.id)
+                    return (
+                      <div
+                        key={team.id}
+                        className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {team.rank}
+                          </div>
+                          <span className="text-white text-sm flex-1 font-semibold">{team.name}</span>
+                          <span className="text-blue-400 text-xs font-bold">{team.points}pts</span>
+                        </div>
+                        {players.length > 0 && (
+                          <div className="ml-8 text-[10px] text-white/60 truncate">
+                            {players.map((p: any) => p.name).join(" • ")}
+                          </div>
+                        )}
                       </div>
-                      <span className="text-white text-sm flex-1">{team.name}</span>
-                      <span className="text-blue-400 text-xs font-bold">{team.points}pts</span>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -422,17 +457,27 @@ export default function PlayoffManagerPage() {
                       <Badge variant="outline" className="bg-purple-600 text-white mb-2">
                         Quarter-Final {qfIdx + 1}
                       </Badge>
-                      {qfTeams.map((team: any, idx: number) => (
-                        <div
-                          key={team.id}
-                          className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50 flex items-center gap-2"
-                        >
-                          <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold">
-                            {idx + 1}
+                      {qfTeams.map((team: any, idx: number) => {
+                        const players = getTeamPlayers(team.id)
+                        return (
+                          <div
+                            key={team.id}
+                            className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50"
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-6 h-6 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {idx + 1}
+                              </div>
+                              <span className="text-white text-sm font-semibold">{team.name}</span>
+                            </div>
+                            {players.length > 0 && (
+                              <div className="ml-8 text-[10px] text-white/60 truncate">
+                                {players.map((p: any) => p.name).join(" • ")}
+                              </div>
+                            )}
                           </div>
-                          <span className="text-white text-sm">{team.name}</span>
-                        </div>
-                      ))}
+                        )
+                      })}
                       {qfTeams.length === 0 && !status.quarterFinalsCreated && (
                         <div className="bg-slate-700/30 p-3 rounded-lg border border-slate-600/50 text-slate-500 text-sm">
                           Generate quarter-finals first
@@ -463,15 +508,25 @@ export default function PlayoffManagerPage() {
                       <Badge variant="outline" className="bg-orange-600 text-white mb-2">
                         Semi-Final {semiIdx + 1}
                       </Badge>
-                      {semiTeams.map((team: any, idx: number) => (
-                        <div
-                          key={team.id}
-                          className="bg-orange-900/30 p-3 rounded-lg border border-orange-500/50 flex items-center gap-2"
-                        >
-                          <Trophy className="w-4 h-4 text-orange-400" />
-                          <span className="text-white text-sm">{team.name}</span>
-                        </div>
-                      ))}
+                      {semiTeams.map((team: any, idx: number) => {
+                        const players = getTeamPlayers(team.id)
+                        return (
+                          <div
+                            key={team.id}
+                            className="bg-orange-900/30 p-3 rounded-lg border border-orange-500/50"
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <Trophy className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                              <span className="text-white text-sm font-semibold">{team.name}</span>
+                            </div>
+                            {players.length > 0 && (
+                              <div className="ml-6 text-[10px] text-white/60 truncate">
+                                {players.map((p: any) => p.name).join(" • ")}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                       {semiTeams.length === 0 && !status.semiFinalsCreated && (
                         <div className="bg-slate-700/30 p-3 rounded-lg border border-slate-600/50 text-slate-500 text-sm">
                           Generate semi-finals first

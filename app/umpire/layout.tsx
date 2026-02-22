@@ -23,11 +23,14 @@ export default function UmpireLayout({
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      // Start signOut but don't wait for it - redirect immediately
+      signOut().catch(err => console.error("Logout error:", err));
+
+      // Immediate redirect to ensure logout always works
+      window.location.href = "/spectator/dashboard";
     } catch (error) {
       console.error("Logout error:", error);
-    } finally {
-      // Always redirect to clear local state
+      // Force redirect even if error
       window.location.href = "/spectator/dashboard";
     }
   };

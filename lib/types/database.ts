@@ -178,7 +178,7 @@ export interface Database {
           umpire_name: string | null
           team_ids: string[]
           state: 'CREATED' | 'READY' | 'TOSS' | 'IN_PROGRESS' | 'COMPLETED' | 'LOCKED'
-          stage: 'LEAGUE' | 'SEMI' | 'FINAL'
+          stage: 'LEAGUE' | 'QF' | 'SEMI' | 'FINAL'
           batting_order: string[] | null
           rankings: Json | null
           locked_at: string | null
@@ -195,7 +195,7 @@ export interface Database {
           umpire_name?: string | null
           team_ids: string[]
           state: 'CREATED' | 'READY' | 'TOSS' | 'IN_PROGRESS' | 'COMPLETED' | 'LOCKED'
-          stage?: 'LEAGUE' | 'SEMI' | 'FINAL'
+          stage?: 'LEAGUE' | 'QF' | 'SEMI' | 'FINAL'
           batting_order?: string[] | null
           rankings?: Json | null
           locked_at?: string | null
@@ -212,7 +212,7 @@ export interface Database {
           umpire_name?: string | null
           team_ids?: string[]
           state?: 'CREATED' | 'READY' | 'TOSS' | 'IN_PROGRESS' | 'COMPLETED' | 'LOCKED'
-          stage?: 'LEAGUE' | 'SEMI' | 'FINAL'
+          stage?: 'LEAGUE' | 'QF' | 'SEMI' | 'FINAL'
           batting_order?: string[] | null
           rankings?: Json | null
           locked_at?: string | null

@@ -126,8 +126,25 @@ export async function generateQuarterFinals(tournamentId: string): Promise<{ qf1
       throw new Error(`Not enough teams in standings. Need 12 teams, found ${standings.length}. Ensure all league matches are completed.`)
     }
 
-    const now = new Date()
-    const defaultCourt = "Court 1"
+    // Get the last league match to calculate QF start times
+    const { data: lastLeagueMatch, error: leagueError } = await supabase
+      .from("matches")
+      .select("start_time")
+      .eq("tournament_id", tournamentId)
+      .eq("stage", "LEAGUE")
+      .order("match_number", { ascending: false })
+      .limit(1)
+      .single()
+
+    if (leagueError) throw leagueError
+
+    if (!lastLeagueMatch) {
+      throw new Error("No league matches found. Cannot determine QF start time.")
+    }
+
+    // Schedule BOTH QFs at the same time, 40 minutes after the last league match
+    const lastMatchTime = new Date((lastLeagueMatch as any).start_time)
+    const qfStartTime = new Date(lastMatchTime.getTime() + 40 * 60 * 1000) // +40 minutes
 
     // QF1: Teams 5, 6, 11, 12 (ranks 5, 6, 11, 12)
     const qf1Teams = [
@@ -140,8 +157,8 @@ export async function generateQuarterFinals(tournamentId: string): Promise<{ qf1
     const qf1 = await createMatch({
       tournamentId,
       matchNumber: 26,
-      court: defaultCourt,
-      startTime: now,
+      court: "Court 1",
+      startTime: qfStartTime,
       umpireId: null,
       umpireName: null,
       teamIds: qf1Teams as [string, string, string, string],
@@ -162,8 +179,8 @@ export async function generateQuarterFinals(tournamentId: string): Promise<{ qf1
     const qf2 = await createMatch({
       tournamentId,
       matchNumber: 27,
-      court: defaultCourt,
-      startTime: now,
+      court: "Court 2",
+      startTime: qfStartTime,
       umpireId: null,
       umpireName: null,
       teamIds: qf2Teams as [string, string, string, string],
@@ -235,8 +252,12 @@ export async function generateSemiFinals(tournamentId: string): Promise<{ semi1:
       throw new Error("Need at least 4 teams in overall standings for semi-finals.")
     }
 
-    const now = new Date()
-    const defaultCourt = "Court 1"
+    // Get any QF match to calculate semi start times (both QFs start at same time)
+    const anyQFMatch = qfMatches[0] // Use first QF
+    const qfTime = new Date(anyQFMatch.start_time)
+
+    // Schedule BOTH SFs at the same time, 40 minutes after the QFs
+    const semiStartTime = new Date(qfTime.getTime() + 40 * 60 * 1000) // +40 minutes
 
     // SF1: QF2 top 2 + Overall 1, 2
     const semi1Teams = [
@@ -249,8 +270,8 @@ export async function generateSemiFinals(tournamentId: string): Promise<{ semi1:
     const semi1 = await createMatch({
       tournamentId,
       matchNumber: 28,
-      court: defaultCourt,
-      startTime: now,
+      court: "Court 1",
+      startTime: semiStartTime,
       umpireId: null,
       umpireName: null,
       teamIds: semi1Teams as [string, string, string, string],
@@ -271,8 +292,8 @@ export async function generateSemiFinals(tournamentId: string): Promise<{ semi1:
     const semi2 = await createMatch({
       tournamentId,
       matchNumber: 29,
-      court: defaultCourt,
-      startTime: now,
+      court: "Court 2",
+      startTime: semiStartTime,
       umpireId: null,
       umpireName: null,
       teamIds: semi2Teams as [string, string, string, string],
@@ -319,8 +340,24 @@ export async function generateFinal(tournamentId: string): Promise<Match> {
       throw new Error("Not enough teams qualified from semi-finals. Ensure both semi-finals are completed.")
     }
 
-    const now = new Date()
-    const defaultCourt = "Court 1"
+    // Get any semi match to calculate final start time (both semis start at same time)
+    const { data: semiMatches, error: semiError } = await supabase
+      .from("matches")
+      .select("start_time")
+      .eq("tournament_id", tournamentId)
+      .eq("stage", "SEMI")
+      .limit(1)
+      .single()
+
+    if (semiError) throw semiError
+
+    if (!semiMatches) {
+      throw new Error("No semi-finals found. Cannot determine final start time.")
+    }
+
+    // Schedule final 40 minutes after the semis
+    const semiTime = new Date((semiMatches as any).start_time)
+    const finalStartTime = new Date(semiTime.getTime() + 40 * 60 * 1000) // +40 minutes
 
     // Final: Semi1-1st, Semi1-2nd, Semi2-1st, Semi2-2nd
     const finalTeams = [
@@ -333,8 +370,8 @@ export async function generateFinal(tournamentId: string): Promise<Match> {
     const final = await createMatch({
       tournamentId,
       matchNumber: 30,
-      court: defaultCourt,
-      startTime: now,
+      court: "Court 1",
+      startTime: finalStartTime,
       umpireId: null,
       umpireName: null,
       teamIds: finalTeams as [string, string, string, string],
