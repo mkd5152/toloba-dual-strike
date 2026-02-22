@@ -185,14 +185,6 @@ export function MatchScheduleTable({ matches }: MatchScheduleTableProps) {
                   >
                     <Link href={`/umpire/scoring/${match.id}`}>Start Scoring</Link>
                   </Button>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="border-[#0d3944] text-[#0d3944] hover:bg-[#0d3944] hover:text-white font-bold"
-                  >
-                    <Link href="/spectator/match-center">Watch</Link>
-                  </Button>
                   {(match.state === "COMPLETED" || match.state === "LOCKED") && (
                     <ScoreOverrideDialog match={match} />
                   )}
