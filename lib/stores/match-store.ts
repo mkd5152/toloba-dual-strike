@@ -170,6 +170,25 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     if (legalBallCount >= 6) {
       if (currentOverIndex < innings.overs.length - 1) {
         nextOverIndex = currentOverIndex + 1;
+
+        // Auto-powerplay: If moving to 3rd over (index 2) and no powerplay selected yet, set it automatically
+        if (nextOverIndex === 2 && innings.powerplayOver === null) {
+          console.log('⚡ Auto-selecting powerplay for 3rd over (no powerplay selected in first 2 overs)');
+          updatedInnings = {
+            ...updatedInnings,
+            powerplayOver: 2,
+            overs: updatedInnings.overs.map((o, i) => ({
+              ...o,
+              isPowerplay: i === 2,
+            })),
+          };
+
+          // Also update in database
+          const { setPowerplayOver } = await import("@/lib/api/innings");
+          setPowerplayOver(innings.id, 2).catch((err) => {
+            console.error("Failed to auto-set powerplay in database:", err);
+          });
+        }
       } else {
         // Innings over - mark as completed
         updatedInnings = {
