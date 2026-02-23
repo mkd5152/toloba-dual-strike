@@ -263,6 +263,8 @@ export default function SpectatorDashboardPage() {
     let totalRunOuts = 0
     let highestScore = { runs: 0, team: '', match: 0 }
     let lowestScore = { runs: Infinity, team: '', match: 0 }
+    let highestInningsScore = { runs: 0, team: '', match: 0 }
+    const teamWickets: Record<string, number> = {}
 
     // Use detailed matches for statistics (already filtered to COMPLETED/LOCKED/IN_PROGRESS in API)
     // Fall back to regular matches if detailed matches haven't loaded yet
@@ -294,9 +296,18 @@ export default function SpectatorDashboardPage() {
           totalRuns += innings.totalRuns || 0
           totalWickets += innings.totalWickets || 0
 
+          // Track highest innings score
+          const inningsRuns = innings.totalRuns || 0
+          if (inningsRuns > highestInningsScore.runs) {
+            const teamName = teams.find(t => t.id === innings.teamId)?.name || 'Unknown'
+            highestInningsScore = { runs: inningsRuns, team: teamName, match: match.matchNumber }
+          }
+
           // Calculate other stats from balls
           innings.overs?.forEach((over) => {
             const isPowerplay = over.isPowerplay
+            const bowlingTeamId = over.bowlingTeamId
+
             over.balls?.forEach((ball) => {
               totalBalls++
               const ballRuns = ball.effectiveRuns || 0
@@ -312,6 +323,11 @@ export default function SpectatorDashboardPage() {
 
               if (ball.isWicket && ball.wicketType === 'CATCH_OUT') totalCatches++
               if (ball.isWicket && ball.wicketType === 'RUN_OUT') totalRunOuts++
+
+              // Track wickets taken by each bowling team
+              if (ball.isWicket && bowlingTeamId) {
+                teamWickets[bowlingTeamId] = (teamWickets[bowlingTeamId] || 0) + 1
+              }
             })
           })
         })
@@ -321,6 +337,15 @@ export default function SpectatorDashboardPage() {
     const completedMatchesCount = completedMatches.length
     const liveMatches = matches.filter(m => m.state === "IN_PROGRESS")
 
+    // Find team with most wickets
+    let mostWicketsTaken = { wickets: 0, team: '' }
+    Object.entries(teamWickets).forEach(([teamId, wickets]) => {
+      if (wickets > mostWicketsTaken.wickets) {
+        const teamName = teams.find(t => t.id === teamId)?.name || 'Unknown'
+        mostWicketsTaken = { wickets, team: teamName }
+      }
+    })
+
     console.log("🔢 Final stats:", {
       total4s,
       total6s,
@@ -328,7 +353,9 @@ export default function SpectatorDashboardPage() {
       totalRuns,
       totalWickets,
       completedMatchesCount,
-      liveMatchesCount: liveMatches.length
+      liveMatchesCount: liveMatches.length,
+      highestInningsScore,
+      mostWicketsTaken
     })
 
     return {
@@ -345,6 +372,8 @@ export default function SpectatorDashboardPage() {
       totalRunOuts,
       highestScore,
       lowestScore: lowestScore.runs === Infinity ? { runs: 0, team: '', match: 0 } : lowestScore,
+      highestInningsScore,
+      mostWicketsTaken,
       completedMatches: completedMatchesCount,
       liveMatches,
       avgRunsPerMatch: completedMatchesCount > 0 ? Math.round(totalRuns / completedMatchesCount) : 0,
@@ -676,21 +705,43 @@ export default function SpectatorDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
-            <div className="space-y-6">
-              <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 rounded-2xl border-2 border-yellow-500/30">
-                <div className="flex items-center gap-2 mb-3">
-                  <Crown className="w-5 h-5 text-yellow-400" />
-                  <p className="text-yellow-400 font-black text-sm">HIGHEST SCORE</p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 rounded-2xl border-2 border-yellow-500/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Crown className="w-5 h-5 text-yellow-400" />
+                    <p className="text-yellow-400 font-black text-sm">HIGHEST MATCH SCORE</p>
+                  </div>
+                  <p className="text-4xl font-black text-yellow-300 mb-2">{stats.highestScore.runs}</p>
+                  <p className="text-yellow-400/80 font-bold text-sm">{stats.highestScore.team}</p>
+                  <p className="text-yellow-400/60 font-bold text-xs">Match {stats.highestScore.match}</p>
                 </div>
-                <p className="text-4xl font-black text-yellow-300 mb-2">{stats.highestScore.runs}</p>
-                <p className="text-yellow-400/80 font-bold text-sm">{stats.highestScore.team}</p>
-                <p className="text-yellow-400/60 font-bold text-xs">Match {stats.highestScore.match}</p>
+                <div className="p-5 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-2xl border-2 border-emerald-500/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Trophy className="w-5 h-5 text-emerald-400" />
+                    <p className="text-emerald-400 font-black text-sm">HIGHEST INNINGS RUNS</p>
+                  </div>
+                  <p className="text-4xl font-black text-emerald-300 mb-2">{stats.highestInningsScore.runs}</p>
+                  <p className="text-emerald-400/80 font-bold text-sm">{stats.highestInningsScore.team}</p>
+                  <p className="text-emerald-400/60 font-bold text-xs">Match {stats.highestInningsScore.match}</p>
+                </div>
               </div>
-              <div className="p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl border border-blue-500/20">
-                <p className="text-blue-400 font-bold text-sm mb-2">LOWEST SCORE</p>
-                <p className="text-3xl font-black text-blue-300 mb-2">{stats.lowestScore.runs}</p>
-                <p className="text-blue-400/80 font-bold text-sm">{stats.lowestScore.team}</p>
-                <p className="text-blue-400/60 font-bold text-xs">Match {stats.lowestScore.match}</p>
+              <div className="space-y-4">
+                <div className="p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl border border-blue-500/20">
+                  <p className="text-blue-400 font-bold text-sm mb-2">LOWEST SCORE</p>
+                  <p className="text-3xl font-black text-blue-300 mb-2">{stats.lowestScore.runs}</p>
+                  <p className="text-blue-400/80 font-bold text-sm">{stats.lowestScore.team}</p>
+                  <p className="text-blue-400/60 font-bold text-xs">Match {stats.lowestScore.match}</p>
+                </div>
+                <div className="p-5 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-2xl border-2 border-red-500/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Crosshair className="w-5 h-5 text-red-400" />
+                    <p className="text-red-400 font-black text-sm">MOST WICKETS TAKEN</p>
+                  </div>
+                  <p className="text-4xl font-black text-red-300 mb-2">{stats.mostWicketsTaken.wickets}</p>
+                  <p className="text-red-400/80 font-bold text-sm">{stats.mostWicketsTaken.team}</p>
+                  <p className="text-red-400/60 font-bold text-xs">By team in the tournament</p>
+                </div>
               </div>
             </div>
           </CardContent>
