@@ -23,12 +23,39 @@ export default function FixturesExportPage() {
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
 
-      const canvas = await html2canvas(contentRef.current, {
+      // Clone the element and strip all className attributes to avoid Tailwind color functions
+      const clone = contentRef.current.cloneNode(true) as HTMLElement;
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.appendChild(clone);
+      document.body.appendChild(tempContainer);
+
+      // Remove all Tailwind classes that might use lab() colors
+      const allElements = clone.getElementsByTagName('*');
+      for (let i = 0; i < allElements.length; i++) {
+        const el = allElements[i] as HTMLElement;
+        // Keep the classes but ensure no color functions are computed
+        if (el.style) {
+          // Force any color properties to use explicit values
+          const computedStyle = window.getComputedStyle(el);
+          if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
+            el.style.color = computedStyle.color;
+          }
+          if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+            el.style.backgroundColor = computedStyle.backgroundColor;
+          }
+        }
+      }
+
+      const canvas = await html2canvas(clone, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
+
+      document.body.removeChild(tempContainer);
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -54,7 +81,12 @@ export default function FixturesExportPage() {
 
   const getTeamColor = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
-    return team?.color || "#cccccc";
+    const color = team?.color || "#cccccc";
+    // Ensure color is a valid hex code
+    if (!color.startsWith('#')) {
+      return "#cccccc";
+    }
+    return color;
   };
 
   const formatDate = (date: Date | null) => {
@@ -87,27 +119,37 @@ export default function FixturesExportPage() {
     return (
       <tr
         key={match.id}
-        className={`border-b-2 border-gray-200 ${isEven ? 'bg-gray-50' : 'bg-white'}`}
+        style={{
+          borderBottom: '2px solid #e5e7eb',
+          backgroundColor: isEven ? '#f9fafb' : '#ffffff'
+        }}
       >
-        <td className="p-4 border-r-2 border-gray-200">
+        <td className="p-4" style={{ borderRight: '2px solid #e5e7eb' }}>
           <div className="flex items-center justify-center">
-            <span className="text-2xl font-black text-purple-600 bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center border-2 border-purple-300">
+            <span
+              className="text-2xl font-black w-12 h-12 rounded-full flex items-center justify-center"
+              style={{
+                color: '#9333ea',
+                backgroundColor: '#f3e8ff',
+                border: '2px solid #d8b4fe'
+              }}
+            >
               {match.matchNumber}
             </span>
           </div>
         </td>
-        <td className="p-4 border-r-2 border-gray-200">
+        <td className="p-4" style={{ borderRight: '2px solid #e5e7eb' }}>
           <div className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-purple-500" />
+            <CalendarIcon className="w-5 h-5" style={{ color: '#a855f7' }} />
             <div>
-              <p className="text-lg font-bold text-gray-900">{formatDate(match.startTime)}</p>
-              <p className="text-sm text-purple-600 font-bold">{formatTime(match.startTime)}</p>
+              <p className="text-lg font-bold" style={{ color: '#111827' }}>{formatDate(match.startTime)}</p>
+              <p className="text-sm font-bold" style={{ color: '#9333ea' }}>{formatTime(match.startTime)}</p>
             </div>
           </div>
         </td>
-        <td className="p-4 border-r-2 border-gray-200">
+        <td className="p-4" style={{ borderRight: '2px solid #e5e7eb' }}>
           <div className="text-center">
-            <p className="text-xl font-black text-[#ff9800]">Court {match.court}</p>
+            <p className="text-xl font-black" style={{ color: '#ff9800' }}>Court {match.court}</p>
           </div>
         </td>
         <td className="p-4">
@@ -116,17 +158,25 @@ export default function FixturesExportPage() {
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
                 <div
-                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
-                  style={{ backgroundColor: getTeamColor(match.teamIds[0]) }}
+                  className="w-8 h-8 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: getTeamColor(match.teamIds[0]),
+                    border: '3px solid #ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
                 ></div>
-                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[0])}</span>
+                <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[0])}</span>
               </div>
-              <span className="text-xl font-black text-gray-400">vs</span>
+              <span className="text-xl font-black" style={{ color: '#9ca3af' }}>vs</span>
               <div className="flex items-center gap-3 flex-1 justify-end">
-                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[1])}</span>
+                <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[1])}</span>
                 <div
-                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
-                  style={{ backgroundColor: getTeamColor(match.teamIds[1]) }}
+                  className="w-8 h-8 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: getTeamColor(match.teamIds[1]),
+                    border: '3px solid #ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
                 ></div>
               </div>
             </div>
@@ -134,17 +184,25 @@ export default function FixturesExportPage() {
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
                 <div
-                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
-                  style={{ backgroundColor: getTeamColor(match.teamIds[2]) }}
+                  className="w-8 h-8 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: getTeamColor(match.teamIds[2]),
+                    border: '3px solid #ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
                 ></div>
-                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[2])}</span>
+                <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[2])}</span>
               </div>
-              <span className="text-xl font-black text-gray-400">vs</span>
+              <span className="text-xl font-black" style={{ color: '#9ca3af' }}>vs</span>
               <div className="flex items-center gap-3 flex-1 justify-end">
-                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[3])}</span>
+                <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[3])}</span>
                 <div
-                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
-                  style={{ backgroundColor: getTeamColor(match.teamIds[3]) }}
+                  className="w-8 h-8 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: getTeamColor(match.teamIds[3]),
+                    border: '3px solid #ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
                 ></div>
               </div>
             </div>
@@ -169,13 +227,9 @@ export default function FixturesExportPage() {
         </div>
 
         {/* Fixtures Content */}
-        <div ref={contentRef} className="bg-white shadow-2xl">
+        <div ref={contentRef} style={{ backgroundColor: '#ffffff', isolation: 'isolate' }}>
           {/* Header */}
-          <div className="relative mb-8 pb-6 border-b-4 border-purple-600">
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-600"></div>
-            </div>
-
+          <div className="relative mb-8 pb-6" style={{ borderBottom: '4px solid #9333ea', backgroundColor: '#ffffff', color: '#000000' }}>
             <div className="relative flex items-start justify-between p-8">
               {/* Left - Tournament Logo */}
               <div className="flex-1">
@@ -192,15 +246,12 @@ export default function FixturesExportPage() {
 
               {/* Center - Title */}
               <div className="flex-1 text-center py-6">
-                <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-full mb-3 shadow-lg inline-block">
-                  <p className="text-xs font-black tracking-widest">OFFICIAL SCHEDULE</p>
-                </div>
-                <h1 className="text-5xl font-black text-[#0d3944] mb-3 tracking-tight">
+                <h1 className="text-5xl font-black mb-3 tracking-tight" style={{ color: '#0d3944' }}>
                   MATCH FIXTURES
                 </h1>
-                <div className="h-1 w-32 bg-gradient-to-r from-purple-500 to-pink-600 mx-auto mb-3"></div>
-                <p className="text-2xl font-bold text-gray-700">{tournament.name}</p>
-                <p className="text-sm text-gray-500 mt-2 font-semibold">
+                <div className="h-1 w-32 mx-auto mb-3" style={{ background: 'linear-gradient(to right, #9333ea, #ec4899)' }}></div>
+                <p className="text-2xl font-bold" style={{ color: '#4a5568' }}>{tournament.name}</p>
+                <p className="text-sm font-semibold mt-2" style={{ color: '#718096' }}>
                   Season 2 • {new Date().getFullYear()}
                 </p>
               </div>
@@ -223,26 +274,26 @@ export default function FixturesExportPage() {
           {/* League Stage */}
           {leagueMatches.length > 0 && (
             <div className="px-8 mb-8">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-4 rounded-t-2xl">
+              <div className="p-4 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff' }}>
                 <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
                   <span className="text-3xl">⚡</span>
                   LEAGUE STAGE
                 </h2>
               </div>
-              <div className="border-4 border-purple-500 rounded-b-2xl overflow-hidden">
+              <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #a855f7' }}>
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gradient-to-r from-purple-400 to-pink-500">
-                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-24">
+                    <tr style={{ background: 'linear-gradient(to right, #c084fc, #f472b6)' }}>
+                      <th className="p-3 text-left font-black w-24" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         MATCH #
                       </th>
-                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-48">
+                      <th className="p-3 text-left font-black w-48" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         DATE & TIME
                       </th>
-                      <th className="p-3 text-center font-black text-white border-r-2 border-white/30 w-32">
+                      <th className="p-3 text-center font-black w-32" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         COURT
                       </th>
-                      <th className="p-3 text-center font-black text-white">
+                      <th className="p-3 text-center font-black" style={{ color: '#ffffff' }}>
                         TEAMS
                       </th>
                     </tr>
@@ -258,26 +309,26 @@ export default function FixturesExportPage() {
           {/* Semi-Finals */}
           {semiMatches.length > 0 && (
             <div className="px-8 mb-8">
-              <div className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-white p-4 rounded-t-2xl">
+              <div className="p-4 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #ff9800, #ffb300)', color: '#ffffff' }}>
                 <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
                   <span className="text-3xl">🔥</span>
                   SEMI-FINALS
                 </h2>
               </div>
-              <div className="border-4 border-[#ff9800] rounded-b-2xl overflow-hidden">
+              <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #ff9800' }}>
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gradient-to-r from-[#ff9800] to-[#ffb300]">
-                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-24">
+                    <tr style={{ background: 'linear-gradient(to right, #ff9800, #ffb300)' }}>
+                      <th className="p-3 text-left font-black w-24" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         MATCH #
                       </th>
-                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-48">
+                      <th className="p-3 text-left font-black w-48" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         DATE & TIME
                       </th>
-                      <th className="p-3 text-center font-black text-white border-r-2 border-white/30 w-32">
+                      <th className="p-3 text-center font-black w-32" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         COURT
                       </th>
-                      <th className="p-3 text-center font-black text-white">
+                      <th className="p-3 text-center font-black" style={{ color: '#ffffff' }}>
                         TEAMS
                       </th>
                     </tr>
@@ -293,26 +344,26 @@ export default function FixturesExportPage() {
           {/* Finals */}
           {finalMatches.length > 0 && (
             <div className="px-8 pb-8">
-              <div className="bg-gradient-to-r from-[#0d3944] to-[#1a5568] text-white p-4 rounded-t-2xl">
+              <div className="p-4 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #0d3944, #1a5568)', color: '#ffffff' }}>
                 <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
                   <span className="text-3xl">🏆</span>
                   FINALS
                 </h2>
               </div>
-              <div className="border-4 border-[#0d3944] rounded-b-2xl overflow-hidden">
+              <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #0d3944' }}>
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gradient-to-r from-[#0d3944] to-[#1a5568]">
-                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-24">
+                    <tr style={{ background: 'linear-gradient(to right, #0d3944, #1a5568)' }}>
+                      <th className="p-3 text-left font-black w-24" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         MATCH #
                       </th>
-                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-48">
+                      <th className="p-3 text-left font-black w-48" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         DATE & TIME
                       </th>
-                      <th className="p-3 text-center font-black text-white border-r-2 border-white/30 w-32">
+                      <th className="p-3 text-center font-black w-32" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
                         COURT
                       </th>
-                      <th className="p-3 text-center font-black text-white">
+                      <th className="p-3 text-center font-black" style={{ color: '#ffffff' }}>
                         TEAMS
                       </th>
                     </tr>
