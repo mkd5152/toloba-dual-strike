@@ -9,7 +9,7 @@ import {
 import { POINTS_SYSTEM } from "@/lib/constants";
 import { useTournamentStore } from "./tournament-store";
 import { recordBall as recordBallAPI, deleteLastBall } from "@/lib/api/balls";
-import { updateInningsTotals } from "@/lib/api/innings";
+import { updateInningsTotals, setPowerplayOver } from "@/lib/api/innings";
 
 interface MatchStore {
   currentMatch: Match | null;
@@ -184,7 +184,6 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
           };
 
           // Also update in database
-          const { setPowerplayOver } = await import("@/lib/api/innings");
           setPowerplayOver(innings.id, 2).catch((err) => {
             console.error("Failed to auto-set powerplay in database:", err);
           });
