@@ -17,7 +17,13 @@ export function BallLog() {
       const overBall = `${over.overNumber}.${ball.ballNumber}`;
       let event = "";
       if (ball.isWicket) {
-        event = `Wicket (${ball.effectiveRuns} runs)`;
+        const wicketTypeLabel =
+          ball.wicketType === "CATCH_OUT" ? "Caught" :
+          ball.wicketType === "RUN_OUT" ? "Run Out" :
+          ball.wicketType === "BOWLING_TEAM" ? "Bowled" :
+          ball.wicketType === "NORMAL" ? "Dot Ball" :
+          "Out";
+        event = `Wicket - ${wicketTypeLabel} (${ball.effectiveRuns} runs)`;
       } else if (ball.isNoball) {
         event = ball.runs > 0
           ? `${ball.runs} + 2 (No ball)`
