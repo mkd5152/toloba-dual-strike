@@ -114,8 +114,9 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       )
     ) {
       // This is the 3rd consecutive dot ball - make it a wicket
+      // This is a bowling achievement, so bowling team gets +5 credit
       ballWithEffective.isWicket = true;
-      ballWithEffective.wicketType = "NORMAL";
+      ballWithEffective.wicketType = "BOWLING_TEAM";
     }
 
     // Calculate effective runs (applies wicket penalties if isWicket is true)
