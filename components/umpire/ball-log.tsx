@@ -19,9 +19,13 @@ export function BallLog() {
       if (ball.isWicket) {
         event = `Wicket (${ball.effectiveRuns} runs)`;
       } else if (ball.isNoball) {
-        event = "No ball (+2)";
+        event = ball.runs > 0
+          ? `${ball.runs} + 2 (No ball)`
+          : "No ball (+2)";
       } else if (ball.isWide) {
-        event = "Wide (+2)";
+        event = ball.runs > 0
+          ? `${ball.runs} + 2 (Wide)`
+          : "Wide (+2)";
       } else if (ball.misconduct) {
         event = "Misconduct (-5)";
       } else if (ball.effectiveRuns !== ball.runs && over.isPowerplay) {
