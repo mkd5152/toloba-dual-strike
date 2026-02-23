@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Calendar, Trophy, LogOut, Menu, X, Layers, Award } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, Trophy, LogOut, Menu, X, Layers, Award, FileText } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useState } from "react";
@@ -20,6 +20,7 @@ export default function OrganizerLayout({
   const navItems = [
     { href: "/organizer/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/organizer/teams", label: "Teams", icon: Users },
+    { href: "/organizer/team-sheet", label: "Team Sheet", icon: FileText },
     { href: "/organizer/schedule", label: "Schedule", icon: Calendar },
     { href: "/organizer/matches", label: "Matches", icon: Trophy },
     { href: "/organizer/standings", label: "Standings", icon: Layers },
