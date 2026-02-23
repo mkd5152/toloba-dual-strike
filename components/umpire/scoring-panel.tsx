@@ -11,7 +11,7 @@ import { useState } from "react";
 import { SCORING_RULES } from "@/lib/constants";
 
 export function ScoringPanel() {
-  const { currentMatch, recordBall, selectPowerplay, undoLastBall } =
+  const { currentMatch, recordBall, selectPowerplay, undoLastBall, useReball, currentOverIndex } =
     useMatchStore();
   const { getTeam } = useTournamentStore();
 
@@ -205,13 +205,31 @@ export function ScoringPanel() {
           </div>
         )}
 
-        <Button
-          variant="secondary"
-          onClick={undoLastBall}
-          className="w-full h-11 sm:h-12 md:h-14 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
-        >
-          Undo last ball
-        </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+          <Button
+            variant="secondary"
+            onClick={undoLastBall}
+            className="h-11 sm:h-12 md:h-14 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
+          >
+            Undo last ball
+          </Button>
+
+          {/* Reball button - only shown in last over (over 2) */}
+          {currentOverIndex === 2 && (
+            <Button
+              variant="outline"
+              onClick={useReball}
+              disabled={
+                (currentInnings?.reballsUsed || 0) >= 3 ||
+                currentOver?.isPowerplay === true ||
+                !currentOver?.balls.length
+              }
+              className="h-11 sm:h-12 md:h-14 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform disabled:opacity-50"
+            >
+              Reball ({(currentInnings?.reballsUsed || 0)}/3)
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
     </>

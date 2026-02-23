@@ -76,6 +76,8 @@ export interface Innings {
   state: InningsState;
   overs: Over[]; // Each over has its own bowlingTeamId
   powerplayOver: number | null; // 0, 1, or 2
+  reballsUsed: number; // Number of reballs used in last over (max 3)
+  reballBonusRuns: number; // Runs from reballed balls that are kept as bonus
   totalRuns: number;
   totalWickets: number;
   noWicketBonus: boolean;

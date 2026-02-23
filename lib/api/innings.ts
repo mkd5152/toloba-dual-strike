@@ -60,7 +60,7 @@ export async function initializeMatchInnings(
       const inningsId = `${matchId}-innings-${inningsIdx + 1}`;
 
       // Create innings in database
-      const inningsData: Database['public']['Tables']['innings']['Insert'] = {
+      const inningsData: any = {
         id: inningsId,
         match_id: matchId,
         team_id: battingTeamId,
@@ -68,6 +68,8 @@ export async function initializeMatchInnings(
         bowling_team_id: bowlingTeams[0], // First bowling team
         state: inningsIdx === 0 ? "IN_PROGRESS" : "NOT_STARTED",
         powerplay_over: null,
+        reballs_used: 0,
+        reball_bonus_runs: 0,
         total_runs: 0,
         total_wickets: 0,
         no_wicket_bonus: false,
@@ -338,6 +340,8 @@ export async function fetchMatchInnings(matchId: string): Promise<Innings[]> {
         state: inningsRow.state as InningsState,
         overs,
         powerplayOver: inningsRow.powerplay_over,
+        reballsUsed: inningsRow.reballs_used || 0,
+        reballBonusRuns: inningsRow.reball_bonus_runs || 0,
         totalRuns: inningsRow.total_runs,
         totalWickets: inningsRow.total_wickets,
         noWicketBonus: inningsRow.no_wicket_bonus,

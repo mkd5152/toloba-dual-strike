@@ -24,6 +24,7 @@ interface MatchStore {
   completeInnings: () => void;
   completeMatch: () => void;
   undoLastBall: () => void;
+  useReball: () => void;
 }
 
 function recalcInningsFromBalls(innings: Innings): Innings {
@@ -35,6 +36,9 @@ function recalcInningsFromBalls(innings: Innings): Innings {
       if (ball.isWicket) totalWickets++;
     }
   }
+  // Add reball bonus runs (from balls that were reballed)
+  totalRuns += innings.reballBonusRuns || 0;
+
   const noWicketBonus = totalWickets === 0;
   const finalScore =
     totalRuns + (noWicketBonus ? 10 : 0);
@@ -605,5 +609,101 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         lockedAt: null,
       });
     }
+
+    // Reset reballsUsed count when undo is used
+    if (updatedInnings.reballsUsed > 0) {
+      const resetInnings = { ...updatedInnings, reballsUsed: Math.max(0, updatedInnings.reballsUsed - 1) };
+      set({
+        currentMatch: {
+          ...updatedMatch,
+          innings: updatedMatch.innings.map((inn, i) =>
+            i === targetInningsIndex ? resetInnings : inn
+          ),
+        },
+      });
+    }
+  },
+
+  useReball: () => {
+    const { currentMatch, currentInningsIndex, currentOverIndex } = get();
+    if (!currentMatch) return;
+
+    const innings = currentMatch.innings[currentInningsIndex];
+    if (!innings) return;
+
+    // Only allow reball in last over (over 2, which is the 3rd over)
+    if (currentOverIndex !== 2) {
+      console.warn("Reball can only be used in the last over");
+      return;
+    }
+
+    const over = innings.overs[currentOverIndex];
+    if (!over || over.balls.length === 0) {
+      console.warn("No balls to reball");
+      return;
+    }
+
+    // Check if max reballs reached
+    if (innings.reballsUsed >= 3) {
+      console.warn("Maximum 3 reballs already used");
+      return;
+    }
+
+    // Cannot use reball in powerplay
+    if (over.isPowerplay) {
+      console.warn("Reball cannot be used in powerplay over");
+      return;
+    }
+
+    console.log(`Using reball ${innings.reballsUsed + 1}/3 in over ${currentOverIndex}`);
+
+    // Get the last ball and its runs
+    const lastBall = over.balls[over.balls.length - 1];
+    const reballRuns = lastBall.effectiveRuns;
+
+    // Remove the last ball from the over
+    const updatedOver: Over = {
+      ...over,
+      balls: over.balls.slice(0, -1),
+    };
+
+    // Update innings with reball bonus and increment reball counter
+    const updatedInnings: Innings = {
+      ...innings,
+      reballsUsed: innings.reballsUsed + 1,
+      reballBonusRuns: (innings.reballBonusRuns || 0) + reballRuns,
+      overs: innings.overs.map((o, i) =>
+        i === currentOverIndex ? updatedOver : o
+      ),
+    };
+
+    // Recalculate totals (will include reballBonusRuns)
+    const recalcedInnings = recalcInningsFromBalls(updatedInnings);
+
+    const updatedMatch: Match = {
+      ...currentMatch,
+      innings: currentMatch.innings.map((inn, i) =>
+        i === currentInningsIndex ? recalcedInnings : inn
+      ),
+    };
+
+    set({ currentMatch: updatedMatch });
+
+    // Delete ball from database
+    if (over.id) {
+      deleteLastBall(over.id).catch((err) => {
+        console.error("Failed to delete ball from database:", err);
+      });
+    }
+
+    // Update innings in database with new reball count and bonus runs
+    updateInningsTotals(innings.id, {
+      totalRuns: recalcedInnings.totalRuns,
+      totalWickets: recalcedInnings.totalWickets,
+      noWicketBonus: recalcedInnings.noWicketBonus,
+      finalScore: recalcedInnings.finalScore,
+    }).catch((err) => {
+      console.error("Failed to update innings totals after reball:", err);
+    });
   },
 }));
