@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Download, CalendarIcon } from "lucide-react";
 import Image from "next/image";
 
 export default function FixturesExportPage() {
   const { matches, teams, loadMatches, loadTeams, tournament } = useTournamentStore();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadMatches();
@@ -15,8 +16,35 @@ export default function FixturesExportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current) return;
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+
+      const canvas = await html2canvas(contentRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 297; // A4 landscape width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`${tournament.name.replace(/\s+/g, '_')}_Fixtures.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
   };
 
   const getTeamName = (teamId: string) => {
@@ -24,321 +52,280 @@ export default function FixturesExportPage() {
     return team?.name || "TBD";
   };
 
-  const getTeamShortCode = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    if (!team) return "T?";
-    // Get the team number from teams array
-    const teamIndex = teams.findIndex(t => t.id === teamId);
-    return `T${teamIndex + 1}`;
-  };
-
   const getTeamColor = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
     return team?.color || "#cccccc";
   };
 
+  const formatDate = (date: Date | null) => {
+    if (!date) return "TBD";
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatTime = (date: Date | null) => {
+    if (!date) return "TBD";
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   // Group matches by stage
   const leagueMatches = matches.filter(m => m.stage === "LEAGUE");
+  const semiMatches = matches.filter(m => m.stage === "SEMI");
+  const finalMatches = matches.filter(m => m.stage === "FINAL");
 
-  // Group league matches into rounds
-  const matchesByRound: { [key: number]: typeof leagueMatches } = {};
-  leagueMatches.forEach(match => {
-    const round = Math.floor((match.matchNumber - 1) / 5) + 1;
-    if (!matchesByRound[round]) {
-      matchesByRound[round] = [];
-    }
-    matchesByRound[round].push(match);
-  });
+  const renderMatchRow = (match: typeof matches[0], index: number) => {
+    const isEven = index % 2 === 0;
+
+    return (
+      <tr
+        key={match.id}
+        className={`border-b-2 border-gray-200 ${isEven ? 'bg-gray-50' : 'bg-white'}`}
+      >
+        <td className="p-4 border-r-2 border-gray-200">
+          <div className="flex items-center justify-center">
+            <span className="text-2xl font-black text-purple-600 bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center border-2 border-purple-300">
+              {match.matchNumber}
+            </span>
+          </div>
+        </td>
+        <td className="p-4 border-r-2 border-gray-200">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-5 h-5 text-purple-500" />
+            <div>
+              <p className="text-lg font-bold text-gray-900">{formatDate(match.startTime)}</p>
+              <p className="text-sm text-purple-600 font-bold">{formatTime(match.startTime)}</p>
+            </div>
+          </div>
+        </td>
+        <td className="p-4 border-r-2 border-gray-200">
+          <div className="text-center">
+            <p className="text-xl font-black text-[#ff9800]">Court {match.court}</p>
+          </div>
+        </td>
+        <td className="p-4">
+          <div className="space-y-3">
+            {/* Team 1 vs Team 2 */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div
+                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
+                  style={{ backgroundColor: getTeamColor(match.teamIds[0]) }}
+                ></div>
+                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[0])}</span>
+              </div>
+              <span className="text-xl font-black text-gray-400">vs</span>
+              <div className="flex items-center gap-3 flex-1 justify-end">
+                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[1])}</span>
+                <div
+                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
+                  style={{ backgroundColor: getTeamColor(match.teamIds[1]) }}
+                ></div>
+              </div>
+            </div>
+            {/* Team 3 vs Team 4 */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div
+                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
+                  style={{ backgroundColor: getTeamColor(match.teamIds[2]) }}
+                ></div>
+                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[2])}</span>
+              </div>
+              <span className="text-xl font-black text-gray-400">vs</span>
+              <div className="flex items-center gap-3 flex-1 justify-end">
+                <span className="text-base font-bold text-gray-900">{getTeamName(match.teamIds[3])}</span>
+                <div
+                  className="w-8 h-8 rounded-full border-3 border-white shadow-lg flex-shrink-0"
+                  style={{ backgroundColor: getTeamColor(match.teamIds[3]) }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    );
+  };
 
   return (
-    <>
-      {/* Print button - hidden when printing */}
-      <div className="print:hidden fixed top-4 right-4 z-50">
-        <Button
-          onClick={handlePrint}
-          className="bg-[#8B1538] hover:bg-[#6B0F2A] text-white font-bold px-6 py-3 rounded-lg shadow-lg"
-        >
-          <Printer className="w-5 h-5 mr-2" />
-          Print / Save as PDF
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Download Button */}
+        <div className="mb-6 flex justify-end">
+          <Button
+            onClick={handleDownloadPDF}
+            className="bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold hover:opacity-90"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download PDF
+          </Button>
+        </div>
 
-      {/* Fixtures Document */}
-      <div className="w-full min-h-screen flex items-center justify-center bg-gray-100 print:bg-white p-4 print:p-0">
-        <div
-          id="fixtures-content"
-          className="w-[210mm] bg-white shadow-2xl print:shadow-none border-4 border-black"
-          style={{ aspectRatio: '1 / 1.414' }}
-        >
+        {/* Fixtures Content */}
+        <div ref={contentRef} className="bg-white shadow-2xl">
           {/* Header */}
-          <div className="bg-white px-8 py-6 border-b-4 border-black">
-            <div className="flex items-start justify-between mb-4">
-              {/* Left Logo */}
-              <div className="w-40">
-                <Image
-                  src="/logos/dual-strike-logo.png"
-                  alt="Toloba Sports"
-                  width={160}
-                  height={160}
-                  className="object-contain"
-                />
+          <div className="relative mb-8 pb-6 border-b-4 border-purple-600">
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-600"></div>
+            </div>
+
+            <div className="relative flex items-start justify-between p-8">
+              {/* Left - Tournament Logo */}
+              <div className="flex-1">
+                <div className="relative w-40 h-40">
+                  <Image
+                    src="/logos/dual-strike-logo.png"
+                    alt="Tournament Logo"
+                    width={160}
+                    height={160}
+                    className="object-contain"
+                  />
+                </div>
               </div>
 
-              {/* Center Title */}
-              <div className="flex-1 text-center pt-2">
-                <h1 className="text-4xl font-black mb-0" style={{ lineHeight: 1 }}>
-                  TOLOBA
+              {/* Center - Title */}
+              <div className="flex-1 text-center py-6">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-full mb-3 shadow-lg inline-block">
+                  <p className="text-xs font-black tracking-widest">OFFICIAL SCHEDULE</p>
+                </div>
+                <h1 className="text-5xl font-black text-[#0d3944] mb-3 tracking-tight">
+                  MATCH FIXTURES
                 </h1>
-                <h2
-                  className="text-5xl font-black mb-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #8B1538 0%, #D4204E 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontStyle: 'italic',
-                    lineHeight: 1
-                  }}
-                >
-                  DOUBLE WICKET
+                <div className="h-1 w-32 bg-gradient-to-r from-purple-500 to-pink-600 mx-auto mb-3"></div>
+                <p className="text-2xl font-bold text-gray-700">{tournament.name}</p>
+                <p className="text-sm text-gray-500 mt-2 font-semibold">
+                  Season 2 • {new Date().getFullYear()}
+                </p>
+              </div>
+
+              {/* Right - Sponsor Logo */}
+              <div className="flex-1 flex justify-end">
+                <div className="relative w-40 h-40">
+                  <Image
+                    src="/logos/sponsor.png"
+                    alt="Sponsor Logo"
+                    width={160}
+                    height={160}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* League Stage */}
+          {leagueMatches.length > 0 && (
+            <div className="px-8 mb-8">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-4 rounded-t-2xl">
+                <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
+                  <span className="text-3xl">⚡</span>
+                  LEAGUE STAGE
                 </h2>
-                <h1 className="text-4xl font-black mt-0" style={{ lineHeight: 1 }}>
-                  TOURNAMENT
-                </h1>
               </div>
-
-              <div className="w-40"></div>
-            </div>
-
-            {/* Event Details Box */}
-            <div className="grid grid-cols-2 border-t-2 border-black pt-3">
-              <div>
-                <p className="text-xs mb-1">
-                  <strong>Date:</strong> Saturday, 8th June 2024
-                </p>
-                <p className="text-xs mb-1">
-                  <strong>Venue:</strong> MSB Private School (Secondary)
-                </p>
-                <p className="text-xs">
-                  <strong>Location Pin:</strong>{" "}
-                  <a href="#" className="text-blue-600 underline text-xs">
-                    https://bit.ly/TDWT-Location-2024
-                  </a>
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs mb-1">
-                  <strong>Reporting by 4:45 PM</strong>
-                </p>
-                <p className="text-xs">
-                  <strong>Total Event Time:</strong> 7 Hours (5 PM to 11 PM)
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Group Stages Table */}
-          <div className="px-6 py-4">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border-2 border-black p-2 bg-white text-sm font-bold w-24">
-                    TIME
-                  </th>
-                  <th className="border-2 border-black p-2 bg-white text-sm font-bold w-20">
-                    ROUNDS
-                  </th>
-                  <th className="border-2 border-black p-2 bg-white text-sm font-bold">
-                    GROUP 1
-                  </th>
-                  <th className="border-2 border-black p-2 bg-white text-sm font-bold">
-                    GROUP 2
-                  </th>
-                  <th className="border-2 border-black p-2 bg-white text-sm font-bold w-24">
-                    T = TEAMS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3, 4].map((round) => {
-                  const roundMatches = matchesByRound[round] || [];
-                  const group1Matches = roundMatches.filter((_, idx) => idx < 2);
-                  const group2Matches = roundMatches.filter((_, idx) => idx >= 2 && idx < 4);
-
-                  return (
-                    <tr key={round}>
-                      {/* Time Column */}
-                      <td className="border-2 border-black p-0">
-                        <div className="text-xs text-center font-bold py-1 border-b border-black">
-                          5:00 - 5:35
-                        </div>
-                        <div className="h-6"></div>
-                        <div className="text-xs text-center font-bold py-1 border-t border-black">
-                          5:40 - 6:15
-                        </div>
-                      </td>
-
-                      {/* Round Number */}
-                      <td className="border-2 border-black p-2">
-                        <div className="flex items-center justify-center h-full">
-                          <div className="text-center">
-                            <div
-                              className="text-4xl font-black"
-                              style={{ color: '#8B1538', writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-                            >
-                              Group Stages
-                            </div>
-                            <div className="text-3xl font-black text-[#8B1538] mt-2">{round}</div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Group 1 */}
-                      <td className="border-2 border-black p-2">
-                        <div className="space-y-2">
-                          <div className="text-center text-xs italic mb-2">GROUP A{round}</div>
-                          {group1Matches.map((match, idx) => (
-                            <div key={match.id} className="flex gap-1 justify-center">
-                              {match.teamIds.slice(0, 4).map((teamId) => (
-                                <div
-                                  key={teamId}
-                                  className="px-3 py-1 text-xs font-bold text-white rounded"
-                                  style={{ backgroundColor: getTeamColor(teamId) }}
-                                >
-                                  {getTeamShortCode(teamId)}
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                          {group1Matches.length < 2 && <div className="h-6"></div>}
-                          <div className="text-center text-xs italic mt-2">GROUP C{round}</div>
-                          <div className="h-6"></div>
-                        </div>
-                      </td>
-
-                      {/* Group 2 */}
-                      <td className="border-2 border-black p-2">
-                        <div className="space-y-2">
-                          <div className="text-center text-xs italic mb-2">GROUP B{round}</div>
-                          {group2Matches.map((match, idx) => (
-                            <div key={match.id} className="flex gap-1 justify-center">
-                              {match.teamIds.slice(0, 4).map((teamId) => (
-                                <div
-                                  key={teamId}
-                                  className="px-3 py-1 text-xs font-bold text-white rounded"
-                                  style={{ backgroundColor: getTeamColor(teamId) }}
-                                >
-                                  {getTeamShortCode(teamId)}
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                          {group2Matches.length < 2 && <div className="h-6"></div>}
-                          <div className="text-center text-xs italic mt-2">GROUP D{round}</div>
-                          <div className="h-6"></div>
-                        </div>
-                      </td>
-
-                      {/* Teams Column */}
-                      <td className="border-2 border-black p-0">
-                        <div className="h-full"></div>
-                      </td>
+              <div className="border-4 border-purple-500 rounded-b-2xl overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-purple-400 to-pink-500">
+                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-24">
+                        MATCH #
+                      </th>
+                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-48">
+                        DATE & TIME
+                      </th>
+                      <th className="p-3 text-center font-black text-white border-r-2 border-white/30 w-32">
+                        COURT
+                      </th>
+                      <th className="p-3 text-center font-black text-white">
+                        TEAMS
+                      </th>
                     </tr>
-                  );
-                })}
-
-                {/* Finals Row */}
-                <tr>
-                  <td className="border-2 border-black p-2 text-xs text-center font-bold">
-                    10:50 - 11:25
-                  </td>
-                  <td className="border-2 border-black p-2 text-sm font-bold text-center">
-                    FINALS
-                  </td>
-                  <td colSpan={2} className="border-2 border-black p-2 bg-yellow-400">
-                    <p className="text-center font-bold text-sm">1st vs 2nd vs 3rd vs 4th</p>
-                  </td>
-                  <td className="border-2 border-black p-0"></td>
-                </tr>
-
-                {/* Ceremony Row */}
-                <tr>
-                  <td className="border-2 border-black p-2 text-xs text-center font-bold">
-                    11:30-11:45
-                  </td>
-                  <td className="border-2 border-black p-2 text-sm font-bold text-center">
-                    CEREMONY
-                  </td>
-                  <td colSpan={2} className="border-2 border-black p-2 bg-yellow-400">
-                    <p className="text-center font-bold text-sm">AWARDS CEREMONY</p>
-                  </td>
-                  <td className="border-2 border-black p-0"></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-6 px-8 pb-6">
-            <div className="space-y-2">
-              <div
-                className="py-4 px-8 transform -skew-x-12"
-                style={{
-                  background: 'linear-gradient(135deg, #8B1538 0%, #D4204E 100%)'
-                }}
-              >
-                <p
-                  className="text-center text-5xl font-black transform skew-x-12"
-                  style={{
-                    background: 'linear-gradient(135deg, #1e88e5 0%, #64b5f6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
-                  ARE YOU
-                </p>
-              </div>
-              <div
-                className="py-4 px-8 transform -skew-x-12"
-                style={{
-                  background: 'linear-gradient(135deg, #8B1538 0%, #D4204E 100%)'
-                }}
-              >
-                <p
-                  className="text-center text-5xl font-black transform skew-x-12"
-                  style={{
-                    background: 'linear-gradient(135deg, #1e88e5 0%, #64b5f6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
-                  }}
-                >
-                  READY?
-                </p>
+                  </thead>
+                  <tbody>
+                    {leagueMatches.map((match, idx) => renderMatchRow(match, idx))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Semi-Finals */}
+          {semiMatches.length > 0 && (
+            <div className="px-8 mb-8">
+              <div className="bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-white p-4 rounded-t-2xl">
+                <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
+                  <span className="text-3xl">🔥</span>
+                  SEMI-FINALS
+                </h2>
+              </div>
+              <div className="border-4 border-[#ff9800] rounded-b-2xl overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-[#ff9800] to-[#ffb300]">
+                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-24">
+                        MATCH #
+                      </th>
+                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-48">
+                        DATE & TIME
+                      </th>
+                      <th className="p-3 text-center font-black text-white border-r-2 border-white/30 w-32">
+                        COURT
+                      </th>
+                      <th className="p-3 text-center font-black text-white">
+                        TEAMS
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {semiMatches.map((match, idx) => renderMatchRow(match, idx))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Finals */}
+          {finalMatches.length > 0 && (
+            <div className="px-8 pb-8">
+              <div className="bg-gradient-to-r from-[#0d3944] to-[#1a5568] text-white p-4 rounded-t-2xl">
+                <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
+                  <span className="text-3xl">🏆</span>
+                  FINALS
+                </h2>
+              </div>
+              <div className="border-4 border-[#0d3944] rounded-b-2xl overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-[#0d3944] to-[#1a5568]">
+                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-24">
+                        MATCH #
+                      </th>
+                      <th className="p-3 text-left font-black text-white border-r-2 border-white/30 w-48">
+                        DATE & TIME
+                      </th>
+                      <th className="p-3 text-center font-black text-white border-r-2 border-white/30 w-32">
+                        COURT
+                      </th>
+                      <th className="p-3 text-center font-black text-white">
+                        TEAMS
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {finalMatches.map((match, idx) => renderMatchRow(match, idx))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Print Styles */}
-      <style jsx global>{`
-        @media print {
-          @page {
-            size: A4;
-            margin: 0;
-          }
-
-          body {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-
-          #fixtures-content {
-            width: 100%;
-            height: 100%;
-            box-shadow: none;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }
