@@ -141,45 +141,11 @@ export default function FixturesExportPage() {
       tempContainer.style.backgroundColor = '#ffffff';
       document.body.appendChild(tempContainer);
 
-      // Create header (logo) page
-      const headerDiv = document.createElement('div');
-      headerDiv.className = 'pdf-page';
-      headerDiv.style.backgroundColor = '#ffffff';
-      headerDiv.innerHTML = contentRef.current.querySelector('.pdf-page')?.querySelector('[class*="relative mb-4"]')?.parentElement?.innerHTML || '';
-
-      // Render header properly
-      const headerContent = document.createElement('div');
-      headerContent.innerHTML = `
-        <div class="relative mb-4 pb-2" style="border-bottom: 4px solid #9333ea; background-color: #ffffff; color: #000000;">
-          <div class="relative flex items-start justify-between p-4">
-            <div class="flex-1">
-              <div class="relative w-56 h-56">
-                <img src="/logos/dual-strike-logo.png" alt="Tournament Logo" width="224" height="224" style="object-fit: contain;" />
-              </div>
-            </div>
-            <div class="flex-1 text-center py-6">
-              <h1 class="text-5xl font-black mb-3 tracking-tight" style="color: #0d3944;">DAY-WISE FIXTURES</h1>
-              <div class="h-1 w-32 mx-auto mb-3" style="background: linear-gradient(to right, #9333ea, #ec4899);"></div>
-              <p class="text-2xl font-bold" style="color: #4a5568;">${tournament.name}</p>
-            </div>
-            <div class="flex-1 flex justify-end">
-              <div class="relative w-56 h-56">
-                <img src="/logos/sponsor.png" alt="Sponsor Logo" width="224" height="224" style="object-fit: contain;" />
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      headerDiv.appendChild(headerContent);
-      tempContainer.appendChild(headerDiv);
-
       // Get all page divs for this specific day
       const allPageDivs = Array.from(contentRef.current.querySelectorAll('.pdf-page')) as HTMLElement[];
 
       // Find the start and end indices for this day's pages
-      let currentDayIndex = 0;
       let startIndex = 0;
-
       for (let i = 0; i < dayIndex; i++) {
         startIndex += dayWisePages[i].pages.length;
       }
@@ -187,21 +153,54 @@ export default function FixturesExportPage() {
       const endIndex = startIndex + day.pages.length;
       const dayPageDivs = allPageDivs.slice(startIndex, endIndex);
 
-      // Clone and add day's fixture pages
-      dayPageDivs.forEach((pageDiv, index) => {
+      // Process each page for this day
+      dayPageDivs.forEach((pageDiv, pageIndex) => {
         const clonedDiv = pageDiv.cloneNode(true) as HTMLElement;
-        // Remove header if it exists (we already added it above)
-        const headerInPage = clonedDiv.querySelector('[class*="relative mb-4"]')?.parentElement;
-        if (headerInPage) {
-          headerInPage.remove();
-        }
-        // Add margin to first page
-        if (index === 0) {
+
+        // First page: Keep header if it exists from main render, otherwise add it
+        if (pageIndex === 0) {
+          const existingHeader = clonedDiv.querySelector('[class*="relative mb-4"]')?.parentElement;
+
+          if (!existingHeader) {
+            // Add header for first page
+            const headerContent = document.createElement('div');
+            headerContent.innerHTML = `
+              <div class="relative mb-4 pb-2" style="border-bottom: 4px solid #9333ea; background-color: #ffffff; color: #000000;">
+                <div class="relative flex items-start justify-between p-4">
+                  <div class="flex-1">
+                    <div class="relative w-56 h-56">
+                      <img src="/logos/dual-strike-logo.png" alt="Tournament Logo" width="224" height="224" style="object-fit: contain;" />
+                    </div>
+                  </div>
+                  <div class="flex-1 text-center py-6">
+                    <h1 class="text-5xl font-black mb-3 tracking-tight" style="color: #0d3944;">DAY-WISE FIXTURES</h1>
+                    <div class="h-1 w-32 mx-auto mb-3" style="background: linear-gradient(to right, #9333ea, #ec4899);"></div>
+                    <p class="text-2xl font-bold" style="color: #4a5568;">${tournament.name}</p>
+                  </div>
+                  <div class="flex-1 flex justify-end">
+                    <div class="relative w-56 h-56">
+                      <img src="/logos/sponsor.png" alt="Sponsor Logo" width="224" height="224" style="object-fit: contain;" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            clonedDiv.insertBefore(headerContent, clonedDiv.firstChild);
+          }
+        } else {
+          // Subsequent pages: Remove header if exists and ensure pt-12 margin
+          const headerInPage = clonedDiv.querySelector('[class*="relative mb-4"]')?.parentElement;
+          if (headerInPage) {
+            headerInPage.remove();
+          }
+
+          // Ensure top margin on subsequent pages
           const content = clonedDiv.querySelector('div') as HTMLElement;
-          if (content) {
+          if (content && !content.classList.contains('pt-12')) {
             content.style.paddingTop = '3rem'; // pt-12
           }
         }
+
         tempContainer.appendChild(clonedDiv);
       });
 
