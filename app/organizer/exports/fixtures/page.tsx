@@ -390,7 +390,7 @@ export default function FixturesExportPage() {
     ];
 
     return (
-      <div className="px-8 mb-6" style={{ position: 'relative' }}>
+      <div className="px-8 mb-6 pt-12" style={{ position: 'relative' }}>
         {/* Watermark */}
         <div
           style={{
