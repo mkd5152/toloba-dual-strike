@@ -192,12 +192,15 @@ export default function FixturesExportPage() {
             clonedDiv.insertBefore(headerContent, clonedDiv.firstChild);
           }
 
-          // CRITICAL: Remove pt-12 padding from first page since it now has logo header
-          const content = clonedDiv.querySelector('div') as HTMLElement;
-          if (content) {
-            content.classList.remove('pt-12');
-            content.style.paddingTop = '0';
-          }
+          // CRITICAL: Remove pt-12 padding from first page content div since it now has logo header
+          // Target the specific content div with px-8 class
+          const allDivs = clonedDiv.querySelectorAll('div');
+          allDivs.forEach(div => {
+            if (div.classList.contains('pt-12')) {
+              div.classList.remove('pt-12');
+              div.style.paddingTop = '0';
+            }
+          });
         } else {
           // Subsequent pages: Remove header if exists and ensure pt-12 margin
           const headerInPage = clonedDiv.querySelector('[class*="relative mb-4"]')?.parentElement;
