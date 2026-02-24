@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { Button } from "@/components/ui/button";
-import { Download, CalendarIcon } from "lucide-react";
+import { Download, CalendarIcon, FileText, Files } from "lucide-react";
 import Image from "next/image";
 
 export default function FixturesExportPage() {
   const { matches, teams, loadMatches, loadTeams, tournament } = useTournamentStore();
   const contentRef = useRef<HTMLDivElement>(null);
+  const [separateFiles, setSeparateFiles] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     loadMatches();
@@ -71,58 +73,178 @@ export default function FixturesExportPage() {
     return result;
   }, [matches]);
 
-  const handleDownloadPDF = async () => {
+  // Helper function to generate PDF from HTML elements
+  const generatePDFFromElements = async (
+    elements: HTMLElement[],
+    html2canvas: any,
+    jsPDF: any
+  ) => {
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    });
+
+    const pageWidth = 297; // A4 landscape width in mm
+
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+
+      // Render each page to canvas with high quality settings
+      const canvas = await html2canvas(element, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+      });
+
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+      const imgData = canvas.toDataURL('image/jpeg', 0.94);
+
+      // Add new page for subsequent pages
+      if (i > 0) {
+        pdf.addPage();
+      }
+
+      // Add image to PDF
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+    }
+
+    return pdf;
+  };
+
+  // Generate single PDF with all days
+  const generateSinglePDF = async (html2canvas: any, jsPDF: any) => {
     if (!contentRef.current) return;
+
+    const pageDivs = Array.from(contentRef.current.querySelectorAll('.pdf-page')) as HTMLElement[];
+    const pdf = await generatePDFFromElements(pageDivs, html2canvas, jsPDF);
+    pdf.save(`${tournament.name.replace(/\s+/g, '_')}_Day_Wise_Fixtures.pdf`);
+  };
+
+  // Generate separate PDFs for each day
+  const generateSeparatePDFs = async (html2canvas: any, jsPDF: any) => {
+    if (!contentRef.current) return;
+
+    for (let dayIndex = 0; dayIndex < dayWisePages.length; dayIndex++) {
+      const day = dayWisePages[dayIndex];
+
+      // Create temporary container for this day's content
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.backgroundColor = '#ffffff';
+      document.body.appendChild(tempContainer);
+
+      // Create header (logo) page
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'pdf-page';
+      headerDiv.style.backgroundColor = '#ffffff';
+      headerDiv.innerHTML = contentRef.current.querySelector('.pdf-page')?.querySelector('[class*="relative mb-4"]')?.parentElement?.innerHTML || '';
+
+      // Render header properly
+      const headerContent = document.createElement('div');
+      headerContent.innerHTML = `
+        <div class="relative mb-4 pb-2" style="border-bottom: 4px solid #9333ea; background-color: #ffffff; color: #000000;">
+          <div class="relative flex items-start justify-between p-4">
+            <div class="flex-1">
+              <div class="relative w-56 h-56">
+                <img src="/logos/dual-strike-logo.png" alt="Tournament Logo" width="224" height="224" style="object-fit: contain;" />
+              </div>
+            </div>
+            <div class="flex-1 text-center py-6">
+              <h1 class="text-5xl font-black mb-3 tracking-tight" style="color: #0d3944;">DAY-WISE FIXTURES</h1>
+              <div class="h-1 w-32 mx-auto mb-3" style="background: linear-gradient(to right, #9333ea, #ec4899);"></div>
+              <p class="text-2xl font-bold" style="color: #4a5568;">${tournament.name}</p>
+            </div>
+            <div class="flex-1 flex justify-end">
+              <div class="relative w-56 h-56">
+                <img src="/logos/sponsor.png" alt="Sponsor Logo" width="224" height="224" style="object-fit: contain;" />
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      headerDiv.appendChild(headerContent);
+      tempContainer.appendChild(headerDiv);
+
+      // Get all page divs for this specific day
+      const allPageDivs = Array.from(contentRef.current.querySelectorAll('.pdf-page')) as HTMLElement[];
+
+      // Find the start and end indices for this day's pages
+      let currentDayIndex = 0;
+      let startIndex = 0;
+
+      for (let i = 0; i < dayIndex; i++) {
+        startIndex += dayWisePages[i].pages.length;
+      }
+
+      const endIndex = startIndex + day.pages.length;
+      const dayPageDivs = allPageDivs.slice(startIndex, endIndex);
+
+      // Clone and add day's fixture pages
+      dayPageDivs.forEach((pageDiv, index) => {
+        const clonedDiv = pageDiv.cloneNode(true) as HTMLElement;
+        // Remove header if it exists (we already added it above)
+        const headerInPage = clonedDiv.querySelector('[class*="relative mb-4"]')?.parentElement;
+        if (headerInPage) {
+          headerInPage.remove();
+        }
+        // Add margin to first page
+        if (index === 0) {
+          const content = clonedDiv.querySelector('div') as HTMLElement;
+          if (content) {
+            content.style.paddingTop = '3rem'; // pt-12
+          }
+        }
+        tempContainer.appendChild(clonedDiv);
+      });
+
+      // Wait for images to load
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Generate PDF for this day
+      const elements = Array.from(tempContainer.querySelectorAll('.pdf-page')) as HTMLElement[];
+      const pdf = await generatePDFFromElements(elements, html2canvas, jsPDF);
+
+      // Clean filename for this day
+      const cleanDayName = day.displayDate.replace(/[^a-zA-Z0-9]/g, '_');
+      pdf.save(`${tournament.name.replace(/\s+/g, '_')}_${cleanDayName}.pdf`);
+
+      // Cleanup
+      document.body.removeChild(tempContainer);
+
+      // Add small delay between downloads to prevent browser blocking
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current || isGenerating) return;
+
+    setIsGenerating(true);
 
     try {
       const html2canvas = (await import('html2canvas-pro')).default;
       const jsPDF = (await import('jspdf')).default;
 
-      // Create PDF with compression enabled
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
-      });
-
-      const pageWidth = 297; // A4 landscape width in mm
-      const pageHeight = 210; // A4 landscape height in mm
-
-      // Get all page divs
-      const pageDivs = contentRef.current.querySelectorAll('.pdf-page');
-
-      for (let i = 0; i < pageDivs.length; i++) {
-        const pageDiv = pageDivs[i] as HTMLElement;
-
-        // Render each page to canvas with high quality settings
-        const canvas = await html2canvas(pageDiv, {
-          scale: 3,
-          useCORS: true,
-          allowTaint: false,
-          logging: false,
-          backgroundColor: '#ffffff',
-          windowWidth: pageDiv.scrollWidth,
-          windowHeight: pageDiv.scrollHeight,
-        });
-
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * pageWidth) / canvas.width;
-        const imgData = canvas.toDataURL('image/jpeg', 0.94);
-
-        // Add new page for subsequent pages
-        if (i > 0) {
-          pdf.addPage();
-        }
-
-        // Add image to PDF
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      if (separateFiles) {
+        // Generate separate PDF for each day
+        await generateSeparatePDFs(html2canvas, jsPDF);
+      } else {
+        // Generate single PDF with all days
+        await generateSinglePDF(html2canvas, jsPDF);
       }
-
-      pdf.save(`${tournament.name.replace(/\s+/g, '_')}_Day_Wise_Fixtures.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -336,14 +458,45 @@ export default function FixturesExportPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Download Button */}
-        <div className="mb-6 flex justify-end">
+        {/* Download Controls */}
+        <div className="mb-6 flex items-center justify-between gap-4">
+          {/* Toggle Button */}
+          <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-md border-2 border-indigo-200">
+            <span className="text-sm font-bold text-gray-700">Download Mode:</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSeparateFiles(false)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all ${
+                  !separateFiles
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                Single File
+              </button>
+              <button
+                onClick={() => setSeparateFiles(true)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all ${
+                  separateFiles
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Files className="w-4 h-4" />
+                Separate Files ({dayWisePages.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Download Button */}
           <Button
             onClick={handleDownloadPDF}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold hover:opacity-90"
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4 mr-2" />
-            Download PDF
+            {isGenerating ? 'Generating...' : `Download ${separateFiles ? `${dayWisePages.length} PDFs` : 'PDF'}`}
           </Button>
         </div>
 
