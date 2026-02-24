@@ -15,25 +15,19 @@ export default function TeamSheetExportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Split teams: first page 4 teams, subsequent pages 7 teams each
+  // Split teams: 12 teams per page
   const teamPages = useMemo(() => {
     const pages: any[][] = [];
 
     if (teams.length === 0) return pages;
 
-    // First page: exactly 4 teams (or less if total < 4)
-    const firstPageCount = Math.min(4, teams.length);
-    pages.push(teams.slice(0, firstPageCount));
-
-    // Remaining pages: 7 teams each
-    if (teams.length > 4) {
-      const remainingTeams = teams.slice(4);
-      for (let i = 0; i < remainingTeams.length; i += 7) {
-        pages.push(remainingTeams.slice(i, i + 7));
-      }
+    // Split into pages of 12 teams each
+    for (let i = 0; i < teams.length; i += 12) {
+      pages.push(teams.slice(i, i + 12));
     }
 
     console.log('Team pagination:', pages.map((p, i) => `Page ${i + 1}: ${p.length} teams`));
+    console.log('Total teams:', teams.length);
     return pages;
   }, [teams]);
 
@@ -93,8 +87,8 @@ export default function TeamSheetExportPage() {
   };
 
   const renderHeader = () => (
-    <div className="relative mb-8 pb-6" style={{ borderBottom: '4px solid #ff9800', backgroundColor: '#ffffff', color: '#000000' }}>
-      <div className="relative flex items-start justify-between p-8">
+    <div className="relative mb-4 pb-3" style={{ borderBottom: '4px solid #ff9800', backgroundColor: '#ffffff', color: '#000000' }}>
+      <div className="relative flex items-start justify-between p-4">
         {/* Left - Tournament Logo */}
         <div className="flex-1">
           <div className="relative w-72 h-72">
@@ -238,32 +232,48 @@ export default function TeamSheetExportPage() {
         {/* Team Sheet Content - Multiple Pages */}
         <div ref={contentRef} style={{ backgroundColor: '#ffffff', isolation: 'isolate' }}>
           {teamPages.map((pageTeams, pageIndex) => (
-            <div key={pageIndex} className="pdf-page" style={{ backgroundColor: '#ffffff', marginBottom: pageIndex < teamPages.length - 1 ? '20px' : '0' }}>
-              {/* Header only on first page */}
+            <div
+              key={pageIndex}
+              className="pdf-page"
+              style={{
+                backgroundColor: '#ffffff',
+                marginBottom: pageIndex < teamPages.length - 1 ? '20px' : '0'
+              }}
+            >
+              {/* Show header only on first page */}
               {pageIndex === 0 && renderHeader()}
 
               {/* Teams Table */}
-              <div className="px-12 pb-12">
-                <div className="rounded-2xl overflow-hidden" style={{ border: '4px solid #0d3944' }}>
+              <div className={`px-12 pb-12 ${pageIndex > 0 ? 'pt-12' : ''}`}>
+                <div
+                  className="overflow-hidden"
+                  style={{
+                    border: '4px solid #0d3944',
+                    borderRadius: pageIndex === 0 ? '1rem' : '1rem'
+                  }}
+                >
                   <table className="w-full">
-                    <thead>
-                      <tr style={{ background: 'linear-gradient(to right, #ff9800, #ffb300)' }}>
-                        <th className="p-4 text-left font-black text-lg w-20" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
-                          SR. #
-                        </th>
-                        <th className="p-4 text-left font-black text-lg" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
-                          TEAM NAME
-                        </th>
-                        <th className="p-4 text-left font-black text-lg" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
-                          PLAYER 1
-                        </th>
-                        <th className="p-4 text-left font-black text-lg" style={{ color: '#ffffff' }}>
-                          PLAYER 2
-                        </th>
-                      </tr>
-                    </thead>
+                    {/* Show table headers only on first page */}
+                    {pageIndex === 0 && (
+                      <thead>
+                        <tr style={{ background: 'linear-gradient(to right, #ff9800, #ffb300)' }}>
+                          <th className="p-4 text-left font-black text-lg w-20" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
+                            SR. #
+                          </th>
+                          <th className="p-4 text-left font-black text-lg" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
+                            TEAM NAME
+                          </th>
+                          <th className="p-4 text-left font-black text-lg" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)' }}>
+                            PLAYER 1
+                          </th>
+                          <th className="p-4 text-left font-black text-lg" style={{ color: '#ffffff' }}>
+                            PLAYER 2
+                          </th>
+                        </tr>
+                      </thead>
+                    )}
                     <tbody>
-                      {pageTeams.map((team, index) => renderTeamRow(team, index))}
+                      {pageTeams.map((team, index) => renderTeamRow(team, pageIndex * 12 + index))}
                     </tbody>
                   </table>
                 </div>
