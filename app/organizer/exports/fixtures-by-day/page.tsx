@@ -426,7 +426,7 @@ export default function FixturesExportPage() {
         key={match.id}
         style={{
           borderBottom: '2px solid #e5e7eb',
-          backgroundColor: isEven ? '#f9fafb' : '#ffffff'
+          backgroundColor: isEven ? 'rgba(249, 250, 251, 0.95)' : 'rgba(255, 255, 255, 0.95)'
         }}
       >
         <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
@@ -510,17 +510,41 @@ export default function FixturesExportPage() {
   };
 
   const renderDayMatches = (pageMatches: typeof matches, isFirstPage: boolean, dayLabel: string, isNewDayStart: boolean = false, isThursday: boolean = false) => (
-    <div className={`px-8 mb-6 ${!isFirstPage || isNewDayStart ? 'pt-10' : ''}`}>
+    <div className={`px-8 mb-6 ${!isFirstPage || isNewDayStart ? 'pt-10' : ''}`} style={{ position: 'relative' }}>
+      {/* Watermark */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '500px',
+          height: '500px',
+          opacity: 0.08,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      >
+        <Image
+          src="/logos/tkmi-watermark.png"
+          alt="TKMI Watermark"
+          width={500}
+          height={500}
+          className="object-contain"
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+
       {isFirstPage && (
-        <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff' }}>
+        <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff', position: 'relative', zIndex: 1 }}>
           <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
             <CalendarIcon className="w-6 h-6" />
             {dayLabel}
           </h2>
         </div>
       )}
-      <div className={isFirstPage ? "rounded-b-2xl overflow-hidden" : "rounded-2xl overflow-hidden"} style={{ border: '4px solid #a855f7', backgroundColor: '#ffffff' }}>
-        <table className="w-full" style={{ backgroundColor: '#ffffff' }}>
+      <div className={isFirstPage ? "rounded-b-2xl overflow-hidden" : "rounded-2xl overflow-hidden"} style={{ border: '4px solid #a855f7', backgroundColor: 'rgba(255, 255, 255, 0.95)', position: 'relative', zIndex: 1 }}>
+        <table className="w-full" style={{ backgroundColor: 'transparent' }}>
           {isFirstPage && (
             <thead>
               <tr style={{ background: 'linear-gradient(to right, #c084fc, #f472b6)' }}>
@@ -542,7 +566,7 @@ export default function FixturesExportPage() {
               </tr>
             </thead>
           )}
-          <tbody style={{ backgroundColor: '#ffffff' }}>
+          <tbody style={{ backgroundColor: 'transparent' }}>
             {isThursday && isFirstPage && (
               <tr style={{ background: 'linear-gradient(to right, #10b981, #059669)', borderBottom: '2px solid #e5e7eb' }}>
                 <td colSpan={5} className="p-3" style={{ textAlign: 'center' }}>
@@ -613,15 +637,39 @@ export default function FixturesExportPage() {
     return (
       <>
         {includeHeader && renderHeader()}
-        <div className="px-8 mb-6">
-          <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff' }}>
+        <div className="px-8 mb-6" style={{ position: 'relative' }}>
+          {/* Watermark */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '500px',
+              height: '500px',
+              opacity: 0.08,
+              zIndex: 0,
+              pointerEvents: 'none',
+            }}
+          >
+            <Image
+              src="/logos/tkmi-watermark.png"
+              alt="TKMI Watermark"
+              width={500}
+              height={500}
+              className="object-contain"
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
+
+          <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff', position: 'relative', zIndex: 1 }}>
             <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
               <CalendarIcon className="w-6 h-6" />
               Sunday, March 1, 2026 - PLAYOFFS
             </h2>
           </div>
-          <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #f59e0b', backgroundColor: '#ffffff' }}>
-            <table className="w-full" style={{ backgroundColor: '#ffffff' }}>
+          <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #f59e0b', backgroundColor: 'rgba(255, 255, 255, 0.95)', position: 'relative', zIndex: 1 }}>
+            <table className="w-full" style={{ backgroundColor: 'transparent' }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #fbbf24, #f87171)' }}>
                   <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
@@ -641,7 +689,7 @@ export default function FixturesExportPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody style={{ backgroundColor: '#ffffff' }}>
+              <tbody style={{ backgroundColor: 'transparent' }}>
                 {playoffMatches.map((match, idx) => {
                   const isEven = idx % 2 === 0;
                   return (
@@ -649,7 +697,7 @@ export default function FixturesExportPage() {
                       key={match.matchNumber}
                       style={{
                         borderBottom: idx < playoffMatches.length - 1 ? '2px solid #e5e7eb' : 'none',
-                        backgroundColor: isEven ? '#fef3c7' : '#ffffff'
+                        backgroundColor: isEven ? 'rgba(254, 243, 199, 0.95)' : 'rgba(255, 255, 255, 0.95)'
                       }}
                     >
                       <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
@@ -697,7 +745,7 @@ export default function FixturesExportPage() {
               </tbody>
             </table>
           </div>
-          <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: '#fef3c7', border: '2px solid #fbbf24' }}>
+          <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: '#fef3c7', border: '2px solid #fbbf24', position: 'relative', zIndex: 1 }}>
             <p className="text-xs font-bold text-center" style={{ color: '#92400e' }}>
               🏆 Closing Ceremony: 10:25 PM - 10:45 PM 🏆
             </p>
