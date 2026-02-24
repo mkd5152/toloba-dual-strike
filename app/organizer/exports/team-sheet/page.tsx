@@ -137,7 +137,7 @@ export default function TeamSheetExportPage() {
         key={team.id}
         style={{
           borderBottom: '2px solid #e5e7eb',
-          backgroundColor: isEven ? '#f9fafb' : '#ffffff'
+          backgroundColor: isEven ? 'rgba(249, 250, 251, 0.95)' : 'rgba(255, 255, 255, 0.95)'
         }}
       >
         <td className="p-5" style={{ borderRight: '2px solid #e5e7eb' }}>
@@ -244,15 +244,40 @@ export default function TeamSheetExportPage() {
               {pageIndex === 0 && renderHeader()}
 
               {/* Teams Table */}
-              <div className={`px-12 pb-12 ${pageIndex > 0 ? 'pt-12' : ''}`}>
+              <div className={`px-12 pb-12 ${pageIndex > 0 ? 'pt-12' : ''}`} style={{ position: 'relative' }}>
+                {/* Watermark */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '500px',
+                    height: '500px',
+                    opacity: 0.08,
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <Image
+                    src="/logos/tkmi-watermark.png"
+                    alt="TKMI Watermark"
+                    width={500}
+                    height={500}
+                    className="object-contain"
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                </div>
+
                 <div
                   className="overflow-hidden"
                   style={{
                     border: '4px solid #0d3944',
-                    borderRadius: pageIndex === 0 ? '1rem' : '1rem'
+                    borderRadius: pageIndex === 0 ? '1rem' : '1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)'
                   }}
                 >
-                  <table className="w-full">
+                  <table className="w-full" style={{ backgroundColor: 'transparent' }}>
                     {/* Show table headers only on first page */}
                     {pageIndex === 0 && (
                       <thead>
@@ -272,7 +297,7 @@ export default function TeamSheetExportPage() {
                         </tr>
                       </thead>
                     )}
-                    <tbody>
+                    <tbody style={{ backgroundColor: 'transparent' }}>
                       {pageTeams.map((team, index) => renderTeamRow(team, pageIndex * 12 + index))}
                     </tbody>
                   </table>
