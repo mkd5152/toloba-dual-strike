@@ -254,64 +254,64 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
   const allLeagueMatchesCompleted = leagueMatchesCompleted >= 25
 
   return (
-    <div>
+    <div className="w-full overflow-x-hidden">
       {/* Tab Navigation */}
-      <div className="flex gap-2 mb-6 p-1 bg-white/5 rounded-lg border border-white/10 w-full sm:w-fit">
+      <div className="flex gap-1.5 sm:gap-2 mb-6 p-1 bg-white/5 rounded-lg border border-white/10 w-full overflow-x-auto scrollbar-hide">
         <button
           onClick={() => setActiveTab("league")}
-          className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-sm sm:text-base transition-all flex-1 sm:flex-initial justify-center ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-xs sm:text-base transition-all flex-1 sm:flex-initial justify-center whitespace-nowrap min-w-0 ${
             activeTab === "league"
               ? "bg-gradient-to-r from-[#ff9800] to-[#ffb300] text-[#0d3944] shadow-lg"
               : "text-white/70 hover:text-white hover:bg-white/5"
           }`}
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
           <span className="hidden sm:inline">League</span>
-          <span className="sm:hidden">L</span>
-          <Badge className="bg-white/20 text-white text-xs ml-1">{leagueMatchesCompleted}/25</Badge>
+          <span className="sm:hidden truncate">L</span>
+          <Badge className="bg-white/20 text-white text-[10px] sm:text-xs flex-shrink-0">{leagueMatchesCompleted}/25</Badge>
         </button>
         <button
           onClick={() => setActiveTab("quarters")}
-          className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-sm sm:text-base transition-all flex-1 sm:flex-initial justify-center ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-xs sm:text-base transition-all flex-1 sm:flex-initial justify-center whitespace-nowrap min-w-0 ${
             activeTab === "quarters"
               ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
               : "text-white/70 hover:text-white hover:bg-white/5"
           }`}
         >
-          <Zap className="w-4 h-4" />
+          <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
           <span className="hidden sm:inline">Quarters</span>
-          <span className="sm:hidden">Q</span>
+          <span className="sm:hidden truncate">Q</span>
           {qfMatches.length > 0 && (
-            <Badge className="bg-white/20 text-white text-xs ml-1">{qfMatches.length}</Badge>
+            <Badge className="bg-white/20 text-white text-[10px] sm:text-xs flex-shrink-0">{qfMatches.length}</Badge>
           )}
         </button>
         <button
           onClick={() => setActiveTab("semis")}
-          className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-sm sm:text-base transition-all flex-1 sm:flex-initial justify-center ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-xs sm:text-base transition-all flex-1 sm:flex-initial justify-center whitespace-nowrap min-w-0 ${
             activeTab === "semis"
               ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
               : "text-white/70 hover:text-white hover:bg-white/5"
           }`}
         >
-          <Target className="w-4 h-4" />
+          <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
           <span className="hidden sm:inline">Semis</span>
-          <span className="sm:hidden">S</span>
+          <span className="sm:hidden truncate">S</span>
           {semiMatches.length > 0 && (
-            <Badge className="bg-white/20 text-white text-xs ml-1">{semiMatches.length}</Badge>
+            <Badge className="bg-white/20 text-white text-[10px] sm:text-xs flex-shrink-0">{semiMatches.length}</Badge>
           )}
         </button>
         <button
           onClick={() => setActiveTab("finals")}
-          className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-sm sm:text-base transition-all flex-1 sm:flex-initial justify-center ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-md font-bold text-xs sm:text-base transition-all flex-1 sm:flex-initial justify-center whitespace-nowrap min-w-0 ${
             activeTab === "finals"
               ? "bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg"
               : "text-white/70 hover:text-white hover:bg-white/5"
           }`}
         >
-          <Award className="w-4 h-4" />
+          <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
           <span className="hidden sm:inline">Finals</span>
-          <span className="sm:hidden">F</span>
-          {finalMatch && <Badge className="bg-white/20 text-white text-xs ml-1">1</Badge>}
+          <span className="sm:hidden truncate">F</span>
+          {finalMatch && <Badge className="bg-white/20 text-white text-[10px] sm:text-xs flex-shrink-0">1</Badge>}
         </button>
       </div>
 
@@ -323,17 +323,17 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
               No standings available yet. Complete some matches to see the leaderboard!
             </div>
           ) : (
-            <Card className="bg-gradient-to-br from-[#ff9800]/10 to-[#ffb300]/10 border-2 border-[#ff9800]/30">
+            <Card className="bg-gradient-to-br from-[#ff9800]/10 to-[#ffb300]/10 border-2 border-[#ff9800]/30 overflow-hidden min-w-0">
               <CardHeader className="p-3 sm:p-4 pb-2">
-                <CardTitle className="text-white flex items-center gap-2 text-base sm:text-xl">
+                <CardTitle className="text-white flex items-center gap-2 text-base sm:text-xl min-w-0">
                   <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff9800] flex-shrink-0" />
-                  <span className="flex-1">Overall Standings</span>
-                  <Badge className="bg-[#ff9800] text-white text-xs sm:text-sm flex-shrink-0">
+                  <span className="flex-1 truncate">Overall Standings</span>
+                  <Badge className="bg-[#ff9800] text-white text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">
                     {leagueStandings.length} teams
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 pt-2">
+              <CardContent className="p-3 sm:p-4 pt-2 overflow-hidden">
                 <div className="space-y-2">
                   {leagueStandings.map((team, idx) => {
                     // Only highlight top 4 if all 25 league matches are complete
@@ -407,19 +407,19 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
           )}
 
           {allLeagueMatchesCompleted && (
-            <div className="mt-4 sm:mt-6 p-3 sm:p-5 bg-gradient-to-r from-[#0d3944] to-[#1a4a57] rounded-lg border-2 border-[#ff9800]">
+            <div className="mt-4 sm:mt-6 p-3 sm:p-5 bg-gradient-to-r from-[#0d3944] to-[#1a4a57] rounded-lg border-2 border-[#ff9800] max-w-full overflow-hidden">
               <div className="flex items-start gap-2 sm:gap-3">
                 <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff9800] mt-0.5 sm:mt-1 flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-base sm:text-xl font-black text-white mb-2">Playoff Format</h3>
-                  <div className="space-y-1 sm:space-y-1.5 text-xs sm:text-base text-white/90 font-medium">
-                    <p className="break-words">⚡ <strong className="text-[#ff9800]">Quarter-Final 1:</strong> Teams 5, 6, 11, 12</p>
-                    <p className="break-words">⚡ <strong className="text-[#ff9800]">Quarter-Final 2:</strong> Teams 7, 8, 9, 10</p>
-                    <p className="break-words">⚔️ <strong className="text-[#ff9800]">Semi-Final 1:</strong> QF2 Top 2 + Overall 1, 2</p>
-                    <p className="break-words">⚔️ <strong className="text-[#ff9800]">Semi-Final 2:</strong> QF1 Top 2 + Overall 3, 4</p>
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <h3 className="text-base sm:text-xl font-black text-white mb-2 break-words">Playoff Format</h3>
+                  <div className="space-y-1 sm:space-y-1.5 text-xs sm:text-sm text-white/90 font-medium overflow-hidden">
+                    <p className="break-words">⚡ <strong className="text-[#ff9800]">QF 1:</strong> Teams 5, 6, 11, 12</p>
+                    <p className="break-words">⚡ <strong className="text-[#ff9800]">QF 2:</strong> Teams 7, 8, 9, 10</p>
+                    <p className="break-words">⚔️ <strong className="text-[#ff9800]">SF 1:</strong> QF2 Top 2 + Overall 1, 2</p>
+                    <p className="break-words">⚔️ <strong className="text-[#ff9800]">SF 2:</strong> QF1 Top 2 + Overall 3, 4</p>
                     <p className="break-words">🏆 <strong className="text-[#ff9800]">Final:</strong> Top 2 from each Semi (4 teams)</p>
                   </div>
-                  <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/70">
+                  <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/70 break-words">
                     ⚡ Scoring resets fresh at each playoff stage!
                   </p>
                 </div>
@@ -437,22 +437,22 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
               No quarter-finals available yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 w-full max-w-full">
               {qfMatches.map((match, idx) => (
                 <Card
                   key={match.id}
-                  className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30"
+                  className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30 overflow-hidden min-w-0"
                 >
                   <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
-                    <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                    <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg min-w-0">
                       <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
-                      <span className="flex-1 truncate">Quarter-Final {idx + 1}</span>
-                      <Badge className="bg-purple-500 text-white text-[10px] sm:text-xs flex-shrink-0">
+                      <span className="flex-1 truncate min-w-0">Quarter-Final {idx + 1}</span>
+                      <Badge className="bg-purple-500 text-white text-[10px] sm:text-xs flex-shrink-0 whitespace-nowrap">
                         Match {match.matchNumber}
                       </Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0">
+                  <CardContent className="p-3 sm:p-4 pt-0 overflow-hidden">
                     {renderMatchRankings(match, `QF${idx + 1}`)}
                   </CardContent>
                 </Card>
@@ -470,22 +470,22 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
               No semi-finals available yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 w-full max-w-full">
               {semiMatches.map((match, idx) => (
                 <Card
                   key={match.id}
-                  className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-2 border-orange-500/30"
+                  className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-2 border-orange-500/30 overflow-hidden min-w-0"
                 >
                   <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
-                    <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+                    <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg min-w-0">
                       <Target className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
-                      <span className="flex-1 truncate">Semi-Final {idx + 1}</span>
-                      <Badge className="bg-orange-500 text-white text-[10px] sm:text-xs flex-shrink-0">
+                      <span className="flex-1 truncate min-w-0">Semi-Final {idx + 1}</span>
+                      <Badge className="bg-orange-500 text-white text-[10px] sm:text-xs flex-shrink-0 whitespace-nowrap">
                         Match {match.matchNumber}
                       </Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0">
+                  <CardContent className="p-3 sm:p-4 pt-0 overflow-hidden">
                     {renderMatchRankings(match, `SF${idx + 1}`)}
                   </CardContent>
                 </Card>
@@ -503,18 +503,18 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
               No final available yet.
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto">
-              <Card className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-2 border-amber-500/50">
+            <div className="max-w-3xl mx-auto w-full px-2 sm:px-0">
+              <Card className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-2 border-amber-500/50 overflow-hidden min-w-0">
                 <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
-                  <CardTitle className="text-white flex items-center gap-2 sm:gap-3 justify-center text-lg sm:text-2xl flex-wrap">
+                  <CardTitle className="text-white flex items-center gap-2 sm:gap-3 justify-center text-lg sm:text-2xl flex-wrap min-w-0">
                     <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500 flex-shrink-0 animate-pulse" />
-                    <span>Grand Finale</span>
-                    <Badge className="bg-amber-500 text-white text-xs sm:text-sm flex-shrink-0">
+                    <span className="break-words">Grand Finale</span>
+                    <Badge className="bg-amber-500 text-white text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">
                       Match {finalMatch.matchNumber}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 sm:p-4 pt-0">
+                <CardContent className="p-3 sm:p-4 pt-0 overflow-hidden">
                   {renderMatchRankings(finalMatch, "Final")}
                 </CardContent>
               </Card>

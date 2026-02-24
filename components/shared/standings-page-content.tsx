@@ -38,32 +38,36 @@ export function StandingsPageContent({
   }, []);
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <div
-          className="inline-block px-3 py-1 mb-2 rounded-full text-xs font-bold uppercase tracking-wide"
-          style={{
-            background: `linear-gradient(to right, ${badgeColorFrom}, ${badgeColorTo})`,
-            color: badgeTextColor,
-          }}
-        >
-          Tournament Progress
+    <div className="w-full overflow-x-hidden">
+      <div className="p-4 md:p-8">
+        <div className="mb-8 max-w-full">
+          <div
+            className="inline-block px-3 py-1 mb-2 rounded-full text-xs font-bold uppercase tracking-wide max-w-full"
+            style={{
+              background: `linear-gradient(to right, ${badgeColorFrom}, ${badgeColorTo})`,
+              color: badgeTextColor,
+            }}
+          >
+            <span className="truncate block">Tournament Progress</span>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap max-w-full">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white drop-shadow-lg break-words min-w-0">
+              Standings & Playoffs
+            </h1>
+            {isStandingsSubscribed && (
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold animate-pulse flex-shrink-0">
+                <Radio className="w-3 h-3 flex-shrink-0" />
+                <span className="whitespace-nowrap">Live Updates</span>
+              </div>
+            )}
+          </div>
+          <p className="text-sm sm:text-base text-white/80 font-medium mt-2 break-words">
+            View league standings, quarter-finals, semi-finals, and finals
+          </p>
         </div>
-        <div className="flex items-baseline gap-4 flex-wrap">
-          <h1 className="text-4xl font-black text-white drop-shadow-lg">Standings & Playoffs</h1>
-          {isStandingsSubscribed && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold animate-pulse">
-              <Radio className="w-3 h-3" />
-              Live Updates
-            </div>
-          )}
-        </div>
-        <p className="text-base text-white/80 font-medium mt-2">
-          View league standings, quarter-finals, semi-finals, and finals
-        </p>
-      </div>
 
-      <FancyStandingsView tournamentId={tournament.id} />
+        <FancyStandingsView tournamentId={tournament.id} />
+      </div>
     </div>
   );
 }

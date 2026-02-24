@@ -152,7 +152,7 @@ export default function SpectatorLayout({
           )}
         </div>
       </nav>
-      <main className="relative">{children}</main>
+      <main className="relative w-full overflow-x-hidden">{children}</main>
     </div>
   );
 }
