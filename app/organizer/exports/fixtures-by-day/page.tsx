@@ -536,14 +536,14 @@ export default function FixturesExportPage() {
       </div>
 
       {isFirstPage && (
-        <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff', position: 'relative', zIndex: 1 }}>
+        <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff' }}>
           <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
             <CalendarIcon className="w-6 h-6" />
             {dayLabel}
           </h2>
         </div>
       )}
-      <div className={isFirstPage ? "rounded-b-2xl overflow-hidden" : "rounded-2xl overflow-hidden"} style={{ border: '4px solid #a855f7', backgroundColor: 'rgba(255, 255, 255, 0.95)', position: 'relative', zIndex: 1 }}>
+      <div className={isFirstPage ? "rounded-b-2xl overflow-hidden" : "rounded-2xl overflow-hidden"} style={{ border: '4px solid #a855f7', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
         <table className="w-full" style={{ backgroundColor: 'transparent' }}>
           {isFirstPage && (
             <thead>
@@ -662,13 +662,13 @@ export default function FixturesExportPage() {
             />
           </div>
 
-          <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff', position: 'relative', zIndex: 1 }}>
+          <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff' }}>
             <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
               <CalendarIcon className="w-6 h-6" />
               Sunday, March 1, 2026 - PLAYOFFS
             </h2>
           </div>
-          <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #f59e0b', backgroundColor: 'rgba(255, 255, 255, 0.95)', position: 'relative', zIndex: 1 }}>
+          <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #f59e0b', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
             <table className="w-full" style={{ backgroundColor: 'transparent' }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #fbbf24, #f87171)' }}>
@@ -745,7 +745,7 @@ export default function FixturesExportPage() {
               </tbody>
             </table>
           </div>
-          <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: '#fef3c7', border: '2px solid #fbbf24', position: 'relative', zIndex: 1 }}>
+          <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: 'rgba(254, 243, 199, 0.95)', border: '2px solid #fbbf24' }}>
             <p className="text-xs font-bold text-center" style={{ color: '#92400e' }}>
               🏆 Closing Ceremony: 10:25 PM - 10:45 PM 🏆
             </p>
