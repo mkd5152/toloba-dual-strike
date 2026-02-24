@@ -134,11 +134,15 @@ export default function FixturesExportPage() {
     for (let dayIndex = 0; dayIndex < dayWisePages.length; dayIndex++) {
       const day = dayWisePages[dayIndex];
 
-      // Create temporary container for this day's content
+      // Create temporary container for this day's content - match contentRef styling exactly
       const tempContainer = document.createElement('div');
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '0';
       tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.style.isolation = 'isolate';
+      tempContainer.style.maxWidth = '80rem'; // max-w-7xl
+      tempContainer.style.width = '100%';
       document.body.appendChild(tempContainer);
 
       // Get all page divs for this specific day
@@ -204,8 +208,20 @@ export default function FixturesExportPage() {
         tempContainer.appendChild(clonedDiv);
       });
 
-      // Wait for images to load
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for all images to load
+      const images = tempContainer.querySelectorAll('img');
+      await Promise.all(
+        Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
+
+      // Additional wait to ensure layout is stable
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Generate PDF for this day
       const elements = Array.from(tempContainer.querySelectorAll('.pdf-page')) as HTMLElement[];
