@@ -247,6 +247,76 @@ export default function FixturesExportPage() {
       // Add small delay between downloads to prevent browser blocking
       await new Promise(resolve => setTimeout(resolve, 500));
     }
+
+    // Generate separate PDF for Sunday Playoffs
+    const allPageDivs = Array.from(contentRef.current.querySelectorAll('.pdf-page')) as HTMLElement[];
+    const playoffPageDiv = allPageDivs[allPageDivs.length - 1]; // Last page is playoffs
+
+    if (playoffPageDiv) {
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '0';
+      tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.style.isolation = 'isolate';
+      tempContainer.style.maxWidth = '80rem';
+      tempContainer.style.width = '100%';
+      document.body.appendChild(tempContainer);
+
+      const clonedDiv = playoffPageDiv.cloneNode(true) as HTMLElement;
+
+      // Add header for playoff page
+      const existingHeader = clonedDiv.querySelector('[class*="relative mb-4"]')?.parentElement;
+      if (!existingHeader) {
+        const headerContent = document.createElement('div');
+        headerContent.innerHTML = `
+          <div class="relative mb-4 pb-2" style="border-bottom: 4px solid #9333ea; background-color: #ffffff; color: #000000;">
+            <div class="relative flex items-start justify-between p-4">
+              <div class="flex-1">
+                <div class="relative w-56 h-56">
+                  <img src="/logos/dual-strike-logo.png" alt="Tournament Logo" width="224" height="224" style="object-fit: contain;" />
+                </div>
+              </div>
+              <div class="flex-1 text-center py-6">
+                <h1 class="text-5xl font-black mb-3 tracking-tight" style="color: #0d3944;">DAY-WISE FIXTURES</h1>
+                <div class="h-1 w-32 mx-auto mb-3" style="background: linear-gradient(to right, #9333ea, #ec4899);"></div>
+                <p class="text-2xl font-bold" style="color: #4a5568;">${tournament.name}</p>
+              </div>
+              <div class="flex-1 flex justify-end">
+                <div class="relative w-56 h-56">
+                  <img src="/logos/sponsor.png" alt="Sponsor Logo" width="224" height="224" style="object-fit: contain;" />
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        clonedDiv.insertBefore(headerContent, clonedDiv.firstChild);
+      }
+
+      tempContainer.appendChild(clonedDiv);
+
+      // Wait for images to load
+      const images = tempContainer.querySelectorAll('img');
+      await Promise.all(
+        Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Generate PDF for playoffs
+      const elements = Array.from(tempContainer.querySelectorAll('.pdf-page')) as HTMLElement[];
+      const pdf = await generatePDFFromElements(elements, html2canvas, jsPDF);
+      pdf.save(`${tournament.name.replace(/\s+/g, '_')}_Sunday_Playoffs.pdf`);
+
+      // Cleanup
+      document.body.removeChild(tempContainer);
+    }
   };
 
   const handleDownloadPDF = async () => {
@@ -359,10 +429,10 @@ export default function FixturesExportPage() {
           backgroundColor: isEven ? '#f9fafb' : '#ffffff'
         }}
       >
-        <td className="p-4" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
+        <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
           <div className="flex items-center justify-center">
             <span
-              className="text-2xl font-black w-12 h-12 rounded-full flex items-center justify-center"
+              className="text-xl font-black w-10 h-10 rounded-full flex items-center justify-center"
               style={{
                 color: '#9333ea',
                 backgroundColor: '#f3e8ff',
@@ -373,65 +443,65 @@ export default function FixturesExportPage() {
             </span>
           </div>
         </td>
-        <td className="p-4" style={{ borderRight: '2px solid #e5e7eb', width: '180px', verticalAlign: 'middle' }}>
+        <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '180px', verticalAlign: 'middle' }}>
           <div className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5" style={{ color: '#a855f7' }} />
-            <p className="text-base font-bold" style={{ color: '#111827' }}>{formatDate(match.startTime)}</p>
+            <CalendarIcon className="w-4 h-4" style={{ color: '#a855f7' }} />
+            <p className="text-sm font-bold" style={{ color: '#111827' }}>{formatDate(match.startTime)}</p>
           </div>
         </td>
-        <td className="p-4 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '120px', verticalAlign: 'middle' }}>
-          <p className="text-base font-bold" style={{ color: '#9333ea' }}>{formatTime(match.startTime)}</p>
+        <td className="p-3 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '120px', verticalAlign: 'middle' }}>
+          <p className="text-sm font-bold" style={{ color: '#9333ea' }}>{formatTime(match.startTime)}</p>
         </td>
-        <td className="p-4" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
+        <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
           <div className="text-center">
-            <p className="text-xl font-black" style={{ color: '#ff9800' }}>{match.court}</p>
+            <p className="text-lg font-black" style={{ color: '#ff9800' }}>{match.court}</p>
           </div>
         </td>
-        <td className="p-4" style={{ verticalAlign: 'middle' }}>
-          <div className="grid grid-cols-2 gap-3">
+        <td className="p-3" style={{ verticalAlign: 'middle' }}>
+          <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded-full flex-shrink-0"
+                className="w-6 h-6 rounded-full flex-shrink-0"
                 style={{
                   backgroundColor: getTeamColor(match.teamIds[0]),
-                  border: '3px solid #ffffff',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)'
                 }}
               ></div>
-              <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[0])}</span>
+              <span className="text-sm font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[0])}</span>
             </div>
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded-full flex-shrink-0"
+                className="w-6 h-6 rounded-full flex-shrink-0"
                 style={{
                   backgroundColor: getTeamColor(match.teamIds[1]),
-                  border: '3px solid #ffffff',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)'
                 }}
               ></div>
-              <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[1])}</span>
+              <span className="text-sm font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[1])}</span>
             </div>
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded-full flex-shrink-0"
+                className="w-6 h-6 rounded-full flex-shrink-0"
                 style={{
                   backgroundColor: getTeamColor(match.teamIds[2]),
-                  border: '3px solid #ffffff',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)'
                 }}
               ></div>
-              <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[2])}</span>
+              <span className="text-sm font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[2])}</span>
             </div>
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded-full flex-shrink-0"
+                className="w-6 h-6 rounded-full flex-shrink-0"
                 style={{
                   backgroundColor: getTeamColor(match.teamIds[3]),
-                  border: '3px solid #ffffff',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1)'
                 }}
               ></div>
-              <span className="text-base font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[3])}</span>
+              <span className="text-sm font-bold" style={{ color: '#111827' }}>{getTeamName(match.teamIds[3])}</span>
             </div>
           </div>
         </td>
@@ -439,12 +509,12 @@ export default function FixturesExportPage() {
     );
   };
 
-  const renderDayMatches = (pageMatches: typeof matches, isFirstPage: boolean, dayLabel: string, isNewDayStart: boolean = false) => (
-    <div className={`px-8 mb-8 ${!isFirstPage || isNewDayStart ? 'pt-12' : ''}`}>
+  const renderDayMatches = (pageMatches: typeof matches, isFirstPage: boolean, dayLabel: string, isNewDayStart: boolean = false, isThursday: boolean = false) => (
+    <div className={`px-8 mb-6 ${!isFirstPage || isNewDayStart ? 'pt-10' : ''}`}>
       {isFirstPage && (
-        <div className="p-4 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff' }}>
+        <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff' }}>
           <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
-            <CalendarIcon className="w-7 h-7" />
+            <CalendarIcon className="w-6 h-6" />
             {dayLabel}
           </h2>
         </div>
@@ -454,31 +524,188 @@ export default function FixturesExportPage() {
           {isFirstPage && (
             <thead>
               <tr style={{ background: 'linear-gradient(to right, #c084fc, #f472b6)' }}>
-                <th className="p-3 text-center font-black" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
+                <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
                   MATCH #
                 </th>
-                <th className="p-3 text-left font-black" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '180px' }}>
+                <th className="p-2 text-left font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '180px' }}>
                   DATE
                 </th>
-                <th className="p-3 text-center font-black" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '120px' }}>
+                <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '120px' }}>
                   TIME
                 </th>
-                <th className="p-3 text-center font-black" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
+                <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
                   COURT
                 </th>
-                <th className="p-3 text-center font-black" style={{ color: '#ffffff' }}>
+                <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff' }}>
                   TEAMS
                 </th>
               </tr>
             </thead>
           )}
           <tbody style={{ backgroundColor: '#ffffff' }}>
+            {isThursday && isFirstPage && (
+              <tr style={{ background: 'linear-gradient(to right, #10b981, #059669)', borderBottom: '2px solid #e5e7eb' }}>
+                <td colSpan={5} className="p-3" style={{ textAlign: 'center' }}>
+                  <p className="text-base font-black flex items-center justify-center gap-2" style={{ color: '#ffffff' }}>
+                    <span className="text-xl">📋</span>
+                    REGISTRATION: 7:30 PM
+                    <span className="text-xl">📋</span>
+                  </p>
+                </td>
+              </tr>
+            )}
             {pageMatches.map((match, idx) => renderMatchRow(match, idx))}
           </tbody>
         </table>
       </div>
     </div>
   );
+
+  const renderPlayoffSchedule = (includeHeader: boolean = false) => {
+    const playoffMatches = [
+      {
+        matchNumber: 26,
+        stage: 'Q1',
+        stageName: 'Qualifier 1',
+        time: '8:00 PM - 8:40 PM',
+        court: 'Court 1',
+        teams: '🎯 The Wildcards',
+        subtitle: 'League Positions: 5th • 6th • 11th • 12th'
+      },
+      {
+        matchNumber: 27,
+        stage: 'Q2',
+        stageName: 'Qualifier 2',
+        time: '8:00 PM - 8:40 PM',
+        court: 'Court 2',
+        teams: '🎯 Core Contenders',
+        subtitle: 'League Positions: 7th • 8th • 9th • 10th'
+      },
+      {
+        matchNumber: 28,
+        stage: 'SF1',
+        stageName: 'Semi-Final 1',
+        time: '8:45 PM - 9:25 PM',
+        court: 'Court 1',
+        teams: '⚡ Elite Quartet',
+        subtitle: 'Q2 Champions (Top 2) + League Leaders (Overall 1st & 2nd)'
+      },
+      {
+        matchNumber: 29,
+        stage: 'SF2',
+        stageName: 'Semi-Final 2',
+        time: '8:45 PM - 9:25 PM',
+        court: 'Court 2',
+        teams: '⚡ Power Pack',
+        subtitle: 'Q1 Champions (Top 2) + League Bronze Medalists (Overall 3rd & 4th)'
+      },
+      {
+        matchNumber: 30,
+        stage: 'FINAL',
+        stageName: 'Grand Finale',
+        time: '9:40 PM - 10:20 PM',
+        court: 'Court 1',
+        teams: '🏆 Ultimate Showdown',
+        subtitle: 'Semi-Final 1 Champions (Top 2) vs Semi-Final 2 Champions (Top 2)'
+      }
+    ];
+
+    return (
+      <>
+        {includeHeader && renderHeader()}
+        <div className="px-8 mb-6">
+          <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff' }}>
+            <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
+              <CalendarIcon className="w-6 h-6" />
+              Sunday, March 1, 2026 - PLAYOFFS
+            </h2>
+          </div>
+          <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #f59e0b', backgroundColor: '#ffffff' }}>
+            <table className="w-full" style={{ backgroundColor: '#ffffff' }}>
+              <thead>
+                <tr style={{ background: 'linear-gradient(to right, #fbbf24, #f87171)' }}>
+                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
+                    MATCH #
+                  </th>
+                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '140px' }}>
+                    STAGE
+                  </th>
+                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '140px' }}>
+                    TIME
+                  </th>
+                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
+                    COURT
+                  </th>
+                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff' }}>
+                    TEAMS
+                  </th>
+                </tr>
+              </thead>
+              <tbody style={{ backgroundColor: '#ffffff' }}>
+                {playoffMatches.map((match, idx) => {
+                  const isEven = idx % 2 === 0;
+                  return (
+                    <tr
+                      key={match.matchNumber}
+                      style={{
+                        borderBottom: idx < playoffMatches.length - 1 ? '2px solid #e5e7eb' : 'none',
+                        backgroundColor: isEven ? '#fef3c7' : '#ffffff'
+                      }}
+                    >
+                      <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
+                        <div className="flex items-center justify-center">
+                          <span
+                            className="text-xl font-black w-10 h-10 rounded-full flex items-center justify-center"
+                            style={{
+                              color: '#f59e0b',
+                              backgroundColor: '#fef3c7',
+                              border: '2px solid #fbbf24'
+                            }}
+                          >
+                            {match.matchNumber}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
+                        <span
+                          className="inline-block px-2 py-1 rounded-full text-xs font-black"
+                          style={{
+                            backgroundColor: match.stage === 'FINAL' ? '#ef4444' : '#f59e0b',
+                            color: '#ffffff'
+                          }}
+                        >
+                          {match.stageName}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
+                        <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>{match.time}</p>
+                      </td>
+                      <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
+                        <div className="text-center">
+                          <p className="text-lg font-black" style={{ color: '#ff9800' }}>{match.court}</p>
+                        </div>
+                      </td>
+                      <td className="p-3" style={{ verticalAlign: 'middle' }}>
+                        <div className="text-center">
+                          <p className="text-base font-black mb-1" style={{ color: '#111827' }}>{match.teams}</p>
+                          <p className="text-xs font-semibold" style={{ color: '#6b7280' }}>{match.subtitle}</p>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: '#fef3c7', border: '2px solid #fbbf24' }}>
+            <p className="text-xs font-bold text-center" style={{ color: '#92400e' }}>
+              🏆 Closing Ceremony: 10:25 PM - 10:45 PM 🏆
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -509,7 +736,7 @@ export default function FixturesExportPage() {
                 }`}
               >
                 <Files className="w-4 h-4" />
-                Separate Files ({dayWisePages.length})
+                Separate Files ({dayWisePages.length + 1})
               </button>
             </div>
           </div>
@@ -521,7 +748,7 @@ export default function FixturesExportPage() {
             className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4 mr-2" />
-            {isGenerating ? 'Generating...' : `Download ${separateFiles ? `${dayWisePages.length} PDFs` : 'PDF'}`}
+            {isGenerating ? 'Generating...' : `Download ${separateFiles ? `${dayWisePages.length + 1} PDFs` : 'PDF'}`}
           </Button>
         </div>
 
@@ -533,6 +760,7 @@ export default function FixturesExportPage() {
               const isFirstPageOfDay = pageIndex === 0;
               const isLastPage = dayIndex === dayWisePages.length - 1 && pageIndex === day.pages.length - 1;
               const isNewDayStart = dayIndex > 0 && pageIndex === 0; // New day starting (not the very first page)
+              const isThursday = dayIndex === 0; // First day is Thursday
 
               return (
                 <div
@@ -542,11 +770,23 @@ export default function FixturesExportPage() {
                 >
                   {/* Header only on very first page */}
                   {isVeryFirstPage && renderHeader()}
-                  {renderDayMatches(pageMatches, isFirstPageOfDay, day.displayDate, isNewDayStart)}
+                  {renderDayMatches(pageMatches, isFirstPageOfDay, day.displayDate, isNewDayStart, isThursday && isFirstPageOfDay)}
                 </div>
               );
             })
           )}
+
+          {/* Playoff Schedule - Sunday (Separate Page) */}
+          <div
+            className="pdf-page"
+            style={{
+              backgroundColor: '#ffffff',
+              marginTop: '20px',
+              pageBreakBefore: 'always'
+            }}
+          >
+            {renderPlayoffSchedule(false)}
+          </div>
         </div>
       </div>
     </div>

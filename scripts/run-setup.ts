@@ -27,7 +27,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 async function runSetup() {
   try {
     console.log('📖 Reading SQL script...')
-    const sqlPath = join(__dirname, 'setup-tournament.sql')
+    const sqlPath = join(__dirname, 'setup-tournament-updated.sql')
     const sql = readFileSync(sqlPath, 'utf-8')
 
     console.log('🚀 Executing SQL script...')
