@@ -292,8 +292,8 @@ export default function FixturesExportPage() {
     );
   };
 
-  const renderDayMatches = (pageMatches: typeof matches, isFirstPage: boolean, dayLabel: string) => (
-    <div className={`px-8 mb-8 ${!isFirstPage ? 'pt-12' : ''}`}>
+  const renderDayMatches = (pageMatches: typeof matches, isFirstPage: boolean, dayLabel: string, isNewDayStart: boolean = false) => (
+    <div className={`px-8 mb-8 ${!isFirstPage || isNewDayStart ? 'pt-12' : ''}`}>
       {isFirstPage && (
         <div className="p-4 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#ffffff' }}>
           <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
@@ -354,6 +354,7 @@ export default function FixturesExportPage() {
               const isVeryFirstPage = dayIndex === 0 && pageIndex === 0;
               const isFirstPageOfDay = pageIndex === 0;
               const isLastPage = dayIndex === dayWisePages.length - 1 && pageIndex === day.pages.length - 1;
+              const isNewDayStart = dayIndex > 0 && pageIndex === 0; // New day starting (not the very first page)
 
               return (
                 <div
@@ -363,7 +364,7 @@ export default function FixturesExportPage() {
                 >
                   {/* Header only on very first page */}
                   {isVeryFirstPage && renderHeader()}
-                  {renderDayMatches(pageMatches, isFirstPageOfDay, day.displayDate)}
+                  {renderDayMatches(pageMatches, isFirstPageOfDay, day.displayDate, isNewDayStart)}
                 </div>
               );
             })
