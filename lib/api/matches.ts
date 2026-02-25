@@ -443,9 +443,22 @@ export async function updateMatchDetails(matchId: string, updates: Partial<{
   teamIds: [string, string, string, string]
   stage: MatchStage
 }>): Promise<Match> {
-  console.log("updateMatchDetails called with:", { matchId, updates });
+  console.log("=== updateMatchDetails START ===");
+  console.log("Function called with:", { matchId, updates });
+  console.log("Current supabase client:", supabase ? "initialized" : "NOT initialized");
 
-  return retryOperation(async () => {
+  // Add timeout wrapper to prevent hanging indefinitely
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      console.error("updateMatchDetails TIMEOUT after 10 seconds");
+      reject(new Error("Update operation timed out after 10 seconds"));
+    }, 10000);
+  });
+
+  console.log("Starting retryOperation...");
+
+  const updatePromise = retryOperation(async () => {
+    console.log("Inside retryOperation callback");
     try {
       const matchData: MatchUpdate = {
         ...(updates.matchNumber !== undefined && { match_number: updates.matchNumber }),
@@ -457,15 +470,17 @@ export async function updateMatchDetails(matchId: string, updates: Partial<{
       }
 
       console.log("Prepared match data for update:", matchData);
-      console.log("Calling Supabase update...");
+      console.log("About to call Supabase API...");
 
       // @ts-ignore - Supabase browser client type inference limitation
       const { data, error } = await supabase.from("matches").update(matchData).eq("id", matchId).select().single()
 
-      console.log("Supabase response:", { data, error });
+      console.log("Supabase API returned");
+      console.log("Response data:", data);
+      console.log("Response error:", error);
 
       if (error) {
-        console.error("Supabase error:", error);
+        console.error("Supabase error details:", error);
         throw error;
       }
       if (!data) {
@@ -476,12 +491,26 @@ export async function updateMatchDetails(matchId: string, updates: Partial<{
       console.log("Match updated successfully, transforming row...");
       const result = transformMatchRow(data);
       console.log("Transformed result:", result);
+      console.log("=== updateMatchDetails SUCCESS ===");
       return result;
     } catch (err) {
-      console.error("Error updating match details:", err)
+      console.error("Error in retryOperation:", err)
+      console.error("Error stack:", err instanceof Error ? err.stack : "No stack");
       throw new Error(`Failed to update match details: ${err instanceof Error ? err.message : "Unknown error"}`)
     }
-  }, 3, 500)
+  }, 3, 500);
+
+  console.log("Racing updatePromise against timeoutPromise...");
+
+  try {
+    const result = await Promise.race([updatePromise, timeoutPromise]);
+    console.log("=== updateMatchDetails COMPLETED ===");
+    return result;
+  } catch (err) {
+    console.error("=== updateMatchDetails FAILED ===");
+    console.error("Final error:", err);
+    throw err;
+  }
 }
 
 /**
