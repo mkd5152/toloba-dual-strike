@@ -158,7 +158,7 @@ export default function TeamSheetExportPage() {
                 border: '3px solid rgba(255, 152, 0, 0.3)'
               }}
             >
-              {teams.indexOf(team) + 1}
+              {index + 1}
             </span>
           </div>
         </td>
