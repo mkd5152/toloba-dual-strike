@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Calendar, Trophy, LogOut, Menu, X, Layers, Award, Download } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, Trophy, LogOut, Menu, X, Layers, Award, Download, CalendarCog } from "lucide-react";
 import { TOURNAMENT_INFO } from "@/lib/constants";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useState } from "react";
@@ -21,6 +21,7 @@ export default function OrganizerLayout({
     { href: "/organizer/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/organizer/teams", label: "Teams", icon: Users },
     { href: "/organizer/schedule", label: "Schedule", icon: Calendar },
+    { href: "/organizer/match-management", label: "Match Management", icon: CalendarCog },
     { href: "/organizer/matches", label: "Matches", icon: Trophy },
     { href: "/organizer/standings", label: "Standings", icon: Layers },
     { href: "/organizer/playoffs", label: "Playoffs", icon: Award },

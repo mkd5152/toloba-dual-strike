@@ -434,6 +434,41 @@ export async function updateMatchRankings(matchId: string, rankings: MatchRankin
 }
 
 /**
+ * Update match details (for rescheduling and team changes)
+ */
+export async function updateMatchDetails(matchId: string, updates: Partial<{
+  matchNumber: number
+  court: string
+  startTime: Date
+  teamIds: [string, string, string, string]
+  stage: MatchStage
+}>): Promise<Match> {
+  return retryOperation(async () => {
+    try {
+      const matchData: MatchUpdate = {
+        ...(updates.matchNumber !== undefined && { match_number: updates.matchNumber }),
+        ...(updates.court && { court: updates.court }),
+        ...(updates.startTime && { start_time: updates.startTime.toISOString() }),
+        ...(updates.teamIds && { team_ids: updates.teamIds as any }),
+        ...(updates.stage && { stage: updates.stage }),
+        updated_at: new Date().toISOString(),
+      }
+
+      // @ts-ignore - Supabase browser client type inference limitation
+      const { data, error } = await supabase.from("matches").update(matchData).eq("id", matchId).select().single()
+
+      if (error) throw error
+      if (!data) throw new Error("No data returned from update")
+
+      return transformMatchRow(data)
+    } catch (err) {
+      console.error("Error updating match details:", err)
+      throw new Error(`Failed to update match details: ${err instanceof Error ? err.message : "Unknown error"}`)
+    }
+  }, 3, 500)
+}
+
+/**
  * Lock a match
  */
 export async function lockMatch(matchId: string): Promise<Match> {
