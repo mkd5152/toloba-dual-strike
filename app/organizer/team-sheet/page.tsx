@@ -20,6 +20,14 @@ export default function TeamSheetPage() {
     window.print();
   };
 
+  // Sort teams by ID (team-1, team-2, etc.) to maintain consistent ordering
+  const sortedTeams = [...teams].sort((a, b) => {
+    // Extract numeric part from team IDs (e.g., "team-1" -> 1, "team-14" -> 14)
+    const numA = parseInt(a.id.split('-')[1] || '0');
+    const numB = parseInt(b.id.split('-')[1] || '0');
+    return numA - numB;
+  });
+
   return (
     <div className="min-h-screen tournament-bg-pattern p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -44,7 +52,7 @@ export default function TeamSheetPage() {
 
         {/* Printable Team Sheet */}
         <div ref={componentRef} className="bg-white">
-          <TeamSheetDocument teams={teams} tournamentName={tournament.name} />
+          <TeamSheetDocument teams={sortedTeams} tournamentName={tournament.name} />
         </div>
       </div>
 

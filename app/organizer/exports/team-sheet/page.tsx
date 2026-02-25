@@ -21,13 +21,21 @@ export default function TeamSheetExportPage() {
 
     if (teams.length === 0) return pages;
 
+    // Sort teams by ID (team-1, team-2, etc.) to maintain consistent ordering
+    const sortedTeams = [...teams].sort((a, b) => {
+      // Extract numeric part from team IDs (e.g., "team-1" -> 1, "team-14" -> 14)
+      const numA = parseInt(a.id.split('-')[1] || '0');
+      const numB = parseInt(b.id.split('-')[1] || '0');
+      return numA - numB;
+    });
+
     // Split into pages of 12 teams each
-    for (let i = 0; i < teams.length; i += 12) {
-      pages.push(teams.slice(i, i + 12));
+    for (let i = 0; i < sortedTeams.length; i += 12) {
+      pages.push(sortedTeams.slice(i, i + 12));
     }
 
     console.log('Team pagination:', pages.map((p, i) => `Page ${i + 1}: ${p.length} teams`));
-    console.log('Total teams:', teams.length);
+    console.log('Total teams:', sortedTeams.length);
     return pages;
   }, [teams]);
 
