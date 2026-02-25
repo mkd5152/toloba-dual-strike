@@ -123,15 +123,27 @@ export function EditMatchDialog({ match, teams, onUpdate, children }: EditMatchD
     const uniqueTeams = new Set(selectedTeams);
     if (uniqueTeams.size !== 4) {
       setError("Please select 4 different teams");
+      setLoading(false);
       return;
     }
 
     setLoading(true);
     setError(null);
 
+    console.log("Submitting match update:", {
+      matchId: match.id,
+      matchNumber,
+      court,
+      date,
+      time,
+      teams: [team1, team2, team3, team4],
+      stage,
+    });
+
     try {
       const startTime = new Date(`${date}T${time}`);
 
+      console.log("Calling updateMatchDetails...");
       await updateMatchDetails(match.id, {
         matchNumber,
         court,
@@ -140,12 +152,16 @@ export function EditMatchDialog({ match, teams, onUpdate, children }: EditMatchD
         stage,
       });
 
-      onUpdate();
+      console.log("Match updated successfully, reloading matches...");
+      await onUpdate();
+
+      console.log("Matches reloaded, closing dialog");
       setOpen(false);
     } catch (err) {
       console.error("Error updating match:", err);
       setError(err instanceof Error ? err.message : "Failed to update match");
     } finally {
+      console.log("Setting loading to false");
       setLoading(false);
     }
   };
@@ -287,7 +303,15 @@ export function EditMatchDialog({ match, teams, onUpdate, children }: EditMatchD
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setLoading(false);
+                setError(null);
+                setOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading || conflicts.length > 0}>
