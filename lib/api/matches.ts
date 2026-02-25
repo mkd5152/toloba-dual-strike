@@ -443,6 +443,8 @@ export async function updateMatchDetails(matchId: string, updates: Partial<{
   teamIds: [string, string, string, string]
   stage: MatchStage
 }>): Promise<Match> {
+  console.log("updateMatchDetails called with:", { matchId, updates });
+
   return retryOperation(async () => {
     try {
       const matchData: MatchUpdate = {
@@ -454,13 +456,27 @@ export async function updateMatchDetails(matchId: string, updates: Partial<{
         updated_at: new Date().toISOString(),
       }
 
+      console.log("Prepared match data for update:", matchData);
+      console.log("Calling Supabase update...");
+
       // @ts-ignore - Supabase browser client type inference limitation
       const { data, error } = await supabase.from("matches").update(matchData).eq("id", matchId).select().single()
 
-      if (error) throw error
-      if (!data) throw new Error("No data returned from update")
+      console.log("Supabase response:", { data, error });
 
-      return transformMatchRow(data)
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      if (!data) {
+        console.error("No data returned from update");
+        throw new Error("No data returned from update");
+      }
+
+      console.log("Match updated successfully, transforming row...");
+      const result = transformMatchRow(data);
+      console.log("Transformed result:", result);
+      return result;
     } catch (err) {
       console.error("Error updating match details:", err)
       throw new Error(`Failed to update match details: ${err instanceof Error ? err.message : "Unknown error"}`)
