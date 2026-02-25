@@ -71,110 +71,110 @@ INSERT INTO tournaments (
 -- STEP 3: CREATE TEAMS (20 TEAMS - NO GROUPS)
 -- ================================================================
 INSERT INTO teams (id, tournament_id, name, color, "group", created_at, updated_at) VALUES
-  ('team-dhaba', 'tdst-season-1', 'Dhaba', '#FF5733', NULL, NOW(), NOW()),
-  ('team-parallel', 'tdst-season-1', 'Parallel Power', '#27AE60', NULL, NOW(), NOW()),
-  ('team-dynamic', 'tdst-season-1', 'Dynamic Duo', '#9B59B6', NULL, NOW(), NOW()),
-  ('team-dragons', 'tdst-season-1', 'Dragons', '#E74C3C', NULL, NOW(), NOW()),
-  ('team-dhanera', 'tdst-season-1', 'Dhanera Daredevils', '#3498DB', NULL, NOW(), NOW()),
-  ('team-hunters', 'tdst-season-1', 'Hunters', '#16A085', NULL, NOW(), NOW()),
-  ('team-sibling', 'tdst-season-1', 'Sibling Strikers', '#E67E22', NULL, NOW(), NOW()),
-  ('team-nahda', 'tdst-season-1', 'Nahda Shooters', '#F1C40F', NULL, NOW(), NOW()),
-  ('team-jade', 'tdst-season-1', 'Team Jade Jaguars', '#566573', NULL, NOW(), NOW()),
-  ('team-swat', 'tdst-season-1', 'Swat Katz', '#95A5A6', NULL, NOW(), NOW()),
-  ('team-hakimi', 'tdst-season-1', 'Hakimi Dynamos', '#F39C12', NULL, NOW(), NOW()),
-  ('team-royal', 'tdst-season-1', 'Royal Blasters', '#C0392B', NULL, NOW(), NOW()),
-  ('team-khatte', 'tdst-season-1', 'Khatte Angoor', '#D35400', NULL, NOW(), NOW()),
-  ('team-dubai', 'tdst-season-1', 'Dubai Sultans', '#6C3483', NULL, NOW(), NOW()),
-  ('team-taher', 'tdst-season-1', 'Taher Ali', '#196F3D', NULL, NOW(), NOW()),
-  ('team-sultan', 'tdst-season-1', 'Sultan Strikers', '#8E44AD', NULL, NOW(), NOW()),
-  ('team-thunder', 'tdst-season-1', 'Thunder Strikers', '#DC7633', NULL, NOW(), NOW()),
-  ('team-ma', 'tdst-season-1', 'MA Stars', '#2980B9', NULL, NOW(), NOW()),
-  ('team-nuqum', 'tdst-season-1', 'Nuqum Rock', '#34495E', NULL, NOW(), NOW()),
-  ('team-power', 'tdst-season-1', 'Power Strikers', '#1ABC9C', NULL, NOW(), NOW());
+  ('team-1', 'tdst-season-1', 'MUSTABIZ', '#FF5733', NULL, NOW(), NOW()),
+  ('team-2', 'tdst-season-1', 'Parallel Power', '#27AE60', NULL, NOW(), NOW()),
+  ('team-3', 'tdst-season-1', 'Dynamic Duo', '#9B59B6', NULL, NOW(), NOW()),
+  ('team-4', 'tdst-season-1', 'Dragons', '#E74C3C', NULL, NOW(), NOW()),
+  ('team-5', 'tdst-season-1', 'Dhanera Daredevils', '#3498DB', NULL, NOW(), NOW()),
+  ('team-6', 'tdst-season-1', 'Hunters', '#16A085', NULL, NOW(), NOW()),
+  ('team-7', 'tdst-season-1', 'Sibling Strikers', '#E67E22', NULL, NOW(), NOW()),
+  ('team-8', 'tdst-season-1', 'Nahda Shooters', '#F1C40F', NULL, NOW(), NOW()),
+  ('team-9', 'tdst-season-1', 'Team Jade Jaguars', '#566573', NULL, NOW(), NOW()),
+  ('team-10', 'tdst-season-1', 'Swat Katz', '#95A5A6', NULL, NOW(), NOW()),
+  ('team-11', 'tdst-season-1', 'Hakimi Dynamos', '#F39C12', NULL, NOW(), NOW()),
+  ('team-12', 'tdst-season-1', 'Royal Blasters', '#C0392B', NULL, NOW(), NOW()),
+  ('team-13', 'tdst-season-1', 'Khatte Angoor', '#D35400', NULL, NOW(), NOW()),
+  ('team-14', 'tdst-season-1', 'Dubai Sultans', '#6C3483', NULL, NOW(), NOW()),
+  ('team-15', 'tdst-season-1', 'Taher Ali', '#196F3D', NULL, NOW(), NOW()),
+  ('team-16', 'tdst-season-1', 'Sultan Strikers', '#8E44AD', NULL, NOW(), NOW()),
+  ('team-17', 'tdst-season-1', 'Thunder Strikers', '#DC7633', NULL, NOW(), NOW()),
+  ('team-18', 'tdst-season-1', 'MA Stars', '#2980B9', NULL, NOW(), NOW()),
+  ('team-19', 'tdst-season-1', 'Nuqum Rock', '#34495E', NULL, NOW(), NOW()),
+  ('team-20', 'tdst-season-1', 'Power Strikers', '#1ABC9C', NULL, NOW(), NOW());
 
 -- ================================================================
 -- STEP 4: ADD PLAYERS TO EACH TEAM (ACTUAL REGISTERED PLAYERS)
 -- ================================================================
 INSERT INTO players (id, team_id, name, role, is_late_arrival, created_at, updated_at) VALUES
-  -- Dhaba
-  ('player-dhaba-1', 'team-dhaba', 'Aliasgar Dhanerawala', 'batsman', false, NOW(), NOW()),
-  ('player-dhaba-2', 'team-dhaba', 'Aliasgar Barbhaya', 'bowler', false, NOW(), NOW()),
+  -- MUSTABIZ
+  ('player-1-1', 'team-1', 'Mustafa Cement', 'batsman', false, NOW(), NOW()),
+  ('player-1-2', 'team-1', 'Abizer Kapadia', 'bowler', false, NOW(), NOW()),
 
   -- Parallel Power
-  ('player-parallel-1', 'team-parallel', 'Mohammed Abbas', 'batsman', false, NOW(), NOW()),
-  ('player-parallel-2', 'team-parallel', 'Mohammad Hozefa', 'bowler', false, NOW(), NOW()),
+  ('player-2-1', 'team-2', 'Mohammed Abbas', 'batsman', false, NOW(), NOW()),
+  ('player-2-2', 'team-2', 'Mohammad Hozefa', 'bowler', false, NOW(), NOW()),
 
   -- Dynamic Duo
-  ('player-dynamic-1', 'team-dynamic', 'Burhanuddin', 'batsman', false, NOW(), NOW()),
-  ('player-dynamic-2', 'team-dynamic', 'Mustafa Patan', 'bowler', false, NOW(), NOW()),
+  ('player-3-1', 'team-3', 'Burhanuddin', 'batsman', false, NOW(), NOW()),
+  ('player-3-2', 'team-3', 'Mustafa Patan', 'bowler', false, NOW(), NOW()),
 
   -- Dragons
-  ('player-dragons-1', 'team-dragons', 'Mudar Koshish', 'batsman', false, NOW(), NOW()),
-  ('player-dragons-2', 'team-dragons', 'Hasan Mahuwala', 'bowler', false, NOW(), NOW()),
+  ('player-4-1', 'team-4', 'Mudar Koshish', 'batsman', false, NOW(), NOW()),
+  ('player-4-2', 'team-4', 'Hasan Mahuwala', 'bowler', false, NOW(), NOW()),
 
   -- Dhanera Daredevils
-  ('player-dhanera-1', 'team-dhanera', 'Abdul Taiyab', 'batsman', false, NOW(), NOW()),
-  ('player-dhanera-2', 'team-dhanera', 'Mustafa Abdul Taiyab', 'bowler', false, NOW(), NOW()),
+  ('player-5-1', 'team-5', 'Abdul Taiyab', 'batsman', false, NOW(), NOW()),
+  ('player-5-2', 'team-5', 'Mustafa Abdul Taiyab', 'bowler', false, NOW(), NOW()),
 
   -- Hunters
-  ('player-hunters-1', 'team-hunters', 'Fakhruddin Moiz Attarwala', 'batsman', false, NOW(), NOW()),
-  ('player-hunters-2', 'team-hunters', 'Mustafa Shaikh Abdul Husain Barbhaya', 'bowler', false, NOW(), NOW()),
+  ('player-6-1', 'team-6', 'Fakhruddin Moiz Attarwala', 'batsman', false, NOW(), NOW()),
+  ('player-6-2', 'team-6', 'Mustafa Shaikh Abdul Husain Barbhaya', 'bowler', false, NOW(), NOW()),
 
   -- Sibling Strikers
-  ('player-sibling-1', 'team-sibling', 'Shabbir Abid Pumpwala', 'batsman', false, NOW(), NOW()),
-  ('player-sibling-2', 'team-sibling', 'Husain Abid Pumpwala', 'bowler', false, NOW(), NOW()),
+  ('player-7-1', 'team-7', 'Shabbir Abid Pumpwala', 'batsman', false, NOW(), NOW()),
+  ('player-7-2', 'team-7', 'Husain Abid Pumpwala', 'bowler', false, NOW(), NOW()),
 
   -- Nahda Shooters
-  ('player-nahda-1', 'team-nahda', 'Husain Shaikh Kutbuddin Electricwala', 'batsman', false, NOW(), NOW()),
-  ('player-nahda-2', 'team-nahda', 'Husain Aziz Pansari', 'bowler', false, NOW(), NOW()),
+  ('player-8-1', 'team-8', 'Husain Shaikh Kutbuddin Electricwala', 'batsman', false, NOW(), NOW()),
+  ('player-8-2', 'team-8', 'Husain Aziz Pansari', 'bowler', false, NOW(), NOW()),
 
   -- Team Jade Jaguars
-  ('player-jade-1', 'team-jade', 'Aziz Moiz Patanwala', 'batsman', false, NOW(), NOW()),
-  ('player-jade-2', 'team-jade', 'Taher Husain Motiwala', 'bowler', false, NOW(), NOW()),
+  ('player-9-1', 'team-9', 'Aziz Moiz Patanwala', 'batsman', false, NOW(), NOW()),
+  ('player-9-2', 'team-9', 'Taher Husain Motiwala', 'bowler', false, NOW(), NOW()),
 
   -- Swat Katz
-  ('player-swat-1', 'team-swat', 'Mulla Mustafa Yusuf Galabhai', 'batsman', false, NOW(), NOW()),
-  ('player-swat-2', 'team-swat', 'Husain Shaikh Akber Tambawala', 'bowler', false, NOW(), NOW()),
+  ('player-10-1', 'team-10', 'Mulla Mustafa Yusuf Galabhai', 'batsman', false, NOW(), NOW()),
+  ('player-10-2', 'team-10', 'Husain Shaikh Akber Tambawala', 'bowler', false, NOW(), NOW()),
 
   -- Hakimi Dynamos
-  ('player-hakimi-1', 'team-hakimi', 'Mohammed Juzer Lokhandwala', 'batsman', false, NOW(), NOW()),
-  ('player-hakimi-2', 'team-hakimi', 'Yusuf Hatim Sunelwala', 'bowler', false, NOW(), NOW()),
+  ('player-11-1', 'team-11', 'Mohammed Juzer Lokhandwala', 'batsman', false, NOW(), NOW()),
+  ('player-11-2', 'team-11', 'Yusuf Hatim Sunelwala', 'bowler', false, NOW(), NOW()),
 
   -- Royal Blasters
-  ('player-royal-1', 'team-royal', 'Adnan Dabba', 'batsman', false, NOW(), NOW()),
-  ('player-royal-2', 'team-royal', 'Burhanuddin Kanpur', 'bowler', false, NOW(), NOW()),
+  ('player-12-1', 'team-12', 'Adnan Dabba', 'batsman', false, NOW(), NOW()),
+  ('player-12-2', 'team-12', 'Burhanuddin Kanpur', 'bowler', false, NOW(), NOW()),
 
   -- Khatte Angoor
-  ('player-khatte-1', 'team-khatte', 'Murtaza Taskin', 'batsman', false, NOW(), NOW()),
-  ('player-khatte-2', 'team-khatte', 'Abbas Gheewala', 'bowler', false, NOW(), NOW()),
+  ('player-13-1', 'team-13', 'Murtaza Taskin', 'batsman', false, NOW(), NOW()),
+  ('player-13-2', 'team-13', 'Abbas Gheewala', 'bowler', false, NOW(), NOW()),
 
   -- Dubai Sultans
-  ('player-dubai-1', 'team-dubai', 'Burhanuddin Chunawala', 'batsman', false, NOW(), NOW()),
-  ('player-dubai-2', 'team-dubai', 'Husain Ali', 'bowler', false, NOW(), NOW()),
+  ('player-14-1', 'team-14', 'Burhanuddin Chunawala', 'batsman', false, NOW(), NOW()),
+  ('player-14-2', 'team-14', 'Husain Ali', 'bowler', false, NOW(), NOW()),
 
   -- Taher Ali
-  ('player-taher-1', 'team-taher', 'Aliasgar Khandwawala', 'batsman', false, NOW(), NOW()),
-  ('player-taher-2', 'team-taher', 'Taher Shabbir Gadiwala', 'bowler', false, NOW(), NOW()),
+  ('player-15-1', 'team-15', 'Aliasgar Khandwawala', 'batsman', false, NOW(), NOW()),
+  ('player-15-2', 'team-15', 'Taher Shabbir Gadiwala', 'bowler', false, NOW(), NOW()),
 
   -- Sultan Strikers
-  ('player-sultan-1', 'team-sultan', 'Huzefa Gohil', 'batsman', false, NOW(), NOW()),
-  ('player-sultan-2', 'team-sultan', 'Malekulashter', 'bowler', false, NOW(), NOW()),
+  ('player-16-1', 'team-16', 'Huzefa Gohil', 'batsman', false, NOW(), NOW()),
+  ('player-16-2', 'team-16', 'Malekulashter', 'bowler', false, NOW(), NOW()),
 
   -- Thunder Strikers
-  ('player-thunder-1', 'team-thunder', 'Ibrahim Sheikh Husain Ezzi', 'batsman', false, NOW(), NOW()),
-  ('player-thunder-2', 'team-thunder', 'Qaid Joher Huzefa Nasir', 'bowler', false, NOW(), NOW()),
+  ('player-17-1', 'team-17', 'Ibrahim Sheikh Husain Ezzi', 'batsman', false, NOW(), NOW()),
+  ('player-17-2', 'team-17', 'Qaid Joher Huzefa Nasir', 'bowler', false, NOW(), NOW()),
 
   -- MA Stars
-  ('player-ma-1', 'team-ma', 'Abdeali Nulwala', 'batsman', false, NOW(), NOW()),
-  ('player-ma-2', 'team-ma', 'Mufaddal Maimoon', 'bowler', false, NOW(), NOW()),
+  ('player-18-1', 'team-18', 'Abdeali Nulwala', 'batsman', false, NOW(), NOW()),
+  ('player-18-2', 'team-18', 'Mufaddal Maimoon', 'bowler', false, NOW(), NOW()),
 
   -- Nuqum Rock
-  ('player-nuqum-1', 'team-nuqum', 'Mohammed Mulla Zoeb Badri', 'batsman', false, NOW(), NOW()),
-  ('player-nuqum-2', 'team-nuqum', 'Abdul Qader Najmuddin Madarwala', 'bowler', false, NOW(), NOW()),
+  ('player-19-1', 'team-19', 'Mohammed Mulla Zoeb Badri', 'batsman', false, NOW(), NOW()),
+  ('player-19-2', 'team-19', 'Abdul Qader Najmuddin Madarwala', 'bowler', false, NOW(), NOW()),
 
   -- Power Strikers
-  ('player-power-1', 'team-power', 'Huzefa Najmi', 'batsman', false, NOW(), NOW()),
-  ('player-power-2', 'team-power', 'Burhanuddin Nasir', 'bowler', false, NOW(), NOW());
+  ('player-20-1', 'team-20', 'Huzefa Najmi', 'batsman', false, NOW(), NOW()),
+  ('player-20-2', 'team-20', 'Burhanuddin Nasir', 'bowler', false, NOW(), NOW());
 
 -- ================================================================
 -- STEP 5: SCHEDULE LEAGUE MATCHES (25 MATCHES)
@@ -191,42 +191,42 @@ INSERT INTO players (id, team_id, name, role, is_late_arrival, created_at, updat
 
 INSERT INTO matches (id, tournament_id, match_number, court, start_time, umpire_id, umpire_name, team_ids, state, stage, batting_order, rankings, locked_at, created_at, updated_at) VALUES
   -- Match 1 & 2 (8:00 PM UAE = 16:00 UTC)
-  -- Match 1: Original Match 5 (Dubai Sultans vs Nahda vs Sultan vs Jade)
+  -- Match 1: Dubai Sultans vs Nahda vs Sultan vs Jade
   ('match-01', 'tdst-season-1', 1, 'Court 1', '2026-02-26 16:00:00', NULL, NULL,
-   ARRAY['team-dubai', 'team-nahda', 'team-sultan', 'team-jade'],
+   ARRAY['team-14', 'team-8', 'team-16', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
-  -- Match 2: Original Match 1 (MA vs Dhaba vs Dhanera vs Nuqum)
+  -- Match 2: MA vs MUSTABIZ vs Dhanera vs Nuqum
   ('match-02', 'tdst-season-1', 2, 'Court 2', '2026-02-26 16:00:00', NULL, NULL,
-   ARRAY['team-ma', 'team-dhaba', 'team-dhanera', 'team-nuqum'],
+   ARRAY['team-18', 'team-1', 'team-5', 'team-19'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 3 & 4 (8:40 PM UAE = 16:40 UTC)
-  -- Match 3: Original Match 2 (Thunder vs Dragons vs Dynamic vs Sibling)
+  -- Match 3: Thunder vs Dragons vs Dynamic vs Sibling
   ('match-03', 'tdst-season-1', 3, 'Court 1', '2026-02-26 16:40:00', NULL, NULL,
-   ARRAY['team-thunder', 'team-dragons', 'team-dynamic', 'team-sibling'],
+   ARRAY['team-17', 'team-4', 'team-3', 'team-7'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
-  -- Match 4: Original Match 3 (Royal vs Hakimi vs Khatte vs Swat)
+  -- Match 4: Royal vs Hakimi vs Khatte vs Swat
   ('match-04', 'tdst-season-1', 4, 'Court 2', '2026-02-26 16:40:00', NULL, NULL,
-   ARRAY['team-royal', 'team-hakimi', 'team-khatte', 'team-swat'],
+   ARRAY['team-12', 'team-11', 'team-13', 'team-10'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 5 & 6 (9:20 PM UAE = 17:20 UTC)
-  -- Match 5: Original Match 4 (Parallel vs Hunters vs Power vs Taher)
+  -- Match 5: Parallel vs Hunters vs NAHDA SHOOTERS vs Taher (CHANGED: Power Strikers → Nahda Shooters)
   ('match-05', 'tdst-season-1', 5, 'Court 1', '2026-02-26 17:20:00', NULL, NULL,
-   ARRAY['team-parallel', 'team-hunters', 'team-power', 'team-taher'],
+   ARRAY['team-2', 'team-6', 'team-8', 'team-15'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
-  -- Match 6: Original Match 6 (MA vs Dragons vs Power vs Jade)
+  -- Match 6: MA vs Dragons vs Power vs Jade
   ('match-06', 'tdst-season-1', 6, 'Court 2', '2026-02-26 17:20:00', NULL, NULL,
-   ARRAY['team-ma', 'team-dragons', 'team-power', 'team-jade'],
+   ARRAY['team-18', 'team-4', 'team-20', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 7 (10:00 PM UAE = 18:00 UTC)
-  -- Match 7: Original Sunday Match 25 (Taher vs Sibling vs Swat vs Jade)
+  -- Match 7: Taher vs Sibling vs Swat vs Jade
   ('match-07', 'tdst-season-1', 7, 'Court 1', '2026-02-26 18:00:00', NULL, NULL,
-   ARRAY['team-taher', 'team-sibling', 'team-swat', 'team-jade'],
+   ARRAY['team-15', 'team-7', 'team-10', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW());
 
 -- FRIDAY, FEB 27, 2026 - 8 LEAGUE GAMES
@@ -238,38 +238,38 @@ INSERT INTO matches (id, tournament_id, match_number, court, start_time, umpire_
 INSERT INTO matches (id, tournament_id, match_number, court, start_time, umpire_id, umpire_name, team_ids, state, stage, batting_order, rankings, locked_at, created_at, updated_at) VALUES
   -- Match 8 & 9 (8:00 PM UAE = 16:00 UTC)
   ('match-08', 'tdst-season-1', 8, 'Court 1', '2026-02-27 16:00:00', NULL, NULL,
-   ARRAY['team-thunder', 'team-hakimi', 'team-sibling', 'team-nuqum'],
+   ARRAY['team-17', 'team-11', 'team-7', 'team-19'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-09', 'tdst-season-1', 9, 'Court 2', '2026-02-27 16:00:00', NULL, NULL,
-   ARRAY['team-royal', 'team-nahda', 'team-sultan', 'team-taher'],
+   ARRAY['team-12', 'team-8', 'team-16', 'team-15'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 10 & 11 (8:40 PM UAE = 16:40 UTC)
   ('match-10', 'tdst-season-1', 10, 'Court 1', '2026-02-27 16:40:00', NULL, NULL,
-   ARRAY['team-parallel', 'team-hunters', 'team-dhanera', 'team-jade'],
+   ARRAY['team-2', 'team-6', 'team-5', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-11', 'tdst-season-1', 11, 'Court 2', '2026-02-27 16:40:00', NULL, NULL,
-   ARRAY['team-dubai', 'team-dhaba', 'team-dynamic', 'team-swat'],
+   ARRAY['team-14', 'team-1', 'team-3', 'team-10'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 12 & 13 (9:20 PM UAE = 17:20 UTC)
   ('match-12', 'tdst-season-1', 12, 'Court 1', '2026-02-27 17:20:00', NULL, NULL,
-   ARRAY['team-ma', 'team-hakimi', 'team-sultan', 'team-swat'],
+   ARRAY['team-18', 'team-11', 'team-16', 'team-10'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-13', 'tdst-season-1', 13, 'Court 2', '2026-02-27 17:20:00', NULL, NULL,
-   ARRAY['team-thunder', 'team-nahda', 'team-dhanera', 'team-jade'],
+   ARRAY['team-17', 'team-8', 'team-5', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 14 & 15 (10:00 PM UAE = 18:00 UTC)
   ('match-14', 'tdst-season-1', 14, 'Court 1', '2026-02-27 18:00:00', NULL, NULL,
-   ARRAY['team-royal', 'team-hunters', 'team-dynamic', 'team-nuqum'],
+   ARRAY['team-12', 'team-6', 'team-3', 'team-19'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-15', 'tdst-season-1', 15, 'Court 2', '2026-02-27 18:00:00', NULL, NULL,
-   ARRAY['team-parallel', 'team-dhaba', 'team-power', 'team-taher'],
+   ARRAY['team-2', 'team-1', 'team-20', 'team-15'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW());
 
 -- SATURDAY, FEB 28, 2026 - 10 LEAGUE GAMES
@@ -282,47 +282,49 @@ INSERT INTO matches (id, tournament_id, match_number, court, start_time, umpire_
 INSERT INTO matches (id, tournament_id, match_number, court, start_time, umpire_id, umpire_name, team_ids, state, stage, batting_order, rankings, locked_at, created_at, updated_at) VALUES
   -- Match 16 & 17 (8:00 PM UAE = 16:00 UTC)
   ('match-16', 'tdst-season-1', 16, 'Court 1', '2026-02-28 16:00:00', NULL, NULL,
-   ARRAY['team-dubai', 'team-dragons', 'team-khatte', 'team-jade'],
+   ARRAY['team-14', 'team-4', 'team-13', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
+  -- Match 17: MA vs Nahda vs Dynamic vs POWER STRIKERS (CHANGED: Jade → Power Strikers)
   ('match-17', 'tdst-season-1', 17, 'Court 2', '2026-02-28 16:00:00', NULL, NULL,
-   ARRAY['team-ma', 'team-nahda', 'team-dynamic', 'team-jade'],
+   ARRAY['team-18', 'team-8', 'team-3', 'team-20'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 18 & 19 (8:40 PM UAE = 16:40 UTC)
   ('match-18', 'tdst-season-1', 18, 'Court 1', '2026-02-28 16:40:00', NULL, NULL,
-   ARRAY['team-thunder', 'team-hunters', 'team-power', 'team-swat'],
+   ARRAY['team-17', 'team-6', 'team-20', 'team-10'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-19', 'tdst-season-1', 19, 'Court 2', '2026-02-28 16:40:00', NULL, NULL,
-   ARRAY['team-royal', 'team-dhaba', 'team-sibling', 'team-jade'],
+   ARRAY['team-12', 'team-1', 'team-7', 'team-9'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 20 & 21 (9:20 PM UAE = 17:20 UTC)
   ('match-20', 'tdst-season-1', 20, 'Court 1', '2026-02-28 17:20:00', NULL, NULL,
-   ARRAY['team-parallel', 'team-dragons', 'team-sultan', 'team-nuqum'],
+   ARRAY['team-2', 'team-4', 'team-16', 'team-19'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-21', 'tdst-season-1', 21, 'Court 2', '2026-02-28 17:20:00', NULL, NULL,
-   ARRAY['team-dubai', 'team-hakimi', 'team-dhanera', 'team-taher'],
+   ARRAY['team-14', 'team-11', 'team-5', 'team-15'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 22 & 23 (10:00 PM UAE = 18:00 UTC)
   ('match-22', 'tdst-season-1', 22, 'Court 1', '2026-02-28 18:00:00', NULL, NULL,
-   ARRAY['team-ma', 'team-thunder', 'team-royal', 'team-parallel'],
+   ARRAY['team-18', 'team-17', 'team-12', 'team-2'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-23', 'tdst-season-1', 23, 'Court 2', '2026-02-28 18:00:00', NULL, NULL,
-   ARRAY['team-dubai', 'team-dhaba', 'team-dragons', 'team-hakimi'],
+   ARRAY['team-14', 'team-1', 'team-4', 'team-11'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   -- Match 24 & 25 (10:40 PM UAE = 18:40 UTC)
+  -- Match 24: Hunters vs TEAM JADE JAGUARS vs Dhanera vs Dynamic (CHANGED: Nahda → Jade)
   ('match-24', 'tdst-season-1', 24, 'Court 1', '2026-02-28 18:40:00', NULL, NULL,
-   ARRAY['team-hunters', 'team-nahda', 'team-dhanera', 'team-dynamic'],
+   ARRAY['team-6', 'team-9', 'team-5', 'team-3'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW()),
 
   ('match-25', 'tdst-season-1', 25, 'Court 2', '2026-02-28 18:40:00', NULL, NULL,
-   ARRAY['team-power', 'team-khatte', 'team-sultan', 'team-nuqum'],
+   ARRAY['team-20', 'team-13', 'team-16', 'team-19'],
    'CREATED', 'LEAGUE', '{}', '[]', NULL, NOW(), NOW());
 
 -- ================================================================
@@ -435,7 +437,7 @@ BEGIN
   RAISE NOTICE '   - 40 mins per match (35min game + 5min buffer)';
   RAISE NOTICE '   ';
   RAISE NOTICE '📋 Teams:';
-  RAISE NOTICE '   Dhaba, Parallel Power, Dynamic Duo, Dragons, Dhanera Daredevils';
+  RAISE NOTICE '   MUSTABIZ, Parallel Power, Dynamic Duo, Dragons, Dhanera Daredevils';
   RAISE NOTICE '   Hunters, Sibling Strikers, Nahda Shooters, Team Jade Jaguars, Swat Katz';
   RAISE NOTICE '   Hakimi Dynamos, Royal Blasters, Khatte Angoor, Dubai Sultans, Taher Ali';
   RAISE NOTICE '   Sultan Strikers, Thunder Strikers, MA Stars, Nuqum Rock, Power Strikers';
