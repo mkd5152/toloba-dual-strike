@@ -52,8 +52,9 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
           const team = getTeam(teamId);
           const innings = match.innings.find((i) => i.teamId === teamId);
 
-          // Only show teams that have started batting (have innings with overs)
-          if (!innings || !innings.overs || innings.overs.length === 0) {
+          // For IN_PROGRESS matches: only show teams that have started batting
+          // For other matches (upcoming/completed): show all teams
+          if (match.state === "IN_PROGRESS" && (!innings || !innings.overs || innings.overs.length === 0)) {
             return null;
           }
 

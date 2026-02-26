@@ -331,15 +331,31 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
   selectPowerplay: async (overNumber) => {
     const { currentMatch, currentInningsIndex } = get();
-    if (!currentMatch) return;
+    if (!currentMatch) {
+      alert("No match loaded. Please refresh the page.");
+      return;
+    }
 
     const innings = currentMatch.innings[currentInningsIndex];
-    if (!innings) return;
+    if (!innings) {
+      alert("No innings found. Please refresh the page.");
+      return;
+    }
+
+    // Check if powerplay already set
+    if (innings.powerplayOver !== null) {
+      alert(`Powerplay already set to Over ${innings.powerplayOver}. Cannot change it.`);
+      return;
+    }
 
     try {
+      console.log(`⚡ Setting powerplay to Over ${overNumber}...`);
+
       // CRITICAL: Save powerplay selection to database
       const { setPowerplayOver } = await import("@/lib/api/innings");
       await setPowerplayOver(innings.id, overNumber as 0 | 1 | 2);
+
+      console.log(`✅ Powerplay saved to database successfully`);
 
       const updatedInnings: Innings = {
         ...innings,
@@ -361,8 +377,11 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       useTournamentStore.getState().updateMatch(currentMatch.id, {
         innings: updatedMatch.innings,
       });
+
+      console.log(`✅ Powerplay set to Over ${overNumber}`);
     } catch (err) {
-      console.error("Error setting powerplay:", err);
+      console.error("❌ Error setting powerplay:", err);
+      alert(`Failed to set powerplay: ${err instanceof Error ? err.message : "Unknown error"}. Please try again or refresh the page.`);
     }
   },
 
