@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { LiveMatchCard } from "@/components/spectator/live-match-card";
 import { ScheduleTimeline } from "@/components/spectator/schedule-timeline";
@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Zap, Flame, TrendingUp, Activity, Radio, Calendar } from "lucide-react";
 import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
 import { supabase } from "@/lib/supabase/client";
-import { fetchMatches, fetchMatchesWithDetails } from "@/lib/api/matches";
+import { fetchMatchesWithDetails } from "@/lib/api/matches";
+import type { Match } from "@/lib/types";
 
 export const dynamic = 'force-dynamic';
 
@@ -24,9 +25,15 @@ interface LiveEvent {
 }
 
 export default function SpectatorLivePage() {
-  const { matches, teams, loadTeams, loading, getTeam, tournament } = useTournamentStore();
+  const { loadTeams, tournament } = useTournamentStore();
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
-  const [detailedMatches, setDetailedMatches] = useState<typeof matches>([]);
+  const [detailedMatches, setDetailedMatches] = useState<Match[]>([]);
+  const detailedMatchesRef = useRef<Match[]>([]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    detailedMatchesRef.current = detailedMatches;
+  }, [detailedMatches]);
 
   // Enable real-time updates for all tournament matches
   const { isMatchesSubscribed } = useRealtimeTournament({
@@ -78,8 +85,8 @@ export default function SpectatorLivePage() {
           // Get current matches and teams from store
           const { getTeam: getCurrentTeam } = useTournamentStore.getState();
 
-          // Find the match from detailedMatches
-          const match = detailedMatches.find((m: any) => m.id === inningsData.match_id);
+          // Find the match from latest detailedMatches ref
+          const match = detailedMatchesRef.current.find((m: any) => m.id === inningsData.match_id);
           if (!match || match.state !== 'IN_PROGRESS') return;
 
           // Get the team
@@ -153,7 +160,7 @@ export default function SpectatorLivePage() {
       console.log('🔴 Unsubscribing from live-balls-feed channel');
       supabase.removeChannel(channel);
     };
-  }, [detailedMatches, tournament.id]); // Re-subscribe when matches change
+  }, [tournament.id]); // Only re-subscribe when tournament changes
 
   const liveMatches = detailedMatches.filter((m) => m.state === "IN_PROGRESS");
   const upcomingMatches = detailedMatches.filter(
