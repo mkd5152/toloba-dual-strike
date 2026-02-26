@@ -89,12 +89,25 @@ export function ScoreOverrideDialog({ match, onUpdated }: ScoreOverrideDialogPro
         })
         .map((ranking, index) => ({ ...ranking, rank: index + 1 }))
 
-      // Update the match in the tournament store
+      // Update the match in the database
+      const matchData = {
+        rankings: updatedRankings,
+        updated_at: new Date().toISOString(),
+      }
+
+      // @ts-ignore - Supabase browser client type inference limitation
+      const { error: dbError } = await (supabase as any)
+        .from("matches")
+        .update(matchData)
+        .eq("id", match.id)
+
+      if (dbError) {
+        throw new Error(`Database error: ${dbError.message}`)
+      }
+
+      // Update the match in the tournament store (for immediate UI update)
       const { updateMatch } = useTournamentStore.getState()
       updateMatch(match.id, { rankings: updatedRankings })
-
-      // TODO: When match persistence is implemented, update database here
-      // For now, we're just updating the in-memory store
 
       setSuccess(true)
       setTimeout(() => {
