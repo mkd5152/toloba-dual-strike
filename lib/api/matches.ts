@@ -121,13 +121,12 @@ export async function fetchMatches(tournamentId: string): Promise<Match[]> {
  */
 export async function fetchMatchesWithDetails(tournamentId: string): Promise<Match[]> {
   try {
-    // Fetch matches (including IN_PROGRESS for live stats)
+    // Fetch ALL matches regardless of state
     // @ts-ignore - Supabase browser client type inference limitation
     const { data: matchesData, error: matchesError } = await supabase
       .from("matches")
       .select("*")
       .eq("tournament_id", tournamentId)
-      .in("state", ["COMPLETED", "LOCKED", "IN_PROGRESS"]) // Include live matches for real-time stats
       .order("match_number")
 
     if (matchesError) throw matchesError
