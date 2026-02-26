@@ -83,24 +83,32 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                     <div className="text-xs text-muted-foreground">
                       {(() => {
                         // Calculate overs bowled
-                        const completeOvers = innings.overs.length;
-                        const currentOver = innings.overs[innings.overs.length - 1];
-                        const ballsInCurrentOver = currentOver
-                          ? currentOver.balls.filter(b => !b.isWide && !b.isNoball).length
-                          : 0;
-
-                        // If current over is complete (6 balls), don't show extra balls
-                        if (ballsInCurrentOver >= 6) {
-                          return `${completeOvers} ov`;
-                        }
-
-                        // If there are no overs yet
-                        if (completeOvers === 0) {
+                        if (!innings.overs || innings.overs.length === 0) {
                           return '0.0 ov';
                         }
 
-                        // Show format: (complete - 1).balls
-                        return `${completeOvers - 1}.${ballsInCurrentOver} ov`;
+                        // Count complete overs (those with 6 legal deliveries)
+                        let completeOvers = 0;
+                        let ballsInCurrentOver = 0;
+
+                        for (let i = 0; i < innings.overs.length; i++) {
+                          const over = innings.overs[i];
+                          const legalBalls = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+
+                          if (legalBalls >= 6) {
+                            completeOvers++;
+                          } else {
+                            // This is the current incomplete over
+                            ballsInCurrentOver = legalBalls;
+                          }
+                        }
+
+                        // Format: "completeOvers.ballsInCurrent ov"
+                        if (ballsInCurrentOver === 0 && completeOvers > 0) {
+                          return `${completeOvers} ov`;
+                        }
+
+                        return `${completeOvers}.${ballsInCurrentOver} ov`;
                       })()}
                     </div>
                   </>
