@@ -7,7 +7,6 @@ import { ScheduleTimeline } from "@/components/spectator/schedule-timeline";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Flame, TrendingUp, Activity, Radio, Calendar } from "lucide-react";
-import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
 import { supabase } from "@/lib/supabase/client";
 import { fetchMatchesWithDetails } from "@/lib/api/matches";
 import type { Match } from "@/lib/types";
@@ -34,14 +33,6 @@ export default function SpectatorLivePage() {
   useEffect(() => {
     detailedMatchesRef.current = detailedMatches;
   }, [detailedMatches]);
-
-  // Enable real-time updates for all tournament matches
-  const { isMatchesSubscribed } = useRealtimeTournament({
-    tournamentId: tournament.id,
-    enabled: true,
-    watchMatches: true,
-    watchStandings: false,
-  });
 
   // Fetch data every time component mounts
   useEffect(() => {
@@ -275,12 +266,10 @@ export default function SpectatorLivePage() {
                 <span className="w-3 h-3 bg-white rounded-full" />
                 Live Now
               </div>
-              {isMatchesSubscribed && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">
-                  <Radio className="w-3 h-3 animate-pulse" />
-                  Real-time updates
-                </div>
-              )}
+              <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">
+                <Radio className="w-3 h-3 animate-pulse" />
+                Real-time updates
+              </div>
             </div>
             <h2 className="text-3xl font-black text-white drop-shadow-lg">
               Matches in Progress
