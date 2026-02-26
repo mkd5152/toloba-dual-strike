@@ -73,12 +73,37 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
               </div>
               <div className="text-right">
                 {innings ? (
-                  <div className="text-xl font-bold">
-                    {innings.totalRuns || 0}
-                    <span className="text-sm text-muted-foreground ml-1">
-                      ({innings.totalWickets || 0}W)
-                    </span>
-                  </div>
+                  <>
+                    <div className="text-xl font-bold">
+                      {innings.totalRuns || 0}
+                      <span className="text-sm text-muted-foreground ml-1">
+                        /{innings.totalWickets || 0}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {(() => {
+                        // Calculate overs bowled
+                        const completeOvers = innings.overs.length;
+                        const currentOver = innings.overs[innings.overs.length - 1];
+                        const ballsInCurrentOver = currentOver
+                          ? currentOver.balls.filter(b => !b.isWide && !b.isNoball).length
+                          : 0;
+
+                        // If current over is complete (6 balls), don't show extra balls
+                        if (ballsInCurrentOver >= 6) {
+                          return `${completeOvers} ov`;
+                        }
+
+                        // If there are no overs yet
+                        if (completeOvers === 0) {
+                          return '0.0 ov';
+                        }
+
+                        // Show format: (complete - 1).balls
+                        return `${completeOvers - 1}.${ballsInCurrentOver} ov`;
+                      })()}
+                    </div>
+                  </>
                 ) : (
                   <span className="text-muted-foreground">Waiting…</span>
                 )}
