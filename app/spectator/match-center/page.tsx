@@ -293,7 +293,7 @@ export default function SpectatorLivePage() {
         </div>
       )}
 
-      {/* Upcoming Matches Preview */}
+      {/* Upcoming Matches */}
       {upcomingMatches.length > 0 && (
         <div className="mb-12">
           <div className="mb-6">
@@ -306,7 +306,32 @@ export default function SpectatorLivePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingMatches.slice(0, 3).map((match) => (
+            {upcomingMatches.map((match) => (
+              <div
+                key={match.id}
+                className="transform hover:scale-105 transition-transform duration-300"
+              >
+                <LiveMatchCard match={match} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Completed Matches */}
+      {completedMatches.length > 0 && (
+        <div className="mb-12">
+          <div className="mb-6">
+            <div className="inline-block px-4 py-2 mb-3 rounded-full bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-black uppercase tracking-wide shadow-lg">
+              Completed
+            </div>
+            <h2 className="text-3xl font-black text-white drop-shadow-lg">
+              Finished Matches
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {completedMatches.map((match) => (
               <div
                 key={match.id}
                 className="transform hover:scale-105 transition-transform duration-300"
