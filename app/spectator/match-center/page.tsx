@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Zap, Flame, TrendingUp, Activity, Radio, Calendar } from "lucide-react";
 import { useRealtimeTournament } from "@/hooks/use-realtime-tournament";
 import { supabase } from "@/lib/supabase/client";
+import { fetchMatches, fetchMatchesWithDetails } from "@/lib/api/matches";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,8 +24,9 @@ interface LiveEvent {
 }
 
 export default function SpectatorLivePage() {
-  const { matches, teams, loadTeams, loadMatches, loading, getTeam, tournament } = useTournamentStore();
+  const { matches, teams, loadTeams, loading, getTeam, tournament } = useTournamentStore();
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
+  const [detailedMatches, setDetailedMatches] = useState<typeof matches>([]);
 
   // Enable real-time updates for all tournament matches
   const { isMatchesSubscribed } = useRealtimeTournament({
@@ -38,7 +40,9 @@ export default function SpectatorLivePage() {
   useEffect(() => {
     const loadData = async () => {
       await loadTeams();
-      await loadMatches();
+      // Load detailed matches with overs and balls for Match Center
+      const matches = await fetchMatchesWithDetails(tournament.id);
+      setDetailedMatches(matches);
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,10 +76,10 @@ export default function SpectatorLivePage() {
           if (!inningsData) return;
 
           // Get current matches and teams from store
-          const { matches: currentMatches, getTeam: getCurrentTeam } = useTournamentStore.getState();
+          const { getTeam: getCurrentTeam } = useTournamentStore.getState();
 
-          // Find the match
-          const match = currentMatches.find((m: any) => m.id === inningsData.match_id);
+          // Find the match from detailedMatches
+          const match = detailedMatches.find((m: any) => m.id === inningsData.match_id);
           if (!match || match.state !== 'IN_PROGRESS') return;
 
           // Get the team
@@ -131,10 +135,11 @@ export default function SpectatorLivePage() {
           schema: 'public',
           table: 'innings',
         },
-        (payload) => {
+        async (payload) => {
           console.log('📊 Live: Innings updated', payload);
-          // Reload matches when innings totals are updated
-          useTournamentStore.getState().loadMatches();
+          // Reload detailed matches when innings totals are updated
+          const matches = await fetchMatchesWithDetails(tournament.id);
+          setDetailedMatches(matches);
         }
       )
       .subscribe((status) => {
@@ -148,13 +153,13 @@ export default function SpectatorLivePage() {
       console.log('🔴 Unsubscribing from live-balls-feed channel');
       supabase.removeChannel(channel);
     };
-  }, []); // Empty deps - subscribe once and never recreate
+  }, [detailedMatches, tournament.id]); // Re-subscribe when matches change
 
-  const liveMatches = matches.filter((m) => m.state === "IN_PROGRESS");
-  const upcomingMatches = matches.filter(
+  const liveMatches = detailedMatches.filter((m) => m.state === "IN_PROGRESS");
+  const upcomingMatches = detailedMatches.filter(
     (m) => m.state === "CREATED" || m.state === "READY" || m.state === "TOSS"
   );
-  const completedMatches = matches.filter((m) => m.state === "COMPLETED" || m.state === "LOCKED");
+  const completedMatches = detailedMatches.filter((m) => m.state === "COMPLETED" || m.state === "LOCKED");
 
   return (
     <div className="p-4 md:p-8">
@@ -246,7 +251,7 @@ export default function SpectatorLivePage() {
               <Calendar className="w-6 h-6 md:w-8 md:h-8 text-[#ffb300]" />
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-black text-white">{matches.length}</p>
+              <p className="text-3xl md:text-4xl font-black text-white">{detailedMatches.length}</p>
               <p className="text-white/80 font-bold text-xs md:text-sm">Total</p>
             </div>
           </div>
@@ -327,10 +332,10 @@ export default function SpectatorLivePage() {
           </p>
         </div>
 
-        <ScheduleTimeline matches={matches} showCompleted={true} />
+        <ScheduleTimeline matches={detailedMatches} showCompleted={true} />
       </div>
 
-      {matches.length === 0 && (
+      {detailedMatches.length === 0 && (
         <div className="text-center py-12">
           <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
             <Activity className="w-12 h-12 text-gray-400" />
