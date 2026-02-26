@@ -52,6 +52,11 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
           const team = getTeam(teamId);
           const innings = match.innings.find((i) => i.teamId === teamId);
 
+          // Only show teams that have started batting (have innings with overs)
+          if (!innings || !innings.overs || innings.overs.length === 0) {
+            return null;
+          }
+
           return (
             <div
               key={teamId}
@@ -89,26 +94,25 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
 
                         // Count complete overs (those with 6 legal deliveries)
                         let completeOvers = 0;
-                        let ballsInCurrentOver = 0;
-
                         for (let i = 0; i < innings.overs.length; i++) {
                           const over = innings.overs[i];
                           const legalBalls = over.balls.filter(b => !b.isWide && !b.isNoball).length;
-
                           if (legalBalls >= 6) {
                             completeOvers++;
-                          } else {
-                            // This is the current incomplete over
-                            ballsInCurrentOver = legalBalls;
                           }
                         }
 
-                        // Format: "completeOvers.ballsInCurrent ov"
-                        if (ballsInCurrentOver === 0 && completeOvers > 0) {
-                          return `${completeOvers} ov`;
+                        // Check the LAST over for incomplete balls
+                        const lastOver = innings.overs[innings.overs.length - 1];
+                        const ballsInLastOver = lastOver.balls.filter(b => !b.isWide && !b.isNoball).length;
+
+                        // If last over is incomplete, show X.Y format
+                        if (ballsInLastOver < 6) {
+                          return `${completeOvers}.${ballsInLastOver} ov`;
                         }
 
-                        return `${completeOvers}.${ballsInCurrentOver} ov`;
+                        // All overs complete
+                        return `${completeOvers} ov`;
                       })()}
                     </div>
                   </>
