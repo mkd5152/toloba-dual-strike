@@ -352,10 +352,18 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
     // CRITICAL: Persist ball to database with error alert
     if (over.id) {
+      console.log('💾 Saving ball to database, over ID:', over.id);
       recordBallAPI(over.id, ballWithEffective).catch((err) => {
         console.error("❌ CRITICAL: Failed to record ball to database:", err);
+        console.error("   Over ID:", over.id);
+        console.error("   Ball data:", ballWithEffective);
         alert("ERROR: Failed to save ball to database! Ball recorded locally but NOT saved. Please notify organizer immediately.");
       });
+    } else {
+      console.error("❌ CRITICAL: Cannot save ball - over.id is missing!");
+      console.error("   Over object:", over);
+      console.error("   Current match state:", currentMatch);
+      alert("CRITICAL ERROR: Cannot save ball to database - over ID is missing! This match needs to be refreshed. Click 'Reload Match Data' button to fix.");
     }
 
     // Update innings totals in database
