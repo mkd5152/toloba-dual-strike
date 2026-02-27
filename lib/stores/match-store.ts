@@ -227,9 +227,12 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
               // CRITICAL: Ensure over ID is preserved during auto-powerplay
               if (!o.id) {
                 console.error('⚠️ WARNING: Over missing ID during auto-powerplay!', o);
+                console.error('   Over number:', o.overNumber);
               }
+              // CRITICAL FIX: Explicitly preserve the ID
               return {
                 ...o,
+                id: o.id, // Explicitly copy ID to ensure it's not lost
                 isPowerplay: i === 2,
               };
             }),
@@ -461,11 +464,17 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
           // CRITICAL: Ensure over ID is preserved
           if (!o.id) {
             console.error('⚠️ WARNING: Over missing ID during powerplay selection!', o);
+            console.error('   Over number:', o.overNumber);
+            console.error('   All properties:', Object.keys(o));
           }
-          return {
+          // CRITICAL FIX: Explicitly preserve the ID
+          const updated = {
             ...o,
+            id: o.id, // Explicitly copy ID to ensure it's not lost
             isPowerplay: o.overNumber === overNumber,
           };
+          console.log(`   Over ${o.overNumber} ID after update:`, updated.id);
+          return updated;
         }),
       };
 
