@@ -47,6 +47,15 @@ export function ScoringPanel() {
   };
 
   const handleWicket = () => {
+    // Safety check: Ensure we have valid team assignments
+    if (!bowlingTeamId || !battingTeamId) {
+      alert("Error: Team assignments not properly set for this over. Cannot record wicket.");
+      return;
+    }
+    if (fieldingTeams.length !== 2) {
+      alert(`Error: Expected 2 fielding teams, found ${fieldingTeams.length}. Cannot record wicket.`);
+      return;
+    }
     setShowWicketDialog(true);
   };
 
@@ -103,18 +112,21 @@ export function ScoringPanel() {
   const powerplayNotSet = currentInnings?.powerplayOver == null;
 
   // Get bowling team and fielding teams for wicket selector
-  const bowlingTeamId = currentOver?.bowlingTeamId || "";
-  const bowlingTeam = getTeam(bowlingTeamId);
-  const battingTeamId = currentInnings?.teamId || "";
+  const bowlingTeamId = currentOver?.bowlingTeamId;
+  const bowlingTeam = bowlingTeamId ? getTeam(bowlingTeamId) : null;
+  const battingTeamId = currentInnings?.teamId;
 
   // Get the 2 fielding teams (exclude batting and bowling teams)
-  const fieldingTeams = currentMatch?.teamIds
-    .filter((teamId) => teamId !== battingTeamId && teamId !== bowlingTeamId)
-    .map((teamId) => {
-      const team = getTeam(teamId);
-      return team ? { id: team.id, name: team.name, color: team.color } : null;
-    })
-    .filter((team): team is { id: string; name: string; color: string } => team !== null) || [];
+  // CRITICAL: Only filter if we have valid batting and bowling team IDs
+  const fieldingTeams = (currentMatch?.teamIds && battingTeamId && bowlingTeamId)
+    ? currentMatch.teamIds
+        .filter((teamId) => teamId !== battingTeamId && teamId !== bowlingTeamId)
+        .map((teamId) => {
+          const team = getTeam(teamId);
+          return team ? { id: team.id, name: team.name, color: team.color } : null;
+        })
+        .filter((team): team is { id: string; name: string; color: string } => team !== null)
+    : [];
 
   return (
     <>
@@ -130,7 +142,7 @@ export function ScoringPanel() {
         open={showWicketDialog}
         onClose={() => setShowWicketDialog(false)}
         onSelectWicket={handleWicketTypeSelected}
-        bowlingTeamId={bowlingTeamId}
+        bowlingTeamId={bowlingTeamId || ""}
         bowlingTeamName={bowlingTeam?.name || "Bowling Team"}
         fieldingTeams={fieldingTeams}
       />
