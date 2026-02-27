@@ -24,11 +24,18 @@ export function ScoringPanel() {
     (i) => i.state === "IN_PROGRESS"
   ) ?? innings;
 
-  // CRITICAL FIX: Find first over with less than 6 LEGAL balls (wides/noballs don't count in powerplay)
+  // CRITICAL FIX: Find incomplete over using SAME logic as innings header
   const currentOver =
     currentInnings?.overs?.find((o) => {
-      const legalBalls = o.balls.filter((b) => !b.isWide && !b.isNoball).length;
-      return legalBalls < 6;
+      const isPowerplayOver = o.isPowerplay;
+      if (isPowerplayOver) {
+        // In powerplay, count only legal balls
+        const legalBallCount = o.balls.filter(b => !b.isWide && !b.isNoball).length;
+        return legalBallCount < 6;
+      } else {
+        // In normal over, all balls count
+        return o.balls.length < 6;
+      }
     }) ?? currentInnings?.overs?.[currentOverIndex];
 
   const ballNumber = currentOver ? currentOver.balls.length + 1 : 1;
