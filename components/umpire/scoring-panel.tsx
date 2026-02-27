@@ -116,17 +116,31 @@ export function ScoringPanel() {
   const bowlingTeam = bowlingTeamId ? getTeam(bowlingTeamId) : null;
   const battingTeamId = currentInnings?.teamId;
 
+  // DEBUG LOGGING
+  console.log('🔍 WICKET DIALOG DEBUG:');
+  console.log('  Match teamIds:', currentMatch?.teamIds);
+  console.log('  Batting team ID:', battingTeamId);
+  console.log('  Bowling team ID:', bowlingTeamId);
+  console.log('  Current over:', currentOver);
+
   // Get the 2 fielding teams (exclude batting and bowling teams)
   // CRITICAL: Only filter if we have valid batting and bowling team IDs
   const fieldingTeams = (currentMatch?.teamIds && battingTeamId && bowlingTeamId)
     ? currentMatch.teamIds
-        .filter((teamId) => teamId !== battingTeamId && teamId !== bowlingTeamId)
+        .filter((teamId) => {
+          const keep = teamId !== battingTeamId && teamId !== bowlingTeamId;
+          console.log(`  Team ${teamId}: ${keep ? 'KEEP' : 'EXCLUDE'} (batting=${teamId === battingTeamId}, bowling=${teamId === bowlingTeamId})`);
+          return keep;
+        })
         .map((teamId) => {
           const team = getTeam(teamId);
           return team ? { id: team.id, name: team.name, color: team.color } : null;
         })
         .filter((team): team is { id: string; name: string; color: string } => team !== null)
     : [];
+
+  console.log('  Final fielding teams:', fieldingTeams.map(t => `${t.name} (${t.id})`));
+  console.log('  Fielding team count:', fieldingTeams.length);
 
   return (
     <>
