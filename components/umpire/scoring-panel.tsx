@@ -23,9 +23,14 @@ export function ScoringPanel() {
   const currentInnings = currentMatch?.innings?.find(
     (i) => i.state === "IN_PROGRESS"
   ) ?? innings;
+
+  // CRITICAL FIX: Find first over with less than 6 LEGAL balls (wides/noballs don't count in powerplay)
   const currentOver =
-    currentInnings?.overs?.find((o) => o.balls.length < 6) ??
-    currentInnings?.overs?.[0];
+    currentInnings?.overs?.find((o) => {
+      const legalBalls = o.balls.filter((b) => !b.isWide && !b.isNoball).length;
+      return legalBalls < 6;
+    }) ?? currentInnings?.overs?.[currentOverIndex];
+
   const ballNumber = currentOver ? currentOver.balls.length + 1 : 1;
 
   const handleRunScore = (runs: 0 | 1 | 2 | 3 | 4 | 5 | 6) => {

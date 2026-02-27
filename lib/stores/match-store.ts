@@ -56,12 +56,52 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   currentInningsIndex: 0,
   currentOverIndex: 0,
 
-  setCurrentMatch: (match) =>
+  setCurrentMatch: (match) => {
+    console.log('🔄 setCurrentMatch called with', match.innings.length, 'innings');
+
+    // CRITICAL FIX: Find the currently active (IN_PROGRESS) innings instead of always defaulting to 0
+    const activeInningsIndex = match.innings.findIndex(
+      (inn) => inn.state === "IN_PROGRESS"
+    );
+
+    // If no IN_PROGRESS innings found, default to 0 (new match or all innings completed)
+    const inningsIndex = activeInningsIndex >= 0 ? activeInningsIndex : 0;
+
+    console.log('📍 Active innings detected:', inningsIndex, 'of', match.innings.length);
+
+    // CRITICAL FIX: Find the current over (first incomplete over in active innings)
+    let overIndex = 0;
+    if (match.innings[inningsIndex]) {
+      const activeInnings = match.innings[inningsIndex];
+
+      // Find the first over that has less than 6 LEGAL balls
+      const incompleteOverIndex = activeInnings.overs.findIndex((over) => {
+        // Count legal balls only (in powerplay, wides/noballs don't count)
+        const legalBalls = over.balls.filter(
+          (b) => !b.isWide && !b.isNoball
+        ).length;
+        return legalBalls < 6;
+      });
+
+      overIndex = incompleteOverIndex >= 0 ? incompleteOverIndex : 0;
+
+      console.log('📍 Active over detected:', overIndex, 'of', activeInnings.overs.length);
+    }
+
+    // Validate: Ensure only ONE innings is IN_PROGRESS
+    const inProgressCount = match.innings.filter(inn => inn.state === "IN_PROGRESS").length;
+    if (inProgressCount > 1) {
+      console.error('⚠️ WARNING: Multiple innings marked as IN_PROGRESS!', inProgressCount);
+    }
+
     set({
       currentMatch: match,
-      currentInningsIndex: 0,
-      currentOverIndex: 0,
-    }),
+      currentInningsIndex: inningsIndex,
+      currentOverIndex: overIndex,
+    });
+
+    console.log('✅ Match state set: innings', inningsIndex, 'over', overIndex);
+  },
 
   recordBall: (ballData) => {
     const { currentMatch, currentInningsIndex, currentOverIndex } = get();

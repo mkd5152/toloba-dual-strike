@@ -289,6 +289,19 @@ export default function ScoringPage() {
               </Badge>
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button
+                  onClick={() => {
+                    if (confirm('Reload match data from database? This will not lose any saved data.')) {
+                      hasLoadedOnceRef.current = false;
+                      loadMatchData();
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none border-2 border-blue-500 text-blue-600 hover:bg-blue-50 h-9 text-xs sm:text-sm touch-manipulation"
+                >
+                  🔄 Reload
+                </Button>
+                <Button
                   onClick={handleResetMatch}
                   variant="outline"
                   size="sm"
@@ -308,6 +321,28 @@ export default function ScoringPage() {
               </div>
             </div>
           </div>
+
+          {/* CRITICAL: Show current innings/over position */}
+          {currentInnings && (
+            <div className="mt-4 p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-blue-600 text-white font-bold text-sm">
+                    Innings {currentInningsIndex + 1} of {currentMatch.innings.length}
+                  </Badge>
+                  <Badge className="bg-green-600 text-white font-bold text-sm">
+                    Over {(currentInnings.overs.findIndex(o => {
+                      const legalBalls = o.balls.filter(b => !b.isWide && !b.isNoball).length;
+                      return legalBalls < 6;
+                    }) + 1) || 1} of 3
+                  </Badge>
+                </div>
+                <div className="text-sm text-blue-800 font-semibold">
+                  Batting: {getTeam(currentInnings.teamId)?.name || 'Unknown'}
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
 
         {!showBattingOrderSelector && (
