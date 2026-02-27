@@ -241,6 +241,17 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
           state: "COMPLETED",
         };
 
+        // CRITICAL FIX: Save completed innings state to database
+        console.log(`✅ Innings ${currentInningsIndex + 1} completed, saving to database...`);
+        import("@/lib/api/innings").then(({ completeInnings }) => {
+          completeInnings(innings.id, updatedInnings.finalScore)
+            .then(() => console.log(`✅ Innings ${currentInningsIndex + 1} marked as COMPLETED in database`))
+            .catch((err) => {
+              console.error("❌ Failed to mark innings as COMPLETED in database:", err);
+              alert("Warning: Innings completion may not have been saved. Please check match status.");
+            });
+        });
+
         nextOverIndex = 0;
         nextInningsIndex = currentInningsIndex + 1;
 
@@ -285,12 +296,20 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
             currentOverIndex: 0,
           });
 
+          // CRITICAL FIX: Save match completion to database
+          console.log("=== SAVING MATCH COMPLETION TO DATABASE ===");
           useTournamentStore.getState().updateMatch(currentMatch.id, {
             state: "COMPLETED",
-            innings: completedMatch.innings,
             rankings,
             lockedAt: completedMatch.lockedAt,
-          });
+          })
+            .then(() => {
+              console.log("✅ Match marked as COMPLETED in database successfully");
+            })
+            .catch((err) => {
+              console.error("❌ CRITICAL: Failed to save match completion to database:", err);
+              alert("CRITICAL ERROR: Match completion may not have been saved to database. Please contact administrator immediately and do not reload the page!");
+            });
 
           return; // Exit early, match is complete
         }
@@ -348,14 +367,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         console.error("❌ Failed to update innings totals:", err);
       });
 
-    // Update match state in database (for rankings when completed)
-    if (updatedMatch.state === "COMPLETED" && updatedMatch.rankings) {
-      useTournamentStore.getState().updateMatch(currentMatch.id, {
-        state: "COMPLETED",
-        rankings: updatedMatch.rankings,
-        lockedAt: updatedMatch.lockedAt || null,
-      });
-    }
+    // Note: Match completion is handled above with early return, so this code is never reached for completed matches
 
     // If we transitioned to a new innings, update its state in the database
     if (nextInningsIndex !== currentInningsIndex && nextInningsIndex < currentMatch.innings.length) {
@@ -428,10 +440,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         isSelectingPowerplay: false
       });
 
-      useTournamentStore.getState().updateMatch(currentMatch.id, {
-        innings: updatedMatch.innings,
-      });
-
+      // Note: Powerplay is already saved to database via setPowerplayOver above
       console.log(`✅ Powerplay set to Over ${overNumber}`);
 
       // Show success feedback
