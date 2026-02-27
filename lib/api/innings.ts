@@ -372,17 +372,29 @@ export async function updateInningsTotals(
     totalWickets: number;
     noWicketBonus: boolean;
     finalScore: number;
+    reballsUsed?: number;
+    reballBonusRuns?: number;
   }
 ): Promise<void> {
   try {
+    const updateData: any = {
+      total_runs: updates.totalRuns,
+      total_wickets: updates.totalWickets,
+      no_wicket_bonus: updates.noWicketBonus,
+      final_score: updates.finalScore,
+    };
+
+    // Add reball fields if provided
+    if (updates.reballsUsed !== undefined) {
+      updateData.reballs_used = updates.reballsUsed;
+    }
+    if (updates.reballBonusRuns !== undefined) {
+      updateData.reball_bonus_runs = updates.reballBonusRuns;
+    }
+
     const { error } = await (supabase as any)
       .from("innings")
-      .update({
-        total_runs: updates.totalRuns,
-        total_wickets: updates.totalWickets,
-        no_wicket_bonus: updates.noWicketBonus,
-        final_score: updates.finalScore,
-      } as any)
+      .update(updateData)
       .eq("id", inningsId);
 
     if (error) throw error;

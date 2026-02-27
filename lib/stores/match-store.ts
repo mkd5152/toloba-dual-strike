@@ -229,9 +229,10 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
             })),
           };
 
-          // Also update in database
+          // CRITICAL FIX: Save auto-powerplay to database with error alert
           setPowerplayOver(innings.id, 2).catch((err) => {
-            console.error("Failed to auto-set powerplay in database:", err);
+            console.error("❌ CRITICAL: Failed to auto-set powerplay in database:", err);
+            alert("ERROR: Failed to save powerplay selection to database! Powerplay set locally but NOT saved. Please notify organizer immediately.");
           });
         }
       } else {
@@ -258,6 +259,15 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         // Check if this was the last innings (4th innings complete)
         if (nextInningsIndex >= currentMatch.innings.length) {
           // Match complete! Calculate rankings and update state
+
+          // CRITICAL FIX: Save completed innings state BEFORE early return
+          // This ensures the 4th innings state is persisted even if match completes immediately
+          import("@/lib/api/innings").then(({ completeInnings }) => {
+            completeInnings(innings.id, updatedInnings.finalScore).catch((err) => {
+              console.error("❌ Failed to mark innings as COMPLETED:", err);
+              alert("ERROR: Failed to save innings completion. Please notify organizer.");
+            });
+          });
 
           // CRITICAL: Recalculate ALL innings to ensure finalScore is correct
           const completedInnings = currentMatch.innings.map((inn, i) => {
@@ -340,10 +350,11 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       currentOverIndex: nextOverIndex,
     });
 
-    // Persist ball to database
+    // CRITICAL: Persist ball to database with error alert
     if (over.id) {
       recordBallAPI(over.id, ballWithEffective).catch((err) => {
-        console.error("Failed to record ball to database:", err);
+        console.error("❌ CRITICAL: Failed to record ball to database:", err);
+        alert("ERROR: Failed to save ball to database! Ball recorded locally but NOT saved. Please notify organizer immediately.");
       });
     }
 
@@ -364,7 +375,8 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         console.log('✅ Innings totals updated successfully');
       })
       .catch((err) => {
-        console.error("❌ Failed to update innings totals:", err);
+        console.error("❌ CRITICAL: Failed to update innings totals:", err);
+        alert("ERROR: Failed to save innings totals to database! Scores shown locally but NOT saved. Please notify organizer immediately.");
       });
 
     // Note: Match completion is handled above with early return, so this code is never reached for completed matches
@@ -712,6 +724,19 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
           ),
         },
       });
+
+      // CRITICAL FIX: Save decremented reball count to database
+      updateInningsTotals(resetInnings.id, {
+        totalRuns: resetInnings.totalRuns,
+        totalWickets: resetInnings.totalWickets,
+        noWicketBonus: resetInnings.noWicketBonus,
+        finalScore: resetInnings.finalScore,
+        reballsUsed: resetInnings.reballsUsed,
+        reballBonusRuns: resetInnings.reballBonusRuns,
+      }).catch((err) => {
+        console.error("❌ Failed to save reball count after undo:", err);
+        alert("ERROR: Failed to save reball count to database after undo. Please notify organizer.");
+      });
     }
   },
 
@@ -787,14 +812,17 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       });
     }
 
-    // Update innings in database with new reball count and bonus runs
+    // CRITICAL FIX: Update innings in database with new reball count and bonus runs
     updateInningsTotals(innings.id, {
       totalRuns: recalcedInnings.totalRuns,
       totalWickets: recalcedInnings.totalWickets,
       noWicketBonus: recalcedInnings.noWicketBonus,
       finalScore: recalcedInnings.finalScore,
+      reballsUsed: recalcedInnings.reballsUsed,
+      reballBonusRuns: recalcedInnings.reballBonusRuns,
     }).catch((err) => {
       console.error("Failed to update innings totals after reball:", err);
+      alert("ERROR: Failed to save reball to database. Please try again.");
     });
   },
 }));
