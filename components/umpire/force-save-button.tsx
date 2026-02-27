@@ -49,7 +49,7 @@ export function ForceSaveButton() {
           .from("overs")
           .select("id, over_number")
           .eq("innings_id", innings.id)
-          .order("over_number");
+          .order("over_number") as { data: Array<{ id: string; over_number: number }> | null; error: any };
 
         if (oversError) {
           errors.push(`Failed to fetch overs for innings ${inningsIdx + 1}: ${oversError.message}`);
@@ -79,7 +79,7 @@ export function ForceSaveButton() {
           const { data: existingBalls } = await supabase
             .from("balls")
             .select("ball_number")
-            .eq("over_id", dbOver.id);
+            .eq("over_id", dbOver.id) as { data: Array<{ ball_number: number }> | null };
 
           const existingBallNumbers = new Set(existingBalls?.map(b => b.ball_number) || []);
 
@@ -109,7 +109,7 @@ export function ForceSaveButton() {
               timestamp: ball.timestamp.toISOString(),
             };
 
-            const { error: ballError } = await supabase
+            const { error: ballError } = await (supabase as any)
               .from("balls")
               .insert(ballData);
 
@@ -125,7 +125,7 @@ export function ForceSaveButton() {
 
         // Update innings totals in database
         console.log(`  Updating innings totals: ${innings.totalRuns} runs, ${innings.totalWickets} wickets`);
-        const { error: inningsError } = await supabase
+        const { error: inningsError } = await (supabase as any)
           .from("innings")
           .update({
             state: innings.state,
@@ -149,7 +149,7 @@ export function ForceSaveButton() {
       // Update match state if completed
       if (currentMatch.state === "COMPLETED") {
         console.log("\n🏁 Updating match state to COMPLETED");
-        const { error: matchError } = await supabase
+        const { error: matchError } = await (supabase as any)
           .from("matches")
           .update({
             state: "COMPLETED",
