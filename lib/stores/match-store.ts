@@ -15,6 +15,7 @@ interface MatchStore {
   currentMatch: Match | null;
   currentInningsIndex: number;
   currentOverIndex: number;
+  isSelectingPowerplay: boolean; // NEW: Loading state for powerplay selection
 
   // Actions
   setCurrentMatch: (match: Match) => void;
@@ -55,6 +56,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   currentMatch: null,
   currentInningsIndex: 0,
   currentOverIndex: 0,
+  isSelectingPowerplay: false,
 
   setCurrentMatch: (match) => {
     console.log('🔄 setCurrentMatch called with', match.innings.length, 'innings');
@@ -370,7 +372,14 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   },
 
   selectPowerplay: async (overNumber) => {
-    const { currentMatch, currentInningsIndex } = get();
+    const { currentMatch, currentInningsIndex, isSelectingPowerplay } = get();
+
+    // Prevent double-clicks
+    if (isSelectingPowerplay) {
+      console.log('⏸️ Powerplay selection already in progress, ignoring click');
+      return;
+    }
+
     if (!currentMatch) {
       alert("No match loaded. Please refresh the page.");
       return;
@@ -388,11 +397,12 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       return;
     }
 
-    try {
-      console.log(`⚡ Setting powerplay to Over ${overNumber}...`);
+    // Set loading state immediately
+    set({ isSelectingPowerplay: true });
+    console.log(`⚡ Setting powerplay to Over ${overNumber}...`);
 
-      // CRITICAL: Save powerplay selection to database
-      const { setPowerplayOver } = await import("@/lib/api/innings");
+    try {
+      // CRITICAL: Save powerplay selection to database (already imported at top!)
       await setPowerplayOver(innings.id, overNumber as 0 | 1 | 2);
 
       console.log(`✅ Powerplay saved to database successfully`);
@@ -413,14 +423,27 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         ),
       };
 
-      set({ currentMatch: updatedMatch });
+      set({
+        currentMatch: updatedMatch,
+        isSelectingPowerplay: false
+      });
+
       useTournamentStore.getState().updateMatch(currentMatch.id, {
         innings: updatedMatch.innings,
       });
 
       console.log(`✅ Powerplay set to Over ${overNumber}`);
+
+      // Show success feedback
+      if (typeof window !== 'undefined') {
+        // Vibrate on mobile if supported
+        if (navigator.vibrate) {
+          navigator.vibrate(100);
+        }
+      }
     } catch (err) {
       console.error("❌ Error setting powerplay:", err);
+      set({ isSelectingPowerplay: false });
       alert(`Failed to set powerplay: ${err instanceof Error ? err.message : "Unknown error"}. Please try again or refresh the page.`);
     }
   },

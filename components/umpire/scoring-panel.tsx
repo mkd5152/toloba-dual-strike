@@ -11,7 +11,7 @@ import { useState } from "react";
 import { SCORING_RULES } from "@/lib/constants";
 
 export function ScoringPanel() {
-  const { currentMatch, recordBall, selectPowerplay, undoLastBall, useReball, currentOverIndex } =
+  const { currentMatch, recordBall, selectPowerplay, undoLastBall, useReball, currentOverIndex, isSelectingPowerplay } =
     useMatchStore();
   const { getTeam } = useTournamentStore();
 
@@ -192,18 +192,38 @@ export function ScoringPanel() {
 
         {powerplayNotSet && (
           <div>
-            <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">
-              Powerplay (Select Once)
-            </h3>
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <h3 className="text-sm sm:text-base font-medium text-gray-700">
+                Powerplay (Select Once)
+              </h3>
+              {isSelectingPowerplay && (
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-orange-600 font-semibold">
+                  <div className="animate-spin w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full"></div>
+                  Saving...
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[0, 1, 2].map((over) => (
                 <Button
                   key={over}
                   variant="outline"
-                  className="h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation active:scale-95 transition-transform"
+                  disabled={isSelectingPowerplay}
+                  className={`h-12 sm:h-14 md:h-16 text-sm sm:text-base font-semibold touch-manipulation transition-all ${
+                    isSelectingPowerplay
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'active:scale-95'
+                  }`}
                   onClick={() => selectPowerplay(over)}
                 >
-                  Over {over}
+                  {isSelectingPowerplay ? (
+                    <span className="flex items-center gap-2">
+                      <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full"></div>
+                      Over {over}
+                    </span>
+                  ) : (
+                    `Over ${over}`
+                  )}
                 </Button>
               ))}
             </div>
