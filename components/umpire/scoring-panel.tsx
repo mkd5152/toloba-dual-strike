@@ -25,18 +25,18 @@ export function ScoringPanel() {
   ) ?? innings;
 
   // CRITICAL FIX: Find incomplete over using SAME logic as innings header
-  const currentOver =
-    currentInnings?.overs?.find((o) => {
-      const isPowerplayOver = o.isPowerplay;
-      if (isPowerplayOver) {
-        // In powerplay, count only legal balls
-        const legalBallCount = o.balls.filter(b => !b.isWide && !b.isNoball).length;
-        return legalBallCount < 6;
-      } else {
-        // In normal over, all balls count
-        return o.balls.length < 6;
-      }
-    }) ?? currentInnings?.overs?.[currentOverIndex];
+  // NO FALLBACK - if find() returns undefined, currentOver is undefined (safer than using stale index)
+  const currentOver = currentInnings?.overs?.find((o) => {
+    const isPowerplayOver = o.isPowerplay;
+    if (isPowerplayOver) {
+      // In powerplay, count only legal balls
+      const legalBallCount = o.balls.filter(b => !b.isWide && !b.isNoball).length;
+      return legalBallCount < 6;
+    } else {
+      // In normal over, all balls count
+      return o.balls.length < 6;
+    }
+  });
 
   const ballNumber = currentOver ? currentOver.balls.length + 1 : 1;
 
@@ -259,7 +259,8 @@ export function ScoringPanel() {
           </Button>
 
           {/* Reball button - only shown in last over (over 2) */}
-          {currentOverIndex === 2 && (
+          {/* CRITICAL FIX: Use detected currentOver, not stale currentOverIndex from store */}
+          {currentOver?.overNumber === 2 && (
             <Button
               variant="outline"
               onClick={useReball}

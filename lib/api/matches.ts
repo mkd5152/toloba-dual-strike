@@ -89,6 +89,8 @@ export async function fetchMatches(tournamentId: string): Promise<Match[]> {
             bowlingTeamId: i.bowling_team_id,
             state: i.state,
             powerplayOver: i.powerplay_over,
+            reballsUsed: i.reballs_used || 0,
+            reballBonusRuns: i.reball_bonus_runs || 0,
             totalRuns: i.total_runs || 0,
             totalWickets: i.total_wickets || 0,
             noWicketBonus: i.no_wicket_bonus || false,
