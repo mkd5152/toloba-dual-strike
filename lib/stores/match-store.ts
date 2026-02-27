@@ -223,10 +223,16 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
           updatedInnings = {
             ...updatedInnings,
             powerplayOver: 2,
-            overs: updatedInnings.overs.map((o, i) => ({
-              ...o,
-              isPowerplay: i === 2,
-            })),
+            overs: updatedInnings.overs.map((o, i) => {
+              // CRITICAL: Ensure over ID is preserved during auto-powerplay
+              if (!o.id) {
+                console.error('⚠️ WARNING: Over missing ID during auto-powerplay!', o);
+              }
+              return {
+                ...o,
+                isPowerplay: i === 2,
+              };
+            }),
           };
 
           // CRITICAL FIX: Save auto-powerplay to database with error alert
@@ -351,6 +357,12 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     });
 
     // CRITICAL: Persist ball to database with error alert
+    console.log('📋 Attempting to save ball...');
+    console.log('   Over number:', over.overNumber);
+    console.log('   Over ID:', over.id);
+    console.log('   Is powerplay:', over.isPowerplay);
+    console.log('   Innings ID:', innings.id);
+
     if (over.id) {
       console.log('💾 Saving ball to database, over ID:', over.id);
       recordBallAPI(over.id, ballWithEffective).catch((err) => {
@@ -362,6 +374,9 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     } else {
       console.error("❌ CRITICAL: Cannot save ball - over.id is missing!");
       console.error("   Over object:", over);
+      console.error("   Over number:", over.overNumber);
+      console.error("   Is powerplay:", over.isPowerplay);
+      console.error("   All innings overs:", innings.overs);
       console.error("   Current match state:", currentMatch);
       alert("CRITICAL ERROR: Cannot save ball to database - over ID is missing! This match needs to be refreshed. Click 'Reload Match Data' button to fix.");
     }
@@ -442,10 +457,16 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       const updatedInnings: Innings = {
         ...innings,
         powerplayOver: overNumber,
-        overs: innings.overs.map((o) => ({
-          ...o,
-          isPowerplay: o.overNumber === overNumber,
-        })),
+        overs: innings.overs.map((o) => {
+          // CRITICAL: Ensure over ID is preserved
+          if (!o.id) {
+            console.error('⚠️ WARNING: Over missing ID during powerplay selection!', o);
+          }
+          return {
+            ...o,
+            isPowerplay: o.overNumber === overNumber,
+          };
+        }),
       };
 
       const updatedMatch: Match = {
