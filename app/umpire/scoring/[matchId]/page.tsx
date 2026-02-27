@@ -6,6 +6,7 @@ import { ScoringPanel } from "@/components/umpire/scoring-panel";
 import { InningsHeader } from "@/components/umpire/innings-header";
 import { BallLog } from "@/components/umpire/ball-log";
 import { BattingOrderSelector } from "@/components/umpire/batting-order-selector";
+import { ForceSaveButton } from "@/components/umpire/force-save-button";
 import { useMatchStore } from "@/lib/stores/match-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -287,7 +288,7 @@ export default function ScoringPage() {
               <Badge variant="outline" className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1.5 font-bold whitespace-nowrap">
                 {currentMatch.state}
               </Badge>
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex gap-2 w-full sm:w-auto flex-wrap">
                 <Button
                   onClick={() => {
                     if (confirm('Reload match data from database? This will not lose any saved data.')) {
@@ -301,6 +302,7 @@ export default function ScoringPage() {
                 >
                   🔄 Reload
                 </Button>
+                <ForceSaveButton />
                 <Button
                   onClick={handleResetMatch}
                   variant="outline"
