@@ -88,32 +88,31 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {(() => {
-                        // Calculate overs bowled
+                        // Calculate overs bowled - use same logic as scoring page (0-based indexing)
                         if (!innings.overs || innings.overs.length === 0) {
                           return '0.0 ov';
                         }
 
-                        // Count complete overs (those with 6 legal deliveries)
-                        let completeOvers = 0;
-                        for (let i = 0; i < innings.overs.length; i++) {
-                          const over = innings.overs[i];
-                          const legalBalls = over.balls.filter(b => !b.isWide && !b.isNoball).length;
-                          if (legalBalls >= 6) {
-                            completeOvers++;
+                        // Find the current over (incomplete over or last over)
+                        const currentOverIndex = innings.overs.findIndex((over) => {
+                          const isPowerplayOver = over.isPowerplay;
+                          if (isPowerplayOver) {
+                            const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+                            return legalBallCount < 6;
+                          } else {
+                            return over.balls.length < 6;
                           }
-                        }
+                        });
 
-                        // Check the LAST over for incomplete balls
-                        const lastOver = innings.overs[innings.overs.length - 1];
-                        const ballsInLastOver = lastOver.balls.filter(b => !b.isWide && !b.isNoball).length;
+                        // Use current over if found, otherwise use last over (all complete)
+                        const overIndex = currentOverIndex >= 0 ? currentOverIndex : innings.overs.length - 1;
+                        const currentOver = innings.overs[overIndex];
 
-                        // If last over is incomplete, show X.Y format
-                        if (ballsInLastOver < 6) {
-                          return `${completeOvers}.${ballsInLastOver} ov`;
-                        }
+                        // Count legal balls in current over for display
+                        const legalBalls = currentOver.balls.filter(b => !b.isWide && !b.isNoball).length;
 
-                        // All overs complete
-                        return `${completeOvers} ov`;
+                        // Display as overNumber.ballNumber (0-based like scoring page)
+                        return `${overIndex}.${legalBalls} ov`;
                       })()}
                     </div>
                   </>
