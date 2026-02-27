@@ -104,7 +104,9 @@ export async function initializeMatchInnings(
 
         if (overError) throw overError;
 
+        // CRITICAL FIX: Include the database ID so balls can be saved!
         overs.push({
+          id: overData.id, // ✅ ADD THIS - without it, balls can't be saved
           overNumber: overIdx,
           bowlingTeamId: bowlingTeamId,
           bowlerId: bowlingTeamPlayers[0].id,
