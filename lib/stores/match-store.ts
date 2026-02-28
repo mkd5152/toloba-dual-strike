@@ -10,12 +10,21 @@ import { POINTS_SYSTEM } from "@/lib/constants";
 import { useTournamentStore } from "./tournament-store";
 import { recordBall as recordBallAPI, deleteLastBall } from "@/lib/api/balls";
 import { updateInningsTotals, setPowerplayOver } from "@/lib/api/innings";
+import { sendTeamsErrorNotification } from "@/lib/utils/teams-webhook";
+
+interface DBSaveStatus {
+  status: "idle" | "saving" | "success" | "error";
+  operation?: string;
+  timestamp?: number;
+  error?: string;
+}
 
 interface MatchStore {
   currentMatch: Match | null;
   currentInningsIndex: number;
   currentOverIndex: number;
   isSelectingPowerplay: boolean; // NEW: Loading state for powerplay selection
+  dbSaveStatus: DBSaveStatus | null; // NEW: Database save status
 
   // Actions
   setCurrentMatch: (match: Match) => void;
@@ -26,6 +35,7 @@ interface MatchStore {
   completeMatch: () => void;
   undoLastBall: () => void;
   useReball: () => void;
+  setDBStatus: (status: DBSaveStatus) => void; // NEW: Set DB status
 }
 
 function recalcInningsFromBalls(innings: Innings): Innings {
@@ -57,6 +67,9 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   currentInningsIndex: 0,
   currentOverIndex: 0,
   isSelectingPowerplay: false,
+  dbSaveStatus: null,
+
+  setDBStatus: (status) => set({ dbSaveStatus: status }),
 
   setCurrentMatch: (match) => {
     console.log('🔄 setCurrentMatch called with', match.innings.length, 'innings');
@@ -363,7 +376,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       currentOverIndex: nextOverIndex,
     });
 
-    // CRITICAL: Persist ball to database with error alert
+    // CRITICAL: Persist ball to database with status indicator and Teams webhook
     console.log('📋 Attempting to save ball...');
     console.log('   Over number:', over.overNumber);
     console.log('   Over ID:', over.id);
@@ -372,12 +385,47 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
     if (over.id) {
       console.log('💾 Saving ball to database, over ID:', over.id);
-      recordBallAPI(over.id, ballWithEffective).catch((err) => {
-        console.error("❌ CRITICAL: Failed to record ball to database:", err);
-        console.error("   Over ID:", over.id);
-        console.error("   Ball data:", ballWithEffective);
-        alert("ERROR: Failed to save ball to database! Ball recorded locally but NOT saved. Please notify organizer immediately.");
-      });
+
+      // Set saving status
+      set({ dbSaveStatus: { status: "saving", operation: "Save Ball", timestamp: Date.now() } });
+
+      recordBallAPI(over.id, ballWithEffective)
+        .then(() => {
+          // Success - update status
+          set({ dbSaveStatus: { status: "success", operation: "Save Ball", timestamp: Date.now() } });
+        })
+        .catch((err) => {
+          console.error("❌ CRITICAL: Failed to record ball to database:", err);
+          console.error("   Over ID:", over.id);
+          console.error("   Ball data:", ballWithEffective);
+
+          // Set error status
+          set({
+            dbSaveStatus: {
+              status: "error",
+              operation: "Save Ball",
+              timestamp: Date.now(),
+              error: err.message || "Failed to save ball"
+            }
+          });
+
+          // Send to Teams webhook (async, won't block UI)
+          sendTeamsErrorNotification({
+            operation: "Save Ball",
+            matchId: currentMatch.id,
+            inningsId: innings.id,
+            overId: over.id,
+            error: err,
+            additionalData: {
+              overNumber: over.overNumber,
+              ballNumber: ballWithEffective.ballNumber,
+              runs: ballWithEffective.runs,
+              isWicket: ballWithEffective.isWicket,
+            }
+          });
+
+          alert("ERROR: Failed to save ball to database! Ball recorded locally but NOT saved. Error sent to Teams channel.");
+        });
     } else {
       console.error("❌ CRITICAL: Cannot save ball - over.id is missing!");
       console.error("   Over object:", over);
@@ -385,6 +433,31 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       console.error("   Is powerplay:", over.isPowerplay);
       console.error("   All innings overs:", innings.overs);
       console.error("   Current match state:", currentMatch);
+
+      // Set error status
+      const error = new Error("Over ID is missing - cannot save ball");
+      set({
+        dbSaveStatus: {
+          status: "error",
+          operation: "Save Ball",
+          timestamp: Date.now(),
+          error: error.message
+        }
+      });
+
+      // Send to Teams
+      sendTeamsErrorNotification({
+        operation: "Save Ball - Missing Over ID",
+        matchId: currentMatch.id,
+        inningsId: innings.id,
+        error: error,
+        additionalData: {
+          overNumber: over.overNumber,
+          currentOverIndex,
+          inningsOversCount: innings.overs.length,
+        }
+      });
+
       alert("CRITICAL ERROR: Cannot save ball to database - over ID is missing! This match needs to be refreshed. Click 'Reload Match Data' button to fix.");
     }
 
@@ -395,6 +468,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       totalWickets: updatedInnings.totalWickets,
       finalScore: updatedInnings.finalScore,
     });
+
     updateInningsTotals(innings.id, {
       totalRuns: updatedInnings.totalRuns,
       totalWickets: updatedInnings.totalWickets,
@@ -403,10 +477,35 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     })
       .then(() => {
         console.log('✅ Innings totals updated successfully');
+        // Success status already set by ball save
       })
       .catch((err) => {
         console.error("❌ CRITICAL: Failed to update innings totals:", err);
-        alert("ERROR: Failed to save innings totals to database! Scores shown locally but NOT saved. Please notify organizer immediately.");
+
+        // Set error status
+        set({
+          dbSaveStatus: {
+            status: "error",
+            operation: "Update Innings Totals",
+            timestamp: Date.now(),
+            error: err.message || "Failed to update innings totals"
+          }
+        });
+
+        // Send to Teams
+        sendTeamsErrorNotification({
+          operation: "Update Innings Totals",
+          matchId: currentMatch.id,
+          inningsId: innings.id,
+          error: err,
+          additionalData: {
+            totalRuns: updatedInnings.totalRuns,
+            totalWickets: updatedInnings.totalWickets,
+            finalScore: updatedInnings.finalScore,
+          }
+        });
+
+        alert("ERROR: Failed to save innings totals to database! Scores shown locally but NOT saved. Error sent to Teams channel.");
       });
 
     // Note: Match completion is handled above with early return, so this code is never reached for completed matches

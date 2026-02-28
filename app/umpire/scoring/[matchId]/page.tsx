@@ -6,7 +6,8 @@ import { ScoringPanel } from "@/components/umpire/scoring-panel";
 import { InningsHeader } from "@/components/umpire/innings-header";
 import { BallLog } from "@/components/umpire/ball-log";
 import { BattingOrderSelector } from "@/components/umpire/batting-order-selector";
-import { ForceSaveButton } from "@/components/umpire/force-save-button";
+import { DBStatusIndicator } from "@/components/umpire/db-status-indicator";
+// import { ForceSaveButton } from "@/components/umpire/force-save-button";
 import { useMatchStore } from "@/lib/stores/match-store";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -258,6 +259,9 @@ export default function ScoringPage() {
 
   return (
     <div className="min-h-screen tournament-bg-pattern">
+      {/* Database Status Indicator - Fixed position, non-disruptive */}
+      <DBStatusIndicator />
+
       <BattingOrderSelector
         teams={matchTeams}
         open={showBattingOrderSelector}
@@ -302,7 +306,7 @@ export default function ScoringPage() {
                 >
                   🔄 Reload
                 </Button>
-                <ForceSaveButton />
+                {/* <ForceSaveButton /> */}
                 <Button
                   onClick={handleResetMatch}
                   variant="outline"
