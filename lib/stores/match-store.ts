@@ -76,18 +76,22 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     if (match.innings[inningsIndex]) {
       const activeInnings = match.innings[inningsIndex];
 
-      // Find the first over that has less than 6 LEGAL balls
+      // Find the first incomplete over using CORRECT logic for powerplay vs normal overs
       const incompleteOverIndex = activeInnings.overs.findIndex((over) => {
-        // Count legal balls only (in powerplay, wides/noballs don't count)
-        const legalBalls = over.balls.filter(
-          (b) => !b.isWide && !b.isNoball
-        ).length;
-        return legalBalls < 6;
+        const isPowerplayOver = over.isPowerplay;
+        if (isPowerplayOver) {
+          // In powerplay, count only legal balls (wides/noballs don't count towards 6-ball limit)
+          const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+          return legalBallCount < 6;
+        } else {
+          // In normal over, ALL balls count towards 6-ball limit
+          return over.balls.length < 6;
+        }
       });
 
       overIndex = incompleteOverIndex >= 0 ? incompleteOverIndex : 0;
 
-      console.log('📍 Active over detected:', overIndex, 'of', activeInnings.overs.length);
+      console.log('📍 Active over detected:', overIndex, 'of', activeInnings.overs.length, 'isPowerplay:', activeInnings.overs[overIndex]?.isPowerplay);
     }
 
     // Validate: Ensure only ONE innings is IN_PROGRESS
