@@ -259,9 +259,6 @@ export default function ScoringPage() {
 
   return (
     <div className="min-h-screen tournament-bg-pattern">
-      {/* Database Status Indicator - Fixed position, non-disruptive */}
-      <DBStatusIndicator />
-
       <BattingOrderSelector
         teams={matchTeams}
         open={showBattingOrderSelector}
@@ -284,6 +281,9 @@ export default function ScoringPage() {
               <p className="text-sm sm:text-base text-gray-600 font-medium truncate">{currentMatch.court}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+              {/* Database Status Indicator - Next to LIVE badge */}
+              <DBStatusIndicator />
+
               {currentMatch.state === "IN_PROGRESS" && (
                 <Badge className="text-sm sm:text-base md:text-lg px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-[#b71c1c] to-[#c62828] text-white font-bold animate-pulse whitespace-nowrap">
                   🔴 LIVE

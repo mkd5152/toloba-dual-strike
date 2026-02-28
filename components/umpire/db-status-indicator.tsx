@@ -30,11 +30,11 @@ export function DBStatusIndicator() {
   const getStatusIcon = () => {
     switch (dbSaveStatus.status) {
       case "success":
-        return <CheckCircle2 className="w-3 h-3 text-white" />;
+        return <CheckCircle2 className="w-3.5 h-3.5 text-white" />;
       case "saving":
-        return <Loader2 className="w-3 h-3 text-white animate-spin" />;
+        return <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />;
       case "error":
-        return <AlertCircle className="w-3 h-3 text-white" />;
+        return <AlertCircle className="w-3.5 h-3.5 text-white" />;
       default:
         return null;
     }
@@ -51,7 +51,7 @@ export function DBStatusIndicator() {
 
   return (
     <div
-      className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full shadow-lg cursor-pointer transition-all hover:scale-105"
+      className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full shadow-lg cursor-pointer transition-all hover:scale-105"
       style={{
         backgroundColor: dbSaveStatus.status === "error" ? "#fef2f2" : "#f9fafb",
         border: `2px solid ${dbSaveStatus.status === "error" ? "#dc2626" : dbSaveStatus.status === "success" ? "#10b981" : "#f59e0b"}`,
@@ -59,12 +59,12 @@ export function DBStatusIndicator() {
       onClick={() => dbSaveStatus.status === "error" && setShowDetails(!showDetails)}
     >
       {/* Status Dot with Icon */}
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center ${getStatusColor()}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${getStatusColor()}`}>
         {getStatusIcon()}
       </div>
 
       {/* Status Text */}
-      <div className="text-xs font-semibold">
+      <div className="text-xs font-semibold whitespace-nowrap">
         {dbSaveStatus.status === "success" && (
           <span className="text-green-700">Saved {getTimeSince()}</span>
         )}
@@ -72,7 +72,7 @@ export function DBStatusIndicator() {
           <span className="text-yellow-700">Saving...</span>
         )}
         {dbSaveStatus.status === "error" && (
-          <span className="text-red-700">Error - Click for details</span>
+          <span className="text-red-700">Error</span>
         )}
       </div>
 
