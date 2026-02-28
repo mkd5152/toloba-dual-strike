@@ -32,11 +32,11 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
     }
   };
 
-  // Calculate match statistics
+  // Calculate match statistics with wicket breakdown by team
   const calculateMatchStats = () => {
     let fours = 0;
     let sixes = 0;
-    let wickets = 0;
+    const wicketsByTeam: Record<string, number> = {};
 
     match.innings.forEach(innings => {
       innings.overs.forEach(over => {
@@ -46,17 +46,28 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
             if (ball.runs === 4) fours++;
             if (ball.runs === 6) sixes++;
           }
-          // Count wickets
-          if (ball.isWicket) wickets++;
+          // Count wickets by fielding team
+          if (ball.isWicket && ball.fieldingTeamId) {
+            wicketsByTeam[ball.fieldingTeamId] = (wicketsByTeam[ball.fieldingTeamId] || 0) + 1;
+          }
         });
       });
     });
 
-    return { fours, sixes, wickets };
+    const totalWickets = Object.values(wicketsByTeam).reduce((sum, w) => sum + w, 0);
+
+    return { fours, sixes, totalWickets, wicketsByTeam };
+  };
+
+  // Find currently batting team (IN_PROGRESS innings)
+  const getCurrentlyBattingTeamId = () => {
+    const currentInnings = match.innings.find(inn => inn.state === "IN_PROGRESS");
+    return currentInnings?.teamId || null;
   };
 
   const stats = match.state === "IN_PROGRESS" ? calculateMatchStats() : null;
-  const showBanner = match.state === "IN_PROGRESS" && stats && (stats.fours > 0 || stats.sixes > 0 || stats.wickets > 0);
+  const showBanner = match.state === "IN_PROGRESS" && stats && (stats.fours > 0 || stats.sixes > 0 || stats.totalWickets > 0);
+  const battingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBattingTeamId() : null;
 
   return (
     <Card className="p-6 relative overflow-hidden">
@@ -68,34 +79,40 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
 
           {/* Fours */}
           {stats.fours > 0 && (
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 shadow-xl animate-in zoom-in duration-300">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center font-black text-white text-sm shadow-lg animate-pulse">
-                4
-              </div>
-              <span className="text-white font-bold text-lg tabular-nums">{stats.fours}</span>
-              <span className="text-blue-200 text-xs font-semibold">FOUR{stats.fours !== 1 ? 'S' : ''}</span>
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 backdrop-blur-sm rounded-full border-2 border-blue-400 shadow-xl animate-in zoom-in duration-300">
+              <span className="text-white font-black text-2xl tabular-nums">{stats.fours}</span>
+              <span className="text-blue-200 text-sm font-bold">FOUR{stats.fours !== 1 ? 'S' : ''}</span>
             </div>
           )}
 
           {/* Sixes */}
           {stats.sixes > 0 && (
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 shadow-xl animate-in zoom-in duration-300 delay-100">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-lg animate-bounce">
-                6
-              </div>
-              <span className="text-white font-bold text-lg tabular-nums">{stats.sixes}</span>
-              <span className="text-purple-200 text-xs font-semibold">SIX{stats.sixes !== 1 ? 'ES' : ''}</span>
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-purple-500/20 backdrop-blur-sm rounded-full border-2 border-purple-400 shadow-xl animate-in zoom-in duration-300 delay-100">
+              <span className="text-white font-black text-2xl tabular-nums">{stats.sixes}</span>
+              <span className="text-purple-200 text-sm font-bold">SIX{stats.sixes !== 1 ? 'ES' : ''}</span>
             </div>
           )}
 
-          {/* Wickets */}
-          {stats.wickets > 0 && (
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 shadow-xl animate-in zoom-in duration-300 delay-200">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white text-lg shadow-lg">
-                🏏
+          {/* Wickets - Show team breakdown if multiple teams */}
+          {stats.totalWickets > 0 && (
+            <div className="flex items-center gap-3 px-4 py-1.5 bg-red-500/20 backdrop-blur-sm rounded-full border-2 border-red-400 shadow-xl animate-in zoom-in duration-300 delay-200">
+              <div className="flex items-center gap-2">
+                <span className="text-white font-black text-2xl tabular-nums">{stats.totalWickets}</span>
+                <span className="text-red-200 text-sm font-bold">WICKET{stats.totalWickets !== 1 ? 'S' : ''}</span>
               </div>
-              <span className="text-white font-bold text-lg tabular-nums">{stats.wickets}</span>
-              <span className="text-red-200 text-xs font-semibold">WICKET{stats.wickets !== 1 ? 'S' : ''}</span>
+              {Object.keys(stats.wicketsByTeam).length > 1 && (
+                <div className="flex items-center gap-2 border-l border-red-300/30 pl-3">
+                  {Object.entries(stats.wicketsByTeam).map(([teamId, count]) => {
+                    const team = getTeam(teamId);
+                    return (
+                      <div key={teamId} className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: team?.color }}></div>
+                        <span className="text-white text-xs font-bold">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -127,18 +144,34 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
             return null;
           }
 
+          const isBatting = battingTeamId === teamId;
+
           return (
             <div
               key={teamId}
-              className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+              className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                isBatting
+                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 shadow-lg'
+                  : 'bg-muted/50'
+              }`}
             >
               <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-full shrink-0"
-                  style={{ backgroundColor: team?.color }}
-                />
+                <div className="relative">
+                  <div
+                    className="w-8 h-8 rounded-full shrink-0"
+                    style={{ backgroundColor: team?.color }}
+                  />
+                  {isBatting && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white"></div>
+                  )}
+                </div>
                 <div>
-                  <span className="font-medium">{team?.name ?? "—"}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{team?.name ?? "—"}</span>
+                    {isBatting && (
+                      <Badge className="bg-green-600 text-white text-[10px] px-2 py-0">BATTING</Badge>
+                    )}
+                  </div>
                   {team?.players && team.players.length > 0 && (
                     <p className="text-xs text-muted-foreground">
                       {team.players.map((p) => p.name).join(" • ")}
