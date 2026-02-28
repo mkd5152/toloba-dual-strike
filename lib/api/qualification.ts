@@ -52,12 +52,20 @@ export async function getOverallStandingsForPlayoffs(tournamentId: string): Prom
       rankings.forEach((ranking: any) => {
         const standing = standingsMap.get(ranking.teamId)
         if (standing) {
+          const runsToAdd = ranking.totalScore || ranking.totalRuns || 0
+          console.log(`📊 Match ${match.match_number}: ${standing.teamName} +${runsToAdd} runs (totalScore: ${ranking.totalScore}, totalRuns: ${ranking.totalRuns})`)
           standing.matchesPlayed++
           standing.points += ranking.points || 0
-          standing.totalRuns += ranking.totalScore || ranking.totalRuns || 0
+          standing.totalRuns += runsToAdd
           standing.totalDismissals += ranking.totalDismissals || 0
         }
       })
+    })
+
+    // Log final standings before sorting
+    console.log("📊 Final Standings (before sorting):")
+    Array.from(standingsMap.values()).forEach(s => {
+      console.log(`  ${s.teamName}: ${s.totalRuns} runs, ${s.points} points, ${s.matchesPlayed} matches`)
     })
 
     // Sort all teams by points, then runs, then name
