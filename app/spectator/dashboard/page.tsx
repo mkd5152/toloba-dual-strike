@@ -602,29 +602,29 @@ export default function SpectatorDashboardPage() {
           <CardContent className="p-8">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-slate-400 font-bold text-sm mb-2">Powerplay Runs</p>
-                <p className="text-4xl font-black text-cyan-400 mb-1">{stats.totalPowerplayRuns}</p>
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <p className="text-slate-200 font-bold text-sm mb-2">Powerplay Runs</p>
+                <p className="text-4xl font-black text-cyan-300 mb-1">{stats.totalPowerplayRuns}</p>
+                <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"
+                    className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow-lg shadow-cyan-500/50"
                     style={{ width: `${stats.totalRuns > 0 ? (stats.totalPowerplayRuns / stats.totalRuns) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>
               <div>
-                <p className="text-slate-400 font-bold text-sm mb-2">Normal Overs</p>
-                <p className="text-4xl font-black text-emerald-400 mb-1">{stats.totalNormalRuns}</p>
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <p className="text-slate-200 font-bold text-sm mb-2">Normal Overs</p>
+                <p className="text-4xl font-black text-emerald-300 mb-1">{stats.totalNormalRuns}</p>
+                <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full"
+                    className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full shadow-lg shadow-emerald-500/50"
                     style={{ width: `${stats.totalRuns > 0 ? (stats.totalNormalRuns / stats.totalRuns) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>
             </div>
-            <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/20">
-              <p className="text-slate-300 font-bold text-sm">
-                ⚡ Powerplay contributed <span className="text-cyan-400 text-lg font-black">{stats.totalRuns > 0 ? ((stats.totalPowerplayRuns / stats.totalRuns) * 100).toFixed(1) : '0'}%</span> of total runs
+            <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-500/40">
+              <p className="text-slate-100 font-bold text-sm">
+                ⚡ Powerplay contributed <span className="text-cyan-300 text-lg font-black">{stats.totalRuns > 0 ? ((stats.totalPowerplayRuns / stats.totalRuns) * 100).toFixed(1) : '0'}%</span> of total runs
               </p>
             </div>
           </CardContent>
@@ -642,20 +642,20 @@ export default function SpectatorDashboardPage() {
           </CardHeader>
           <CardContent className="p-8">
             <div className="grid grid-cols-2 gap-6 mb-6">
-              <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl border border-blue-500/20">
-                <p className="text-blue-400 font-bold text-sm mb-2">FOURS</p>
-                <p className="text-5xl font-black text-blue-300 mb-1">{stats.total4s}</p>
-                <p className="text-blue-400/70 font-bold text-xs">{stats.total4s * 4} runs</p>
+              <div className="text-center p-6 bg-gradient-to-br from-blue-500/25 to-blue-600/25 rounded-2xl border border-blue-400/40 shadow-lg shadow-blue-500/20">
+                <p className="text-blue-300 font-bold text-sm mb-2">FOURS</p>
+                <p className="text-5xl font-black text-blue-200 mb-1">{stats.total4s}</p>
+                <p className="text-blue-300 font-bold text-xs">{stats.total4s * 4} runs</p>
               </div>
-              <div className="text-center p-6 bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-2xl border border-red-500/20">
-                <p className="text-red-400 font-bold text-sm mb-2">SIXES</p>
-                <p className="text-5xl font-black text-red-300 mb-1">{stats.total6s}</p>
-                <p className="text-red-400/70 font-bold text-xs">{stats.total6s * 6} runs</p>
+              <div className="text-center p-6 bg-gradient-to-br from-red-500/25 to-red-600/25 rounded-2xl border border-red-400/40 shadow-lg shadow-red-500/20">
+                <p className="text-red-300 font-bold text-sm mb-2">SIXES</p>
+                <p className="text-5xl font-black text-red-200 mb-1">{stats.total6s}</p>
+                <p className="text-red-300 font-bold text-xs">{stats.total6s * 6} runs</p>
               </div>
             </div>
-            <div className="p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl border border-orange-500/20">
-              <p className="text-slate-300 font-bold text-sm">
-                🏏 Boundaries scored <span className="text-orange-400 text-lg font-black">{stats.boundaryRuns}</span> runs (<span className="text-orange-400 font-black">{stats.totalRuns > 0 ? ((stats.boundaryRuns / stats.totalRuns) * 100).toFixed(1) : '0'}%</span> of total)
+            <div className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl border border-orange-500/40">
+              <p className="text-slate-100 font-bold text-sm">
+                🏏 Boundaries scored <span className="text-orange-300 text-lg font-black">{stats.boundaryRuns}</span> runs (<span className="text-orange-300 font-black">{stats.totalRuns > 0 ? ((stats.boundaryRuns / stats.totalRuns) * 100).toFixed(1) : '0'}%</span> of total)
               </p>
             </div>
           </CardContent>
@@ -676,19 +676,19 @@ export default function SpectatorDashboardPage() {
           </CardHeader>
           <CardContent className="p-8">
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-2xl border border-emerald-500/20">
+              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-500/25 to-green-500/25 rounded-2xl border border-emerald-400/40 shadow-lg shadow-emerald-500/20">
                 <div>
-                  <p className="text-emerald-400 font-bold text-sm mb-1">CATCHES</p>
-                  <p className="text-emerald-300 font-bold text-xs">Brilliant grabs!</p>
+                  <p className="text-emerald-300 font-bold text-sm mb-1">CATCHES</p>
+                  <p className="text-emerald-200 font-bold text-xs">Brilliant grabs!</p>
                 </div>
-                <p className="text-5xl font-black text-emerald-300">{stats.totalCatches}</p>
+                <p className="text-5xl font-black text-emerald-200">{stats.totalCatches}</p>
               </div>
-              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-2xl border border-orange-500/20">
+              <div className="flex items-center justify-between p-5 bg-gradient-to-r from-orange-500/25 to-amber-500/25 rounded-2xl border border-orange-400/40 shadow-lg shadow-orange-500/20">
                 <div>
-                  <p className="text-orange-400 font-bold text-sm mb-1">RUN OUTS</p>
-                  <p className="text-orange-300 font-bold text-xs">Direct hits!</p>
+                  <p className="text-orange-300 font-bold text-sm mb-1">RUN OUTS</p>
+                  <p className="text-orange-200 font-bold text-xs">Direct hits!</p>
                 </div>
-                <p className="text-5xl font-black text-orange-300">{stats.totalRunOuts}</p>
+                <p className="text-5xl font-black text-orange-200">{stats.totalRunOuts}</p>
               </div>
             </div>
           </CardContent>
@@ -707,40 +707,40 @@ export default function SpectatorDashboardPage() {
           <CardContent className="p-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <div className="p-5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 rounded-2xl border-2 border-yellow-500/30">
+                <div className="p-5 bg-gradient-to-r from-yellow-500/25 to-amber-500/25 rounded-2xl border-2 border-yellow-400/50 shadow-lg shadow-yellow-500/20">
                   <div className="flex items-center gap-2 mb-3">
-                    <Crown className="w-5 h-5 text-yellow-400" />
-                    <p className="text-yellow-400 font-black text-sm">HIGHEST MATCH SCORE</p>
+                    <Crown className="w-5 h-5 text-yellow-300" />
+                    <p className="text-yellow-300 font-black text-sm">HIGHEST MATCH SCORE</p>
                   </div>
-                  <p className="text-4xl font-black text-yellow-300 mb-2">{stats.highestScore.runs}</p>
-                  <p className="text-yellow-400/80 font-bold text-sm">{stats.highestScore.team}</p>
-                  <p className="text-yellow-400/60 font-bold text-xs">Match {stats.highestScore.match}</p>
+                  <p className="text-4xl font-black text-yellow-200 mb-2">{stats.highestScore.runs}</p>
+                  <p className="text-yellow-300 font-bold text-sm">{stats.highestScore.team}</p>
+                  <p className="text-yellow-300/80 font-bold text-xs">Match {stats.highestScore.match}</p>
                 </div>
-                <div className="p-5 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-2xl border-2 border-emerald-500/30">
+                <div className="p-5 bg-gradient-to-r from-emerald-500/25 to-green-500/25 rounded-2xl border-2 border-emerald-400/50 shadow-lg shadow-emerald-500/20">
                   <div className="flex items-center gap-2 mb-3">
-                    <Trophy className="w-5 h-5 text-emerald-400" />
-                    <p className="text-emerald-400 font-black text-sm">HIGHEST INNINGS RUNS</p>
+                    <Trophy className="w-5 h-5 text-emerald-300" />
+                    <p className="text-emerald-300 font-black text-sm">HIGHEST INNINGS RUNS</p>
                   </div>
-                  <p className="text-4xl font-black text-emerald-300 mb-2">{stats.highestInningsScore.runs}</p>
-                  <p className="text-emerald-400/80 font-bold text-sm">{stats.highestInningsScore.team}</p>
-                  <p className="text-emerald-400/60 font-bold text-xs">Match {stats.highestInningsScore.match}</p>
+                  <p className="text-4xl font-black text-emerald-200 mb-2">{stats.highestInningsScore.runs}</p>
+                  <p className="text-emerald-300 font-bold text-sm">{stats.highestInningsScore.team}</p>
+                  <p className="text-emerald-300/80 font-bold text-xs">Match {stats.highestInningsScore.match}</p>
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl border border-blue-500/20">
-                  <p className="text-blue-400 font-bold text-sm mb-2">LOWEST SCORE</p>
-                  <p className="text-3xl font-black text-blue-300 mb-2">{stats.lowestScore.runs}</p>
-                  <p className="text-blue-400/80 font-bold text-sm">{stats.lowestScore.team}</p>
-                  <p className="text-blue-400/60 font-bold text-xs">Match {stats.lowestScore.match}</p>
+                <div className="p-5 bg-gradient-to-r from-blue-500/25 to-cyan-500/25 rounded-2xl border border-blue-400/40 shadow-lg shadow-blue-500/20">
+                  <p className="text-blue-300 font-bold text-sm mb-2">LOWEST SCORE</p>
+                  <p className="text-3xl font-black text-blue-200 mb-2">{stats.lowestScore.runs}</p>
+                  <p className="text-blue-300 font-bold text-sm">{stats.lowestScore.team}</p>
+                  <p className="text-blue-300/80 font-bold text-xs">Match {stats.lowestScore.match}</p>
                 </div>
-                <div className="p-5 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-2xl border-2 border-red-500/30">
+                <div className="p-5 bg-gradient-to-r from-red-500/25 to-rose-500/25 rounded-2xl border-2 border-red-400/50 shadow-lg shadow-red-500/20">
                   <div className="flex items-center gap-2 mb-3">
-                    <Crosshair className="w-5 h-5 text-red-400" />
-                    <p className="text-red-400 font-black text-sm">MOST WICKETS TAKEN</p>
+                    <Crosshair className="w-5 h-5 text-red-300" />
+                    <p className="text-red-300 font-black text-sm">MOST WICKETS TAKEN</p>
                   </div>
-                  <p className="text-4xl font-black text-red-300 mb-2">{stats.mostWicketsTaken.wickets}</p>
-                  <p className="text-red-400/80 font-bold text-sm">{stats.mostWicketsTaken.team}</p>
-                  <p className="text-red-400/60 font-bold text-xs">By team in the tournament</p>
+                  <p className="text-4xl font-black text-red-200 mb-2">{stats.mostWicketsTaken.wickets}</p>
+                  <p className="text-red-300 font-bold text-sm">{stats.mostWicketsTaken.team}</p>
+                  <p className="text-red-300/80 font-bold text-xs">By team in the tournament</p>
                 </div>
               </div>
             </div>
