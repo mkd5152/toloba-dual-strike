@@ -42,7 +42,25 @@ export default function DayWiseStandingsPage() {
 
   // Calculate standings for a specific day
   const dayStandings = useMemo(() => {
-    const dayMatches = matchesByDay.get(selectedDay) || [];
+    // Get all days sorted
+    const sortedDays = Array.from(matchesByDay.keys()).sort();
+    const selectedDayIndex = sortedDays.indexOf(selectedDay);
+
+    // For Day 1: only Day 1 matches
+    // For Day 2+: cumulative from Day 1 up to selected day
+    let dayMatches: Match[] = [];
+    if (selectedDayIndex === 0) {
+      // Day 1: only show Day 1 matches
+      dayMatches = matchesByDay.get(selectedDay) || [];
+    } else {
+      // Day 2+: cumulative from Day 1 to selected day
+      for (let i = 0; i <= selectedDayIndex; i++) {
+        const day = sortedDays[i];
+        const matches = matchesByDay.get(day) || [];
+        dayMatches.push(...matches);
+      }
+    }
+
     const standingsMap = new Map<string, StandingsEntry>();
 
     // Initialize all teams
@@ -59,9 +77,10 @@ export default function DayWiseStandingsPage() {
     });
 
     console.log("Total teams initialized:", teams.length);
+    console.log("Selected day index:", selectedDayIndex);
     console.log("Day matches (completed/locked):", dayMatches.filter((m) => m.state === "COMPLETED" || m.state === "LOCKED").length);
 
-    // Process only completed matches from this day
+    // Process only completed matches
     const completedMatches = dayMatches.filter((m) => m.state === "COMPLETED" || m.state === "LOCKED");
     completedMatches.forEach((match) => {
       console.log(`Match ${match.matchNumber}: ${match.rankings.length} rankings`);
@@ -178,7 +197,9 @@ export default function DayWiseStandingsPage() {
 
   const renderHeader = () => {
     const dayDate = new Date(selectedDay);
-    const dayNum = Array.from(matchesByDay.keys()).sort().indexOf(selectedDay) + 1;
+    const sortedDays = Array.from(matchesByDay.keys()).sort();
+    const dayNum = sortedDays.indexOf(selectedDay) + 1;
+    const isCumulative = dayNum > 1;
 
     return (
       <div className="relative mb-4 pb-3" style={{ borderBottom: '4px solid #ff9800', backgroundColor: '#ffffff', color: '#000000' }}>
@@ -201,6 +222,11 @@ export default function DayWiseStandingsPage() {
             <h1 className="text-5xl font-black mb-3 tracking-tight" style={{ color: '#0d3944' }}>
               DAY {dayNum} STANDINGS
             </h1>
+            {isCumulative && (
+              <p className="text-sm font-semibold mb-2" style={{ color: '#ff9800' }}>
+                (Cumulative: Day 1 - Day {dayNum})
+              </p>
+            )}
             <div className="h-1 w-32 mx-auto mb-4" style={{ background: 'linear-gradient(to right, #ff9800, #ffb300)' }}></div>
             <p className="text-2xl font-bold mb-2" style={{ color: '#4a5568' }}>{tournament.name}</p>
             <p className="text-lg font-semibold" style={{ color: '#6b7280' }}>
