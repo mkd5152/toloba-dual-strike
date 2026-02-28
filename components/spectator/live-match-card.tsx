@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Match } from "@/lib/types";
 import { useTournamentStore } from "@/lib/stores/tournament-store";
+import { useEffect, useState } from "react";
 
 interface LiveMatchCardProps {
   match: Match;
@@ -11,6 +12,15 @@ interface LiveMatchCardProps {
 
 export function LiveMatchCard({ match }: LiveMatchCardProps) {
   const { getTeam } = useTournamentStore();
+  const [, setTick] = useState(0);
+
+  // Force re-render every 5 seconds to update banner visibility
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Map match state to user-friendly labels
   const getStateLabel = (state: string) => {
@@ -37,18 +47,28 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
     let fours = 0;
     let sixes = 0;
     const wicketsByTeam: Record<string, number> = {};
+    let lastBallTimestamp: Date | null = null;
+    let lastWicketType: string | null = null;
 
     match.innings.forEach(innings => {
       innings.overs.forEach(over => {
         over.balls.forEach(ball => {
+          // Track most recent ball timestamp
+          if (!lastBallTimestamp || ball.timestamp > lastBallTimestamp) {
+            lastBallTimestamp = ball.timestamp;
+          }
+
           // Count boundaries (exclude wides and noballs from boundary count)
           if (!ball.isWide && !ball.isNoball) {
             if (ball.runs === 4) fours++;
             if (ball.runs === 6) sixes++;
           }
-          // Count wickets by fielding team
+          // Count wickets by fielding team and track last wicket type
           if (ball.isWicket && ball.fieldingTeamId) {
             wicketsByTeam[ball.fieldingTeamId] = (wicketsByTeam[ball.fieldingTeamId] || 0) + 1;
+            if (!lastBallTimestamp || ball.timestamp >= lastBallTimestamp) {
+              lastWicketType = ball.wicketType;
+            }
           }
         });
       });
@@ -56,7 +76,10 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
 
     const totalWickets = Object.values(wicketsByTeam).reduce((sum, w) => sum + w, 0);
 
-    return { fours, sixes, totalWickets, wicketsByTeam };
+    // Check if last activity was within 20 seconds
+    const isRecent = lastBallTimestamp && (Date.now() - lastBallTimestamp.getTime()) < 20000;
+
+    return { fours, sixes, totalWickets, wicketsByTeam, lastWicketType, isRecent };
   };
 
   // Find currently batting team (IN_PROGRESS innings)
@@ -87,7 +110,7 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
   };
 
   const stats = match.state === "IN_PROGRESS" ? calculateMatchStats() : null;
-  const showBanner = match.state === "IN_PROGRESS" && stats && (stats.fours > 0 || stats.sixes > 0 || stats.totalWickets > 0);
+  const showBanner = match.state === "IN_PROGRESS" && stats && stats.isRecent && (stats.fours > 0 || stats.sixes > 0 || stats.totalWickets > 0);
   const battingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBattingTeamId() : null;
   const bowlingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBowlingTeamId() : null;
 
@@ -126,7 +149,12 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
             <div className="flex items-center gap-3 px-4 py-1.5 bg-red-500/20 backdrop-blur-sm rounded-full border-2 border-red-400 shadow-xl animate-in zoom-in duration-300 delay-200">
               <div className="flex items-center gap-2">
                 <span className="text-white font-black text-2xl tabular-nums">{stats.totalWickets}</span>
-                <span className="text-red-200 text-sm font-bold">WICKET{stats.totalWickets !== 1 ? 'S' : ''}</span>
+                <div className="flex flex-col">
+                  <span className="text-red-200 text-sm font-bold leading-none">WICKET{stats.totalWickets !== 1 ? 'S' : ''}</span>
+                  {stats.lastWicketType && (
+                    <span className="text-red-100 text-[10px] font-semibold leading-none mt-0.5 uppercase">{stats.lastWicketType.replace('_', ' ')}</span>
+                  )}
+                </div>
               </div>
               {Object.keys(stats.wicketsByTeam).length > 1 && (
                 <div className="flex items-center gap-2 border-l border-red-300/30 pl-3">
