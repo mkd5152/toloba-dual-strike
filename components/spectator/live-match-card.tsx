@@ -65,9 +65,31 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
     return currentInnings?.teamId || null;
   };
 
+  // Find currently bowling team (from current over in IN_PROGRESS innings)
+  const getCurrentlyBowlingTeamId = () => {
+    const currentInnings = match.innings.find(inn => inn.state === "IN_PROGRESS");
+    if (!currentInnings || !currentInnings.overs || currentInnings.overs.length === 0) {
+      return null;
+    }
+
+    // Find the current incomplete over
+    const currentOver = currentInnings.overs.find((over) => {
+      const isPowerplayOver = over.isPowerplay;
+      if (isPowerplayOver) {
+        const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+        return legalBallCount < 6;
+      } else {
+        return over.balls.length < 6;
+      }
+    });
+
+    return currentOver?.bowlingTeamId || null;
+  };
+
   const stats = match.state === "IN_PROGRESS" ? calculateMatchStats() : null;
   const showBanner = match.state === "IN_PROGRESS" && stats && (stats.fours > 0 || stats.sixes > 0 || stats.totalWickets > 0);
   const battingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBattingTeamId() : null;
+  const bowlingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBowlingTeamId() : null;
 
   return (
     <Card className="p-6 relative overflow-hidden">
@@ -80,16 +102,22 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
           {/* Fours */}
           {stats.fours > 0 && (
             <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 backdrop-blur-sm rounded-full border-2 border-blue-400 shadow-xl animate-in zoom-in duration-300">
-              <span className="text-white font-black text-2xl tabular-nums">{stats.fours}</span>
+              <span className="text-white font-black text-2xl tabular-nums">4</span>
               <span className="text-blue-200 text-sm font-bold">FOUR{stats.fours !== 1 ? 'S' : ''}</span>
+              {stats.fours > 1 && (
+                <span className="text-white font-black text-lg">×{stats.fours}</span>
+              )}
             </div>
           )}
 
           {/* Sixes */}
           {stats.sixes > 0 && (
             <div className="flex items-center gap-2 px-4 py-1.5 bg-purple-500/20 backdrop-blur-sm rounded-full border-2 border-purple-400 shadow-xl animate-in zoom-in duration-300 delay-100">
-              <span className="text-white font-black text-2xl tabular-nums">{stats.sixes}</span>
+              <span className="text-white font-black text-2xl tabular-nums">6</span>
               <span className="text-purple-200 text-sm font-bold">SIX{stats.sixes !== 1 ? 'ES' : ''}</span>
+              {stats.sixes > 1 && (
+                <span className="text-white font-black text-lg">×{stats.sixes}</span>
+              )}
             </div>
           )}
 
@@ -145,6 +173,7 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
           }
 
           const isBatting = battingTeamId === teamId;
+          const isBowling = bowlingTeamId === teamId;
 
           return (
             <div
@@ -152,6 +181,8 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
               className={`flex items-center justify-between p-3 rounded-lg transition-all ${
                 isBatting
                   ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 shadow-lg'
+                  : isBowling
+                  ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-500 shadow-lg'
                   : 'bg-muted/50'
               }`}
             >
@@ -164,12 +195,18 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                   {isBatting && (
                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white"></div>
                   )}
+                  {isBowling && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse border-2 border-white"></div>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{team?.name ?? "—"}</span>
                     {isBatting && (
                       <Badge className="bg-green-600 text-white text-[10px] px-2 py-0">BATTING</Badge>
+                    )}
+                    {isBowling && (
+                      <Badge className="bg-orange-600 text-white text-[10px] px-2 py-0">BOWLING</Badge>
                     )}
                   </div>
                   {team?.players && team.players.length > 0 && (
