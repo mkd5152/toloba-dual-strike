@@ -205,9 +205,13 @@ export function ScheduleTimeline({ matches, showCompleted = true }: ScheduleTime
                                     {team.players.map((p) => p.name).join(" • ")}
                                   </p>
                                 )}
-                                {ranking && (
+                                {ranking && match.battingOrder && (
                                   <p className="text-xs text-gray-500 font-semibold mt-1">
-                                    Rank: {ranking.rank}
+                                    Batted: {(() => {
+                                      const position = match.battingOrder.indexOf(team.id) + 1;
+                                      const suffix = position === 1 ? 'st' : position === 2 ? 'nd' : position === 3 ? 'rd' : 'th';
+                                      return `${position}${suffix}`;
+                                    })()}
                                   </p>
                                 )}
                               </div>
