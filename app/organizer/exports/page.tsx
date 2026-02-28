@@ -62,6 +62,15 @@ export default function ExportsPage() {
       features: ["Points table", "Team statistics", "Performance metrics"]
     },
     {
+      id: "day-wise-standings",
+      title: "Day-wise Standings",
+      description: "Standings report for matches played on a specific day",
+      icon: Trophy,
+      color: "from-teal-500 to-cyan-600",
+      href: "/organizer/exports/day-wise-standings",
+      features: ["Day-by-day view", "Ranking by points", "Professional format"]
+    },
+    {
       id: "ball-by-ball",
       title: "Ball-by-Ball Data",
       description: "Export detailed ball-by-ball data (CSV)",
