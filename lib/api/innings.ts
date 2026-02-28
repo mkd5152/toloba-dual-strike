@@ -252,24 +252,37 @@ export async function updateInningsState(
  */
 export async function setPowerplayOver(inningsId: string, overNumber: 0 | 1 | 2): Promise<void> {
   try {
+    console.log(`🔵 setPowerplayOver: Starting for innings ${inningsId}, over ${overNumber}`);
+
     // Update innings powerplay_over field
+    console.log(`🔵 setPowerplayOver: Updating innings table...`);
     const { error: inningsError } = await (supabase as any)
       .from("innings")
       .update({ powerplay_over: overNumber } as any)
       .eq("id", inningsId);
 
-    if (inningsError) throw inningsError;
+    if (inningsError) {
+      console.error(`❌ setPowerplayOver: Innings update failed:`, inningsError);
+      throw inningsError;
+    }
+    console.log(`✅ setPowerplayOver: Innings table updated successfully`);
 
     // Mark the specific over as powerplay
+    console.log(`🔵 setPowerplayOver: Updating overs table for over ${overNumber}...`);
     const { error: overError } = await (supabase as any)
       .from("overs")
       .update({ is_powerplay: true } as any)
       .eq("innings_id", inningsId)
       .eq("over_number", overNumber);
 
-    if (overError) throw overError;
+    if (overError) {
+      console.error(`❌ setPowerplayOver: Over update failed:`, overError);
+      throw overError;
+    }
+    console.log(`✅ setPowerplayOver: Over table updated successfully`);
+    console.log(`✅ setPowerplayOver: Complete!`);
   } catch (err) {
-    console.error("Error setting powerplay over:", err);
+    console.error("❌ setPowerplayOver: Error setting powerplay over:", err);
     throw new Error(
       `Failed to set powerplay over: ${err instanceof Error ? err.message : "Unknown error"}`
     );

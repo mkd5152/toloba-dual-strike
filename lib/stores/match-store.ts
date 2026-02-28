@@ -554,11 +554,18 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     set({ isSelectingPowerplay: true });
     console.log(`⚡ Setting powerplay to Over ${overNumber}...`);
 
+    // Set saving status
+    set({ dbSaveStatus: { status: "saving", operation: "Set Powerplay", timestamp: Date.now() } });
+
     try {
       // CRITICAL: Save powerplay selection to database (already imported at top!)
+      console.log(`📋 Calling setPowerplayOver for innings ${innings.id}, over ${overNumber}...`);
       await setPowerplayOver(innings.id, overNumber as 0 | 1 | 2);
 
       console.log(`✅ Powerplay saved to database successfully`);
+
+      // Update success status
+      set({ dbSaveStatus: { status: "success", operation: "Set Powerplay", timestamp: Date.now() } });
 
       const updatedInnings: Innings = {
         ...innings,
@@ -605,7 +612,30 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       }
     } catch (err) {
       console.error("❌ Error setting powerplay:", err);
-      set({ isSelectingPowerplay: false });
+
+      // Set error status
+      set({
+        isSelectingPowerplay: false,
+        dbSaveStatus: {
+          status: "error",
+          operation: "Set Powerplay",
+          timestamp: Date.now(),
+          error: err instanceof Error ? err.message : "Unknown error"
+        }
+      });
+
+      // Send to Teams webhook
+      sendTeamsErrorNotification({
+        operation: "Set Powerplay",
+        matchId: currentMatch.id,
+        inningsId: innings.id,
+        error: err instanceof Error ? err : new Error(String(err)),
+        additionalData: {
+          overNumber: overNumber,
+          currentPowerplayOver: innings.powerplayOver,
+        }
+      });
+
       alert(`Failed to set powerplay: ${err instanceof Error ? err.message : "Unknown error"}. Please try again or refresh the page.`);
     }
   },

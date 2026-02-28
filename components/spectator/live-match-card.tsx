@@ -86,7 +86,7 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                         /{innings.totalWickets || 0}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {(() => {
                         // Calculate overs bowled
                         if (!innings.overs || innings.overs.length === 0) {
