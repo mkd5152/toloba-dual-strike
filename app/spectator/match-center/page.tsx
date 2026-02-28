@@ -140,10 +140,25 @@ export default function SpectatorLivePage() {
           setDetailedMatches(matches);
         }
       )
+      // Listen to match state changes (CREATED -> IN_PROGRESS, etc.)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'matches',
+        },
+        async (payload) => {
+          console.log('🏆 Live: Match state updated', payload);
+          // Reload detailed matches when match state changes
+          const matches = await fetchMatchesWithDetails(tournament.id);
+          setDetailedMatches(matches);
+        }
+      )
       .subscribe((status) => {
-        console.log('🔴 Live page balls/innings subscription status:', status);
+        console.log('🔴 Live page balls/innings/matches subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to balls and innings changes');
+          console.log('✅ Successfully subscribed to balls, innings, and matches changes');
         }
       });
 
