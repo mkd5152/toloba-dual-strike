@@ -199,7 +199,6 @@ export default function DayWiseStandingsPage() {
     const dayDate = new Date(selectedDay);
     const sortedDays = Array.from(matchesByDay.keys()).sort();
     const dayNum = sortedDays.indexOf(selectedDay) + 1;
-    const isCumulative = dayNum > 1;
 
     return (
       <div className="relative mb-4 pb-3" style={{ borderBottom: '4px solid #ff9800', backgroundColor: '#ffffff', color: '#000000' }}>
@@ -222,11 +221,6 @@ export default function DayWiseStandingsPage() {
             <h1 className="text-5xl font-black mb-3 tracking-tight" style={{ color: '#0d3944' }}>
               DAY {dayNum} STANDINGS
             </h1>
-            {isCumulative && (
-              <p className="text-sm font-semibold mb-2" style={{ color: '#ff9800' }}>
-                (Cumulative: Day 1 - Day {dayNum})
-              </p>
-            )}
             <div className="h-1 w-32 mx-auto mb-4" style={{ background: 'linear-gradient(to right, #ff9800, #ffb300)' }}></div>
             <p className="text-2xl font-bold mb-2" style={{ color: '#4a5568' }}>{tournament.name}</p>
             <p className="text-lg font-semibold" style={{ color: '#6b7280' }}>
