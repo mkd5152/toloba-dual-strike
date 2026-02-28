@@ -125,7 +125,22 @@ export default function SpectatorLivePage() {
           setLiveEvents(prev => [newEvent, ...prev].slice(0, 10)); // Keep latest 10
         }
       )
-      // Listen to innings updates (totals) for score updates
+      // Listen to innings INSERT (when match starts and innings are created)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'innings',
+        },
+        async (payload) => {
+          console.log('🆕 Live: New innings created', payload);
+          // Reload detailed matches when new innings are created (match started)
+          const matches = await fetchMatchesWithDetails(tournament.id);
+          setDetailedMatches(matches);
+        }
+      )
+      // Listen to innings UPDATE (totals) for score updates
       .on(
         'postgres_changes',
         {
@@ -156,9 +171,12 @@ export default function SpectatorLivePage() {
         }
       )
       .subscribe((status) => {
-        console.log('🔴 Live page balls/innings/matches subscription status:', status);
+        console.log('🔴 Live page subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to balls, innings, and matches changes');
+          console.log('✅ Successfully subscribed to:');
+          console.log('   - balls (INSERT)');
+          console.log('   - innings (INSERT, UPDATE)');
+          console.log('   - matches (UPDATE)');
         }
       });
 
