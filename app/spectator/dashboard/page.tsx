@@ -371,11 +371,13 @@ export default function SpectatorDashboardPage() {
 
     // Find team with highest overall score across all matches
     let highestOverallScore = { runs: 0, team: '' }
+    console.log("🔢 Team Total Scores:", Object.values(teamTotalScores).map(({ runs, name }) => `${name}: ${runs}`).join(', '))
     Object.values(teamTotalScores).forEach(({ runs, name }) => {
       if (runs > highestOverallScore.runs) {
         highestOverallScore = { runs, team: name }
       }
     })
+    console.log("🔢 Highest Overall Score:", highestOverallScore)
 
     console.log("🔢 Final stats:", {
       total4s,
