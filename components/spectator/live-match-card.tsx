@@ -32,21 +32,90 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
     }
   };
 
-  return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-semibold text-lg">Match {match.matchNumber}</h3>
-          <p className="text-sm text-muted-foreground">{match.court}</p>
-        </div>
-        <Badge
-          variant={match.state === "IN_PROGRESS" ? "default" : "secondary"}
-        >
-          {getStateLabel(match.state)}
-        </Badge>
-      </div>
+  // Calculate match statistics
+  const calculateMatchStats = () => {
+    let fours = 0;
+    let sixes = 0;
+    let wickets = 0;
 
-      <div className="space-y-3">
+    match.innings.forEach(innings => {
+      innings.overs.forEach(over => {
+        over.balls.forEach(ball => {
+          // Count boundaries (exclude wides and noballs from boundary count)
+          if (!ball.isWide && !ball.isNoball) {
+            if (ball.runs === 4) fours++;
+            if (ball.runs === 6) sixes++;
+          }
+          // Count wickets
+          if (ball.isWicket) wickets++;
+        });
+      });
+    });
+
+    return { fours, sixes, wickets };
+  };
+
+  const stats = match.state === "IN_PROGRESS" ? calculateMatchStats() : null;
+  const showBanner = match.state === "IN_PROGRESS" && stats && (stats.fours > 0 || stats.sixes > 0 || stats.wickets > 0);
+
+  return (
+    <Card className="p-6 relative overflow-hidden">
+      {/* Cricket Stats Banner - Only for LIVE matches */}
+      {showBanner && stats && (
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-[#0d3944] via-[#1a5f7a] to-[#0d3944] h-12 flex items-center justify-center gap-6 shadow-lg z-10 animate-in slide-in-from-top duration-500">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+
+          {/* Fours */}
+          {stats.fours > 0 && (
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 shadow-xl animate-in zoom-in duration-300">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center font-black text-white text-sm shadow-lg animate-pulse">
+                4
+              </div>
+              <span className="text-white font-bold text-lg tabular-nums">{stats.fours}</span>
+              <span className="text-blue-200 text-xs font-semibold">FOUR{stats.fours !== 1 ? 'S' : ''}</span>
+            </div>
+          )}
+
+          {/* Sixes */}
+          {stats.sixes > 0 && (
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 shadow-xl animate-in zoom-in duration-300 delay-100">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-lg animate-bounce">
+                6
+              </div>
+              <span className="text-white font-bold text-lg tabular-nums">{stats.sixes}</span>
+              <span className="text-purple-200 text-xs font-semibold">SIX{stats.sixes !== 1 ? 'ES' : ''}</span>
+            </div>
+          )}
+
+          {/* Wickets */}
+          {stats.wickets > 0 && (
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 shadow-xl animate-in zoom-in duration-300 delay-200">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white text-lg shadow-lg">
+                🏏
+              </div>
+              <span className="text-white font-bold text-lg tabular-nums">{stats.wickets}</span>
+              <span className="text-red-200 text-xs font-semibold">WICKET{stats.wickets !== 1 ? 'S' : ''}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add padding-top when banner is visible */}
+      <div className={showBanner ? "pt-12" : ""}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-lg">Match {match.matchNumber}</h3>
+            <p className="text-sm text-muted-foreground">{match.court}</p>
+          </div>
+          <Badge
+            variant={match.state === "IN_PROGRESS" ? "default" : "secondary"}
+          >
+            {getStateLabel(match.state)}
+          </Badge>
+        </div>
+
+        <div className="space-y-3">
         {/* Display teams in batting order (umpire-selected sequence) */}
         {(match.battingOrder && match.battingOrder.length > 0 ? match.battingOrder : match.teamIds).map((teamId) => {
           const team = getTeam(teamId);
@@ -132,6 +201,7 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
             </div>
           );
         })}
+        </div>
       </div>
     </Card>
   );
