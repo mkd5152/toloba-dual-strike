@@ -88,12 +88,17 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {(() => {
-                        // Calculate overs bowled - use same logic as scoring page (0-based indexing)
+                        // Calculate overs bowled
                         if (!innings.overs || innings.overs.length === 0) {
                           return '0.0 ov';
                         }
 
-                        // Find the current over (incomplete over or last over)
+                        // Check if innings is completed (all 3 overs bowled)
+                        if (innings.state === "COMPLETED") {
+                          return '3.0 ov';
+                        }
+
+                        // Find the current over (incomplete over)
                         const currentOverIndex = innings.overs.findIndex((over) => {
                           const isPowerplayOver = over.isPowerplay;
                           if (isPowerplayOver) {
@@ -104,15 +109,19 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                           }
                         });
 
-                        // Use current over if found, otherwise use last over (all complete)
-                        const overIndex = currentOverIndex >= 0 ? currentOverIndex : innings.overs.length - 1;
-                        const currentOver = innings.overs[overIndex];
+                        // If no incomplete over found, all overs are complete
+                        if (currentOverIndex < 0) {
+                          return '3.0 ov';
+                        }
+
+                        // Use current over for in-progress innings
+                        const currentOver = innings.overs[currentOverIndex];
 
                         // Count legal balls in current over for display
                         const legalBalls = currentOver.balls.filter(b => !b.isWide && !b.isNoball).length;
 
-                        // Display as overNumber.ballNumber (0-based like scoring page)
-                        return `${overIndex}.${legalBalls} ov`;
+                        // Display as overNumber.ballNumber (0-indexed overs)
+                        return `${currentOverIndex}.${legalBalls} ov`;
                       })()}
                     </div>
                   </>
