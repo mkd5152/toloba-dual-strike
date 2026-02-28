@@ -43,3 +43,8 @@ next-env.d.ts
 # Excel files
 *.xlsx
 *.xls
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/

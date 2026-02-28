@@ -11,7 +11,11 @@
     "db:add-columns": "tsx scripts/add-stage-and-group-columns.ts",
     "db:migrate-bowling": "tsx scripts/migrate-bowling-rotation.ts",
     "test:complete-league": "tsx scripts/complete-all-league-matches-simple.ts",
-    "reset-match": "tsx scripts/reset-match.ts"
+    "reset-match": "tsx scripts/reset-match.ts",
+    "stress-test": "tsx scripts/stress-test-matches.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:smoke": "playwright test e2e/smoke-test.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -44,6 +48,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/papaparse": "^5.5.2",
