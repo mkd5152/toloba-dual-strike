@@ -10,7 +10,8 @@
     "db:init": "tsx scripts/load-initial-data.ts",
     "db:add-columns": "tsx scripts/add-stage-and-group-columns.ts",
     "db:migrate-bowling": "tsx scripts/migrate-bowling-rotation.ts",
-    "test:complete-league": "tsx scripts/complete-all-league-matches-simple.ts"
+    "test:complete-league": "tsx scripts/complete-all-league-matches-simple.ts",
+    "reset-match": "tsx scripts/reset-match.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
