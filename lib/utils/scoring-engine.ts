@@ -36,10 +36,11 @@ export function calculateBallRuns(ball: Ball, isPowerplay: boolean): number {
 }
 
 /**
- * Check if the current ball is the 3rd consecutive dot ball (0 runs)
+ * Check if the current ball is the 3rd consecutive dot ball (0 runs) WITHIN THE SAME OVER
  * A dot ball is a legal delivery where the batting team scores 0 runs.
  * Extras (noballs, wides) do NOT count as dot balls.
- * If this is the 3rd consecutive dot ball, it should be considered a wicket.
+ * If this is the 3rd consecutive dot ball within the same over, it should be considered a wicket.
+ * IMPORTANT: The dot ball counter resets when a new over starts.
  */
 export function checkConsecutiveDotBallViolation(
   over: Over,
@@ -53,27 +54,19 @@ export function checkConsecutiveDotBallViolation(
     return false;
   }
 
-  const allPreviousBalls: Ball[] = [];
+  // IMPORTANT: Only count dot balls within the CURRENT over
+  // Dot ball counter resets when a new over starts
+  const currentOverBalls: Ball[] = [];
 
-  // Add balls from current over FIRST (most recent)
+  // Add balls from current over only (in reverse order, most recent first)
   for (let i = over.balls.length - 1; i >= 0; i--) {
-    allPreviousBalls.push(over.balls[i]);
+    currentOverBalls.push(over.balls[i]);
   }
 
-  // Then collect balls from previous overs (in reverse order, most recent first)
-  if (previousOvers && previousOvers.length > 0) {
-    for (let i = previousOvers.length - 1; i >= 0; i--) {
-      const prevOver = previousOvers[i];
-      for (let j = prevOver.balls.length - 1; j >= 0; j--) {
-        allPreviousBalls.push(prevOver.balls[j]);
-      }
-    }
-  }
-
-  // Find the last 2 LEGAL dot balls (excluding noballs and wides)
+  // Find the last 2 LEGAL dot balls within the current over only
   let dotBallCount = 0;
 
-  for (const ball of allPreviousBalls) {
+  for (const ball of currentOverBalls) {
     // If we hit a wicket, stop counting - the sequence is broken
     if (ball.isWicket) {
       break;
@@ -83,7 +76,7 @@ export function checkConsecutiveDotBallViolation(
     if (ball.runs === 0 && !ball.isNoball && !ball.isWide) {
       dotBallCount++;
       if (dotBallCount === 2) {
-        // Found 2 consecutive legal dot balls before current ball
+        // Found 2 consecutive legal dot balls before current ball (within same over)
         return true;
       }
     } else {
