@@ -42,44 +42,38 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
     }
   };
 
-  // Calculate match statistics with wicket breakdown by team
-  const calculateMatchStats = () => {
-    let fours = 0;
-    let sixes = 0;
-    const wicketsByTeam: Record<string, number> = {};
+  // Get ONLY the most recent ball's stats (not cumulative!)
+  const getLastBallStats = () => {
+    let lastBall: any = null;
     let lastBallTimestamp: Date | null = null;
-    let lastWicketType: string | null = null;
 
+    // Find the most recent ball across all innings
     match.innings.forEach(innings => {
       innings.overs.forEach(over => {
         over.balls.forEach(ball => {
-          // Track most recent ball timestamp
           if (!lastBallTimestamp || ball.timestamp > lastBallTimestamp) {
             lastBallTimestamp = ball.timestamp;
-          }
-
-          // Count boundaries (exclude wides and noballs from boundary count)
-          if (!ball.isWide && !ball.isNoball) {
-            if (ball.runs === 4) fours++;
-            if (ball.runs === 6) sixes++;
-          }
-          // Count wickets by fielding team and track last wicket type
-          if (ball.isWicket && ball.fieldingTeamId) {
-            wicketsByTeam[ball.fieldingTeamId] = (wicketsByTeam[ball.fieldingTeamId] || 0) + 1;
-            if (!lastBallTimestamp || ball.timestamp >= lastBallTimestamp) {
-              lastWicketType = ball.wicketType;
-            }
+            lastBall = { ...ball, bowlingTeamId: over.bowlingTeamId };
           }
         });
       });
     });
 
-    const totalWickets = Object.values(wicketsByTeam).reduce((sum, w) => sum + w, 0);
+    if (!lastBall || !lastBallTimestamp) {
+      return { isRecent: false, isFour: false, isSix: false, isWicket: false, wicketType: null, fieldingTeamId: null };
+    }
 
-    // Check if last activity was within 20 seconds
-    const isRecent = lastBallTimestamp && (Date.now() - lastBallTimestamp.getTime()) < 20000;
+    // Check if last ball was within 20 seconds
+    const isRecent = (Date.now() - lastBallTimestamp.getTime()) < 20000;
 
-    return { fours, sixes, totalWickets, wicketsByTeam, lastWicketType, isRecent };
+    // Check what type of ball it was
+    const isFour = !lastBall.isWide && !lastBall.isNoball && lastBall.runs === 4;
+    const isSix = !lastBall.isWide && !lastBall.isNoball && lastBall.runs === 6;
+    const isWicket = lastBall.isWicket;
+    const wicketType = lastBall.wicketType;
+    const fieldingTeamId = lastBall.fieldingTeamId;
+
+    return { isRecent, isFour, isSix, isWicket, wicketType, fieldingTeamId };
   };
 
   // Find currently batting team (IN_PROGRESS innings)
@@ -109,73 +103,52 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
     return currentOver?.bowlingTeamId || null;
   };
 
-  const stats = match.state === "IN_PROGRESS" ? calculateMatchStats() : null;
-  const showBanner = match.state === "IN_PROGRESS" && stats && stats.isRecent && (stats.fours > 0 || stats.sixes > 0 || stats.totalWickets > 0);
+  const lastBallStats = match.state === "IN_PROGRESS" ? getLastBallStats() : null;
+  const showBanner = match.state === "IN_PROGRESS" && lastBallStats && lastBallStats.isRecent && (lastBallStats.isFour || lastBallStats.isSix || lastBallStats.isWicket);
   const battingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBattingTeamId() : null;
   const bowlingTeamId = match.state === "IN_PROGRESS" ? getCurrentlyBowlingTeamId() : null;
 
   return (
     <Card className="p-6 relative overflow-hidden">
-      {/* Cricket Stats Banner - Only for LIVE matches */}
-      {showBanner && stats && (
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-[#0d3944] via-[#1a5f7a] to-[#0d3944] h-12 flex items-center justify-center gap-6 shadow-lg z-10 animate-in slide-in-from-top duration-500">
+      {/* Cricket Stats Banner - Shows ONLY the most recent ball */}
+      {showBanner && lastBallStats && (
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-[#0d3944] via-[#1a5f7a] to-[#0d3944] h-14 flex items-center justify-center gap-4 shadow-lg z-10 animate-in slide-in-from-top duration-500">
           {/* Glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
 
-          {/* Fours */}
-          {stats.fours > 0 && (
+          {/* Four */}
+          {lastBallStats.isFour && (
             <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 backdrop-blur-sm rounded-full border-2 border-blue-400 shadow-xl animate-in zoom-in duration-300">
               <span className="text-white font-black text-2xl tabular-nums">4</span>
-              <span className="text-blue-200 text-sm font-bold">FOUR{stats.fours !== 1 ? 'S' : ''}</span>
-              {stats.fours > 1 && (
-                <span className="text-white font-black text-lg">×{stats.fours}</span>
-              )}
+              <span className="text-blue-200 text-sm font-bold">FOUR!</span>
             </div>
           )}
 
-          {/* Sixes */}
-          {stats.sixes > 0 && (
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-purple-500/20 backdrop-blur-sm rounded-full border-2 border-purple-400 shadow-xl animate-in zoom-in duration-300 delay-100">
+          {/* Six */}
+          {lastBallStats.isSix && (
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-purple-500/20 backdrop-blur-sm rounded-full border-2 border-purple-400 shadow-xl animate-in zoom-in duration-300">
               <span className="text-white font-black text-2xl tabular-nums">6</span>
-              <span className="text-purple-200 text-sm font-bold">SIX{stats.sixes !== 1 ? 'ES' : ''}</span>
-              {stats.sixes > 1 && (
-                <span className="text-white font-black text-lg">×{stats.sixes}</span>
-              )}
+              <span className="text-purple-200 text-sm font-bold">SIX!</span>
             </div>
           )}
 
-          {/* Wickets - Show team breakdown if multiple teams */}
-          {stats.totalWickets > 0 && (
-            <div className="flex items-center gap-3 px-4 py-1.5 bg-red-500/20 backdrop-blur-sm rounded-full border-2 border-red-400 shadow-xl animate-in zoom-in duration-300 delay-200">
-              <div className="flex items-center gap-2">
-                <span className="text-white font-black text-2xl tabular-nums">{stats.totalWickets}</span>
-                <div className="flex flex-col">
-                  <span className="text-red-200 text-sm font-bold leading-none">WICKET{stats.totalWickets !== 1 ? 'S' : ''}</span>
-                  {stats.lastWicketType && (
-                    <span className="text-red-100 text-[10px] font-semibold leading-none mt-0.5 uppercase">{stats.lastWicketType.replace('_', ' ')}</span>
-                  )}
-                </div>
+          {/* Wicket */}
+          {lastBallStats.isWicket && (
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-red-500/20 backdrop-blur-sm rounded-full border-2 border-red-400 shadow-xl animate-in zoom-in duration-300">
+              <span className="text-white font-black text-xl">🏏</span>
+              <div className="flex flex-col">
+                <span className="text-red-200 text-sm font-bold leading-tight">WICKET!</span>
+                {lastBallStats.wicketType && lastBallStats.wicketType !== "BOWLING_TEAM" && (
+                  <span className="text-red-100 text-[10px] font-semibold leading-tight uppercase">{lastBallStats.wicketType.replace('_', ' ')}</span>
+                )}
               </div>
-              {Object.keys(stats.wicketsByTeam).length > 1 && (
-                <div className="flex items-center gap-2 border-l border-red-300/30 pl-3">
-                  {Object.entries(stats.wicketsByTeam).map(([teamId, count]) => {
-                    const team = getTeam(teamId);
-                    return (
-                      <div key={teamId} className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: team?.color }}></div>
-                        <span className="text-white text-xs font-bold">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           )}
         </div>
       )}
 
       {/* Add padding-top when banner is visible */}
-      <div className={showBanner ? "pt-12" : ""}>
+      <div className={showBanner ? "pt-14" : ""}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-semibold text-lg">Match {match.matchNumber}</h3>
