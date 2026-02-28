@@ -51,13 +51,21 @@ export async function calculateStandings(tournamentId: string): Promise<Standing
       rankings.forEach((ranking: any) => {
         const standing = standingsMap.get(ranking.teamId)
         if (standing) {
+          const runsToAdd = ranking.totalScore || ranking.totalRuns || 0
+          console.log(`📊 Match ${match.match_number}: ${standing.teamName} +${runsToAdd} runs (totalScore: ${ranking.totalScore}, totalRuns: ${ranking.totalRuns})`)
           standing.matchesPlayed++
           standing.points += ranking.points || 0
           // Use totalScore (includes bonuses) instead of totalRuns for accurate display
-          standing.totalRuns += ranking.totalScore || ranking.totalRuns || 0
+          standing.totalRuns += runsToAdd
           // totalDismissals would come from innings data if available
         }
       })
+    })
+
+    // Log final standings before sorting
+    console.log("📊 Final Standings (before sorting):")
+    Array.from(standingsMap.values()).forEach(s => {
+      console.log(`  ${s.teamName}: ${s.totalRuns} runs, ${s.points} points, ${s.matchesPlayed} matches`)
     })
 
     // Convert to array and sort
