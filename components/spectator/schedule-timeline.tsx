@@ -109,6 +109,17 @@ export function ScheduleTimeline({ matches, showCompleted = true }: ScheduleTime
 
               if (!showCompleted && isCompleted) return null;
 
+              // Sort teams by ranking for completed matches
+              const sortedTeams = isCompleted && match.rankings.length > 0
+                ? [...teams].sort((a, b) => {
+                    if (!a || !b) return 0;
+                    const rankA = getRankingForTeam(match, a.id);
+                    const rankB = getRankingForTeam(match, b.id);
+                    if (!rankA || !rankB) return 0;
+                    return rankA.rank - rankB.rank;
+                  })
+                : teams;
+
               return (
                 <Card
                   key={match.id}
@@ -152,7 +163,7 @@ export function ScheduleTimeline({ matches, showCompleted = true }: ScheduleTime
                   {/* Teams Display */}
                   <div className="p-4">
                     <div className="space-y-2">
-                      {teams.map((team, idx) => {
+                      {sortedTeams.map((team) => {
                         if (!team) return null;
                         const ranking = getRankingForTeam(match, team.id);
                         const isWinner =
@@ -196,7 +207,7 @@ export function ScheduleTimeline({ matches, showCompleted = true }: ScheduleTime
                                 )}
                                 {ranking && (
                                   <p className="text-xs text-gray-500 font-semibold mt-1">
-                                    Position: {idx + 1}
+                                    Rank: {ranking.rank}
                                   </p>
                                 )}
                               </div>
