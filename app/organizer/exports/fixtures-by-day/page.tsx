@@ -720,7 +720,7 @@ export default function FixturesExportPage() {
     return (
       <>
         {includeHeader && renderHeader()}
-        <div className="px-8 mb-6" style={{ position: 'relative' }}>
+        <div className="px-8 mb-4" style={{ position: 'relative' }}>
           {/* Watermark */}
           <div
             style={{
@@ -745,9 +745,9 @@ export default function FixturesExportPage() {
             />
           </div>
 
-          <div className="p-3 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff' }}>
-            <h2 className="text-2xl font-black tracking-wide flex items-center gap-3">
-              <CalendarIcon className="w-6 h-6" />
+          <div className="p-2 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff' }}>
+            <h2 className="text-xl font-black tracking-wide flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
               Sunday, March 1, 2026 - PLAYOFFS
             </h2>
           </div>
@@ -755,19 +755,19 @@ export default function FixturesExportPage() {
             <table className="w-full" style={{ backgroundColor: 'transparent' }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #fbbf24, #f87171)' }}>
-                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
+                  <th className="p-1.5 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
                     MATCH #
                   </th>
-                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '140px' }}>
+                  <th className="p-1.5 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '140px' }}>
                     STAGE
                   </th>
-                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '140px' }}>
+                  <th className="p-1.5 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '140px' }}>
                     TIME
                   </th>
-                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
+                  <th className="p-1.5 text-center font-black text-sm" style={{ color: '#ffffff', borderRight: '2px solid rgba(255, 255, 255, 0.3)', width: '100px' }}>
                     COURT
                   </th>
-                  <th className="p-2 text-center font-black text-sm" style={{ color: '#ffffff' }}>
+                  <th className="p-1.5 text-center font-black text-sm" style={{ color: '#ffffff' }}>
                     TEAMS
                   </th>
                 </tr>
@@ -789,7 +789,7 @@ export default function FixturesExportPage() {
                         backgroundColor: isEven ? 'rgba(254, 243, 199, 0.95)' : 'rgba(255, 255, 255, 0.95)'
                       }}
                     >
-                      <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
+                      <td className="p-2" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
                         <div className="flex items-center justify-center">
                           <span
                             className="text-xl font-black w-10 h-10 rounded-full flex items-center justify-center"
@@ -804,7 +804,7 @@ export default function FixturesExportPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="p-3 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
+                      <td className="p-2 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
                         <span
                           className="inline-block px-2 py-1 rounded-full text-xs font-black"
                           style={{
@@ -818,15 +818,15 @@ export default function FixturesExportPage() {
                           {isFinal && '🏆 '}{match.stageName}
                         </span>
                       </td>
-                      <td className="p-3 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
+                      <td className="p-2 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
                         <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>{match.time}</p>
                       </td>
-                      <td className="p-3" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
+                      <td className="p-2" style={{ borderRight: '2px solid #e5e7eb', width: '100px', verticalAlign: 'middle' }}>
                         <div className="text-center">
                           <p className="text-lg font-black" style={{ color: '#ff9800' }}>{match.court}</p>
                         </div>
                       </td>
-                      <td className="p-3" style={{ verticalAlign: 'middle' }}>
+                      <td className="p-2" style={{ verticalAlign: 'middle' }}>
                         {match.hybridTeams ? (
                           <div className="grid grid-cols-2 gap-1.5">
                             {/* League qualifiers - we know these teams */}
@@ -1029,7 +1029,7 @@ export default function FixturesExportPage() {
               </tbody>
             </table>
           </div>
-          <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: 'rgba(254, 243, 199, 0.95)', border: '2px solid #fbbf24' }}>
+          <div className="mt-2 p-2 rounded-xl" style={{ backgroundColor: 'rgba(254, 243, 199, 0.95)', border: '2px solid #fbbf24' }}>
             <p className="text-xs font-bold text-center" style={{ color: '#92400e' }}>
               🏆 Closing Ceremony: 10:25 PM - 10:45 PM 🏆
             </p>
