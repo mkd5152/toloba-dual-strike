@@ -264,8 +264,11 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                         // Count legal balls in current over for display
                         const legalBalls = currentOver.balls.filter(b => !b.isWide && !b.isNoball).length;
 
-                        // Display as overNumber.ballNumber (0-indexed overs)
-                        return `${currentOverIndex}.${legalBalls} ov`;
+                        // Calculate completed overs (all overs before current)
+                        const completedOvers = currentOverIndex;
+
+                        // Display as completedOvers.ballsInCurrentOver
+                        return `${completedOvers}.${legalBalls} ov`;
                       })()}
                     </div>
                   </>

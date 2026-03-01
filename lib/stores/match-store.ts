@@ -231,6 +231,19 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
 
     // If over complete (6 legal balls), move to next over or next innings
     if (legalBallCount >= 6) {
+      console.log('🏁 Over completed! Triggering innings totals update...');
+
+      // CRITICAL FIX: Update innings totals immediately when over completes
+      // This triggers the innings UPDATE event for real-time spectators
+      updateInningsTotals(innings.id, {
+        totalRuns: updatedInnings.totalRuns,
+        totalWickets: updatedInnings.totalWickets,
+        noWicketBonus: updatedInnings.noWicketBonus,
+        finalScore: updatedInnings.finalScore,
+      }).catch((err) => {
+        console.error("❌ Failed to update innings totals on over completion:", err);
+      });
+
       if (currentOverIndex < innings.overs.length - 1) {
         nextOverIndex = currentOverIndex + 1;
 
@@ -267,6 +280,18 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
           ...updatedInnings,
           state: "COMPLETED",
         };
+
+        // CRITICAL FIX: Update innings totals IMMEDIATELY before marking as completed
+        // This ensures spectators see the final score before the innings state changes
+        console.log(`✅ Innings ${currentInningsIndex + 1} completed, updating totals first...`);
+        updateInningsTotals(innings.id, {
+          totalRuns: updatedInnings.totalRuns,
+          totalWickets: updatedInnings.totalWickets,
+          noWicketBonus: updatedInnings.noWicketBonus,
+          finalScore: updatedInnings.finalScore,
+        }).catch((err) => {
+          console.error("❌ Failed to update innings totals on innings completion:", err);
+        });
 
         // CRITICAL FIX: Save completed innings state to database
         console.log(`✅ Innings ${currentInningsIndex + 1} completed, saving to database...`);
