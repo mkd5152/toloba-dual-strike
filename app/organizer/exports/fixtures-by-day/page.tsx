@@ -828,7 +828,7 @@ export default function FixturesExportPage() {
                       </td>
                       <td className="p-3" style={{ verticalAlign: 'middle' }}>
                         {match.hybridTeams ? (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-1.5">
                             {/* League qualifiers - we know these teams */}
                             {match.leagueTeams!.map((rank, idx) => {
                               const teamId = sorted.find(t => t.rank === rank)?.teamId;
@@ -849,7 +849,7 @@ export default function FixturesExportPage() {
                               return (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-2 p-1.5 rounded-lg"
+                                  className="flex items-center gap-1.5 p-1 rounded-lg"
                                   style={{
                                     background: `linear-gradient(135deg, ${teamColor}15, ${teamColor}25)`,
                                     border: `2px solid ${teamColor}`,
@@ -857,7 +857,7 @@ export default function FixturesExportPage() {
                                   }}
                                 >
                                   <div
-                                    className="w-6 h-6 rounded-full flex-shrink-0"
+                                    className="w-5 h-5 rounded-full flex-shrink-0"
                                     style={{
                                       backgroundColor: teamColor,
                                       border: '2px solid #ffffff',
@@ -865,10 +865,10 @@ export default function FixturesExportPage() {
                                     }}
                                   ></div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-black truncate" style={{ color: '#111827' }}>
+                                    <p className="text-[11px] font-black truncate leading-tight" style={{ color: '#111827' }}>
                                       {teamName}
                                     </p>
-                                    <p className="text-[10px] font-bold" style={{
+                                    <p className="text-[9px] font-bold leading-tight" style={{
                                       color: teamColor,
                                       opacity: 0.8
                                     }}>
@@ -894,7 +894,7 @@ export default function FixturesExportPage() {
                                   return (
                                     <div
                                       key={`qf-${slot}`}
-                                      className="flex items-center gap-2 p-1.5 rounded-lg"
+                                      className="flex items-center gap-1.5 p-1 rounded-lg"
                                       style={{
                                         background: `linear-gradient(135deg, ${teamColor}15, ${teamColor}25)`,
                                         border: `2px solid ${teamColor}`,
@@ -902,7 +902,7 @@ export default function FixturesExportPage() {
                                       }}
                                     >
                                       <div
-                                        className="w-6 h-6 rounded-full flex-shrink-0"
+                                        className="w-5 h-5 rounded-full flex-shrink-0"
                                         style={{
                                           backgroundColor: teamColor,
                                           border: '2px solid #ffffff',
@@ -910,10 +910,10 @@ export default function FixturesExportPage() {
                                         }}
                                       ></div>
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-black truncate" style={{ color: '#111827' }}>
+                                        <p className="text-[11px] font-black truncate leading-tight" style={{ color: '#111827' }}>
                                           {teamName}
                                         </p>
-                                        <p className="text-[10px] font-bold" style={{
+                                        <p className="text-[9px] font-bold leading-tight" style={{
                                           color: teamColor,
                                           opacity: 0.8
                                         }}>
@@ -929,7 +929,7 @@ export default function FixturesExportPage() {
                               return (
                                 <div
                                   key={`mystery-${slot}`}
-                                  className="flex items-center gap-2 p-1.5 rounded-lg"
+                                  className="flex items-center gap-1.5 p-1 rounded-lg"
                                   style={{
                                     background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.85) 50%, rgba(217, 119, 6, 0.95) 100%)',
                                     border: '3px solid #f59e0b',
@@ -937,23 +937,23 @@ export default function FixturesExportPage() {
                                   }}
                                 >
                                   <div
-                                    className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center"
+                                    className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center"
                                     style={{
                                       backgroundColor: '#ffffff',
                                       border: '2px solid #fbbf24',
                                       boxShadow: '0 0 8px rgba(251, 191, 36, 0.8)'
                                     }}
                                   >
-                                    <span className="text-sm">👑</span>
+                                    <span className="text-xs">👑</span>
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-black truncate" style={{
+                                    <p className="text-[11px] font-black truncate leading-tight" style={{
                                       color: '#ffffff',
                                       textShadow: '0 1px 4px rgba(0, 0, 0, 0.6)'
                                     }}>
                                       {match.qfSource} Champion
                                     </p>
-                                    <p className="text-[10px] font-bold" style={{
+                                    <p className="text-[9px] font-bold leading-tight" style={{
                                       color: '#fef3c7',
                                       opacity: 0.9,
                                       textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'
@@ -983,13 +983,13 @@ export default function FixturesExportPage() {
                             </p>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-1.5">
                             {teamNames.map((teamName, teamIdx) => {
                               const leagueRank = sorted.find(t => t.teamId === match.teamIds![teamIdx])?.rank;
                               return (
                                 <div
                                   key={teamIdx}
-                                  className="flex items-center gap-2 p-1.5 rounded-lg"
+                                  className="flex items-center gap-1.5 p-1 rounded-lg"
                                   style={{
                                     background: `linear-gradient(135deg, ${teamColors[teamIdx]}15, ${teamColors[teamIdx]}25)`,
                                     border: `2px solid ${teamColors[teamIdx]}`,
@@ -997,7 +997,7 @@ export default function FixturesExportPage() {
                                   }}
                                 >
                                   <div
-                                    className="w-6 h-6 rounded-full flex-shrink-0"
+                                    className="w-5 h-5 rounded-full flex-shrink-0"
                                     style={{
                                       backgroundColor: teamColors[teamIdx],
                                       border: '2px solid #ffffff',
@@ -1005,11 +1005,11 @@ export default function FixturesExportPage() {
                                     }}
                                   ></div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-black truncate" style={{ color: '#111827' }}>
+                                    <p className="text-[11px] font-black truncate leading-tight" style={{ color: '#111827' }}>
                                       {teamName}
                                     </p>
                                     {leagueRank && match.ranks && (
-                                      <p className="text-[10px] font-bold" style={{
+                                      <p className="text-[9px] font-bold leading-tight" style={{
                                         color: teamColors[teamIdx],
                                         opacity: 0.8
                                       }}>
