@@ -221,7 +221,11 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                 {innings ? (
                   <>
                     <div className="text-xl font-bold">
-                      {innings.totalRuns || 0}
+                      {(() => {
+                        // Get the ranking for this team to display totalScore (includes bonuses)
+                        const ranking = match.rankings.find(r => r.teamId === teamId);
+                        return ranking?.totalScore ?? innings.totalRuns ?? 0;
+                      })()}
                       <span className="text-sm text-muted-foreground ml-1">
                         /{innings.totalWickets || 0}
                       </span>

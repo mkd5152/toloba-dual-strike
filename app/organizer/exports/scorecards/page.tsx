@@ -285,7 +285,7 @@ function ScorecardDocument({ match, teams, tournamentName }: ScorecardDocumentPr
                   TEAM
                 </th>
                 <th className="p-4 text-center font-black text-white border-r-2 border-white/30 w-32">
-                  RUNS
+                  SCORE
                 </th>
                 <th className="p-4 text-center font-black text-white border-r-2 border-white/30 w-32">
                   WICKETS
@@ -334,7 +334,7 @@ function ScorecardDocument({ match, teams, tournamentName }: ScorecardDocumentPr
                       </div>
                     </td>
                     <td className="p-4 text-center border-r-2 border-gray-200">
-                      <span className="text-2xl font-black text-gray-900">{ranking.totalRuns}</span>
+                      <span className="text-2xl font-black text-gray-900">{ranking.totalScore}</span>
                     </td>
                     <td className="p-4 text-center border-r-2 border-gray-200">
                       <span className="text-2xl font-black text-red-600">{ranking.totalDismissals}</span>

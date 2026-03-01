@@ -250,10 +250,14 @@ export default function DayWiseStandingsPage() {
     );
   };
 
-  const renderStandingRow = (entry: StandingsEntry, index: number) => {
+  const renderStandingRow = (entry: StandingsEntry, index: number, isSaturday: boolean) => {
     const team = teams.find((t) => t.id === entry.teamId);
     const isEven = index % 2 === 0;
     const isTopThree = entry.rank <= 3;
+
+    // Playoff qualifications (only on Saturday - Day 3)
+    const isTopFour = entry.rank <= 4 && isSaturday;
+    const isQFTeam = entry.rank >= 5 && entry.rank <= 12 && isSaturday;
 
     // Medal colors for top 3
     const getMedalStyle = (rank: number) => {
@@ -265,13 +269,36 @@ export default function DayWiseStandingsPage() {
 
     const medalStyle = getMedalStyle(entry.rank);
 
+    // Determine row background for playoff qualification
+    const getRowStyle = () => {
+      if (isTopFour) {
+        return {
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.30) 50%, rgba(16, 185, 129, 0.25) 100%)',
+          boxShadow: '0 0 25px rgba(16, 185, 129, 0.4), inset 0 0 40px rgba(16, 185, 129, 0.15)',
+        };
+      }
+      if (isQFTeam) {
+        return {
+          background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.18) 50%, rgba(168, 85, 247, 0.15) 100%)',
+          boxShadow: '0 0 20px rgba(168, 85, 247, 0.25), inset 0 0 30px rgba(168, 85, 247, 0.08)',
+        };
+      }
+      return {
+        background: isEven ? 'rgba(249, 250, 251, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        boxShadow: 'none',
+      };
+    };
+
+    const rowStyle = getRowStyle();
+
     return (
       <tr
         key={entry.teamId}
         style={{
           borderBottom: '2px solid #e5e7eb',
-          backgroundColor: isEven ? 'rgba(249, 250, 251, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: isSaturday ? rowStyle.background : (isEven ? 'rgba(249, 250, 251, 0.95)' : 'rgba(255, 255, 255, 0.95)'),
           fontWeight: isTopThree ? '700' : '400',
+          ...(isSaturday && { boxShadow: rowStyle.boxShadow, transition: 'all 0.3s ease' }),
         }}
       >
         {/* Rank */}
@@ -280,10 +307,10 @@ export default function DayWiseStandingsPage() {
             <span
               className="text-2xl font-black w-14 h-14 rounded-full flex items-center justify-center"
               style={{
-                backgroundColor: medalStyle.bg,
-                color: medalStyle.color,
-                border: `3px solid ${isTopThree ? medalStyle.bg : 'rgba(255, 152, 0, 0.3)'}`,
-                boxShadow: isTopThree ? '0 4px 6px -1px rgba(0, 0, 0, 0.2)' : 'none',
+                backgroundColor: isTopFour ? '#10b981' : isQFTeam ? '#a855f7' : medalStyle.bg,
+                color: isTopFour || isQFTeam ? '#ffffff' : medalStyle.color,
+                border: `3px solid ${isTopFour ? '#10b981' : isQFTeam ? '#a855f7' : isTopThree ? medalStyle.bg : 'rgba(255, 152, 0, 0.3)'}`,
+                boxShadow: isTopFour ? '0 8px 16px rgba(16, 185, 129, 0.5)' : isQFTeam ? '0 6px 12px rgba(168, 85, 247, 0.4)' : isTopThree ? '0 4px 6px -1px rgba(0, 0, 0, 0.2)' : 'none',
               }}
             >
               {entry.rank}
@@ -298,13 +325,41 @@ export default function DayWiseStandingsPage() {
               className="w-12 h-12 rounded-full flex-shrink-0"
               style={{
                 backgroundColor: team?.color || '#gray',
-                border: '4px solid #ffffff',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                border: isTopFour ? '4px solid #10b981' : isQFTeam ? '4px solid #a855f7' : '4px solid #ffffff',
+                boxShadow: isTopFour ? '0 0 15px rgba(16, 185, 129, 0.5)' : isQFTeam ? '0 0 12px rgba(168, 85, 247, 0.4)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
             ></div>
-            <p className="text-xl font-black" style={{ color: '#0d3944' }}>
-              {entry.teamName}
-            </p>
+            {(isTopFour || isQFTeam) ? (
+              <div className="flex flex-col">
+                <p className="text-xl font-black" style={{ color: '#0d3944' }}>
+                  {entry.teamName}
+                </p>
+                {isTopFour && (
+                  <span className="text-xs font-black px-2 py-0.5 rounded-full mt-1 inline-block" style={{
+                    background: 'linear-gradient(to right, #10b981, #059669)',
+                    color: '#ffffff',
+                    boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)',
+                    letterSpacing: '0.5px'
+                  }}>
+                    ⚡ SEMI-FINALS QUALIFIED
+                  </span>
+                )}
+                {isQFTeam && (
+                  <span className="text-xs font-black px-2 py-0.5 rounded-full mt-1 inline-block" style={{
+                    background: 'linear-gradient(to right, #a855f7, #ec4899)',
+                    color: '#ffffff',
+                    boxShadow: '0 2px 6px rgba(168, 85, 247, 0.3)',
+                    letterSpacing: '0.5px'
+                  }}>
+                    ⚔️ QUARTER-FINALS QUALIFIED
+                  </span>
+                )}
+              </div>
+            ) : (
+              <p className="text-xl font-black" style={{ color: '#0d3944' }}>
+                {entry.teamName}
+              </p>
+            )}
           </div>
         </td>
 
@@ -520,7 +575,11 @@ export default function DayWiseStandingsPage() {
                       </thead>
                     )}
                     <tbody style={{ backgroundColor: 'transparent' }}>
-                      {pageStandings.map((entry) => renderStandingRow(entry, entry.rank - 1))}
+                      {pageStandings.map((entry) => {
+                        // Saturday is 2026-02-28 (Day 3)
+                        const isSaturday = selectedDay === "2026-02-28";
+                        return renderStandingRow(entry, entry.rank - 1, isSaturday);
+                      })}
                     </tbody>
                   </table>
                 </div>
