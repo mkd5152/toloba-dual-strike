@@ -688,9 +688,8 @@ export default function FixturesExportPage() {
         stageName: 'Semi-Final 1',
         time: '8:45 PM - 9:25 PM',
         court: 'Court 1',
-        teamIds: sf1Teams,
-        dynamicTeams: true,
-        subtitle: 'Q2 Winners + League 1st & 2nd'
+        teams: '⚡ Elite Quartet',
+        subtitle: 'Q2 Champions (Top 2) + League Leaders (Overall 1st & 2nd)'
       },
       {
         matchNumber: 29,
@@ -698,9 +697,8 @@ export default function FixturesExportPage() {
         stageName: 'Semi-Final 2',
         time: '8:45 PM - 9:25 PM',
         court: 'Court 2',
-        teamIds: sf2Teams,
-        dynamicTeams: true,
-        subtitle: 'Q1 Winners + League 3rd & 4th'
+        teams: '⚡ Power Pack',
+        subtitle: 'Q1 Champions (Top 2) + League Bronze Medalists (Overall 3rd & 4th)'
       },
       {
         matchNumber: 30,
@@ -708,9 +706,8 @@ export default function FixturesExportPage() {
         stageName: 'Grand Finale',
         time: '9:40 PM - 10:20 PM',
         court: 'Court 1',
-        teamIds: finalTeams,
-        dynamicTeams: true,
-        subtitle: 'SF1 Winners vs SF2 Winners'
+        teams: '🏆 Ultimate Showdown',
+        subtitle: 'Semi-Final 1 Champions (Top 2) vs Semi-Final 2 Champions (Top 2)'
       }
     ];
 
@@ -773,9 +770,10 @@ export default function FixturesExportPage() {
                 {playoffMatches.map((match, idx) => {
                   const isEven = idx % 2 === 0;
                   const isFinal = match.stage === 'FINAL';
+                  const isDynamic = !!match.teamIds;
                   const teamNames = match.teamIds?.map(id => getTeamName(id)) || [];
                   const teamColors = match.teamIds?.map(id => getTeamColor(id)) || [];
-                  const hasTBD = teamNames.length === 0 || teamNames.some(name => name === "TBD");
+                  const hasTBD = isDynamic && (teamNames.length === 0 || teamNames.some(name => name === "TBD"));
 
                   return (
                     <tr
@@ -823,7 +821,12 @@ export default function FixturesExportPage() {
                         </div>
                       </td>
                       <td className="p-3" style={{ verticalAlign: 'middle' }}>
-                        {hasTBD ? (
+                        {!isDynamic ? (
+                          <div className="text-center">
+                            <p className="text-base font-black mb-1" style={{ color: '#111827' }}>{match.teams}</p>
+                            <p className="text-xs font-semibold" style={{ color: '#6b7280' }}>{match.subtitle}</p>
+                          </div>
+                        ) : hasTBD ? (
                           <div className="text-center py-2">
                             <p className="text-sm font-bold mb-1" style={{
                               color: '#9ca3af',
