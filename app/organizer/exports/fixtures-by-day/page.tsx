@@ -929,32 +929,38 @@ export default function FixturesExportPage() {
                               return (
                                 <div
                                   key={`mystery-${slot}`}
-                                  className="flex flex-col items-center justify-center p-2 rounded-lg relative overflow-hidden"
+                                  className="flex items-center gap-2 p-1.5 rounded-lg"
                                   style={{
                                     background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.85) 50%, rgba(217, 119, 6, 0.95) 100%)',
                                     border: '3px solid #f59e0b',
-                                    boxShadow: '0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(251, 191, 36, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.2)',
-                                    minHeight: '45px'
+                                    boxShadow: '0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(251, 191, 36, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.2)'
                                   }}
                                 >
-                                  <p className="text-2xl font-black mb-0" style={{
-                                    color: '#ffffff',
-                                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.3)'
-                                  }}>👑</p>
-                                  <p className="text-[8px] font-black text-center leading-tight mt-0.5" style={{
-                                    color: '#ffffff',
-                                    letterSpacing: '0.5px',
-                                    textShadow: '0 1px 4px rgba(0, 0, 0, 0.6)'
-                                  }}>
-                                    {match.qfSource}
-                                  </p>
-                                  <p className="text-[7px] font-black text-center leading-tight" style={{
-                                    color: '#fef3c7',
-                                    letterSpacing: '0.3px',
-                                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)'
-                                  }}>
-                                    CHAMPION
-                                  </p>
+                                  <div
+                                    className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center"
+                                    style={{
+                                      backgroundColor: '#ffffff',
+                                      border: '2px solid #fbbf24',
+                                      boxShadow: '0 0 8px rgba(251, 191, 36, 0.8)'
+                                    }}
+                                  >
+                                    <span className="text-sm">👑</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-black truncate" style={{
+                                      color: '#ffffff',
+                                      textShadow: '0 1px 4px rgba(0, 0, 0, 0.6)'
+                                    }}>
+                                      {match.qfSource} Champion
+                                    </p>
+                                    <p className="text-[10px] font-bold" style={{
+                                      color: '#fef3c7',
+                                      opacity: 0.9,
+                                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'
+                                    }}>
+                                      To Be Decided
+                                    </p>
+                                  </div>
                                 </div>
                               );
                             })}
