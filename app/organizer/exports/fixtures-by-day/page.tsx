@@ -931,18 +931,29 @@ export default function FixturesExportPage() {
                                   key={`mystery-${slot}`}
                                   className="flex flex-col items-center justify-center p-2 rounded-lg relative overflow-hidden"
                                   style={{
-                                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.15))',
-                                    border: '2px dashed #f59e0b',
-                                    boxShadow: '0 0 12px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.05)',
+                                    background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.85) 50%, rgba(217, 119, 6, 0.95) 100%)',
+                                    border: '3px solid #f59e0b',
+                                    boxShadow: '0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(251, 191, 36, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.2)',
                                     minHeight: '45px'
                                   }}
                                 >
-                                  <p className="text-xl font-black mb-0.5" style={{ color: '#f59e0b', opacity: 0.6 }}>?</p>
-                                  <p className="text-[9px] font-black text-center leading-tight" style={{
-                                    color: '#d97706',
-                                    letterSpacing: '0.3px'
+                                  <p className="text-2xl font-black mb-0" style={{
+                                    color: '#ffffff',
+                                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.3)'
+                                  }}>👑</p>
+                                  <p className="text-[8px] font-black text-center leading-tight mt-0.5" style={{
+                                    color: '#ffffff',
+                                    letterSpacing: '0.5px',
+                                    textShadow: '0 1px 4px rgba(0, 0, 0, 0.6)'
                                   }}>
-                                    {match.qfSource} BATTLE
+                                    {match.qfSource}
+                                  </p>
+                                  <p className="text-[7px] font-black text-center leading-tight" style={{
+                                    color: '#fef3c7',
+                                    letterSpacing: '0.3px',
+                                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)'
+                                  }}>
+                                    CHAMPION
                                   </p>
                                 </div>
                               );
