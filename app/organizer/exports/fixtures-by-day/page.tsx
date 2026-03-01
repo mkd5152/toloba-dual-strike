@@ -688,7 +688,10 @@ export default function FixturesExportPage() {
         stageName: 'Semi-Final 1',
         time: '8:45 PM - 9:25 PM',
         court: 'Court 1',
-        teams: '⚡ Elite Quartet',
+        teamIds: sf1Teams,
+        hybridTeams: true,
+        leagueTeams: [1, 2], // League 1st & 2nd - we know these
+        qfSource: 'Q2',
         subtitle: 'Q2 Champions (Top 2) + League Leaders (Overall 1st & 2nd)'
       },
       {
@@ -697,7 +700,10 @@ export default function FixturesExportPage() {
         stageName: 'Semi-Final 2',
         time: '8:45 PM - 9:25 PM',
         court: 'Court 2',
-        teams: '⚡ Power Pack',
+        teamIds: sf2Teams,
+        hybridTeams: true,
+        leagueTeams: [3, 4], // League 3rd & 4th - we know these
+        qfSource: 'Q1',
         subtitle: 'Q1 Champions (Top 2) + League Bronze Medalists (Overall 3rd & 4th)'
       },
       {
@@ -770,7 +776,7 @@ export default function FixturesExportPage() {
                 {playoffMatches.map((match, idx) => {
                   const isEven = idx % 2 === 0;
                   const isFinal = match.stage === 'FINAL';
-                  const isDynamic = !!match.teamIds;
+                  const isDynamic = !!match.teamIds && !match.hybridTeams;
                   const teamNames = match.teamIds?.map(id => getTeamName(id)) || [];
                   const teamColors = match.teamIds?.map(id => getTeamColor(id)) || [];
                   const hasTBD = isDynamic && (teamNames.length === 0 || teamNames.some(name => name === "TBD"));
@@ -821,7 +827,128 @@ export default function FixturesExportPage() {
                         </div>
                       </td>
                       <td className="p-3" style={{ verticalAlign: 'middle' }}>
-                        {!isDynamic ? (
+                        {match.hybridTeams ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* League qualifiers - we know these teams */}
+                            {match.leagueTeams!.map((rank, idx) => {
+                              const teamId = sorted.find(t => t.rank === rank)?.teamId;
+                              const teamName = teamId ? getTeamName(teamId) : 'TBD';
+                              const teamColor = teamId ? getTeamColor(teamId) : '#cccccc';
+
+                              if (!teamId) {
+                                return (
+                                  <div key={idx} className="flex items-center justify-center p-2 rounded-lg" style={{
+                                    background: 'rgba(156, 163, 175, 0.1)',
+                                    border: '2px dashed #9ca3af'
+                                  }}>
+                                    <p className="text-xs font-bold" style={{ color: '#9ca3af' }}>TBD</p>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-2 p-1.5 rounded-lg"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${teamColor}15, ${teamColor}25)`,
+                                    border: `2px solid ${teamColor}`,
+                                    boxShadow: `0 0 8px ${teamColor}40`
+                                  }}
+                                >
+                                  <div
+                                    className="w-6 h-6 rounded-full flex-shrink-0"
+                                    style={{
+                                      backgroundColor: teamColor,
+                                      border: '2px solid #ffffff',
+                                      boxShadow: `0 0 6px ${teamColor}60`
+                                    }}
+                                  ></div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-black truncate" style={{ color: '#111827' }}>
+                                      {teamName}
+                                    </p>
+                                    <p className="text-[10px] font-bold" style={{
+                                      color: teamColor,
+                                      opacity: 0.8
+                                    }}>
+                                      League #{rank}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+
+                            {/* QF Winners - Mystery boxes */}
+                            {[0, 1].map((slot) => {
+                              // Check if QF match is completed
+                              const qfMatch = matches.find(m => m.matchNumber === (match.qfSource === 'Q1' ? 26 : 27));
+                              const isQFComplete = qfMatch && (qfMatch.state === "COMPLETED" || qfMatch.state === "LOCKED");
+
+                              if (isQFComplete && qfMatch.rankings) {
+                                // Show actual QF winner
+                                const winner = qfMatch.rankings.filter(r => r.rank <= 2)[slot];
+                                if (winner) {
+                                  const teamName = getTeamName(winner.teamId);
+                                  const teamColor = getTeamColor(winner.teamId);
+                                  return (
+                                    <div
+                                      key={`qf-${slot}`}
+                                      className="flex items-center gap-2 p-1.5 rounded-lg"
+                                      style={{
+                                        background: `linear-gradient(135deg, ${teamColor}15, ${teamColor}25)`,
+                                        border: `2px solid ${teamColor}`,
+                                        boxShadow: `0 0 8px ${teamColor}40`
+                                      }}
+                                    >
+                                      <div
+                                        className="w-6 h-6 rounded-full flex-shrink-0"
+                                        style={{
+                                          backgroundColor: teamColor,
+                                          border: '2px solid #ffffff',
+                                          boxShadow: `0 0 6px ${teamColor}60`
+                                        }}
+                                      ></div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-black truncate" style={{ color: '#111827' }}>
+                                          {teamName}
+                                        </p>
+                                        <p className="text-[10px] font-bold" style={{
+                                          color: teamColor,
+                                          opacity: 0.8
+                                        }}>
+                                          {match.qfSource} Winner
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                              }
+
+                              // Mystery box for QF winners not yet determined
+                              return (
+                                <div
+                                  key={`mystery-${slot}`}
+                                  className="flex flex-col items-center justify-center p-2 rounded-lg relative overflow-hidden"
+                                  style={{
+                                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.15))',
+                                    border: '2px dashed #f59e0b',
+                                    boxShadow: '0 0 12px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.05)',
+                                    minHeight: '45px'
+                                  }}
+                                >
+                                  <p className="text-xl font-black mb-0.5" style={{ color: '#f59e0b', opacity: 0.6 }}>?</p>
+                                  <p className="text-[9px] font-black text-center leading-tight" style={{
+                                    color: '#d97706',
+                                    letterSpacing: '0.3px'
+                                  }}>
+                                    {match.qfSource} BATTLE
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : !isDynamic ? (
                           <div className="text-center">
                             <p className="text-base font-black mb-1" style={{ color: '#111827' }}>{match.teams}</p>
                             <p className="text-xs font-semibold" style={{ color: '#6b7280' }}>{match.subtitle}</p>
