@@ -585,7 +585,82 @@ export default function FixturesExportPage() {
     </div>
   );
 
+  // Helper to get playoff teams dynamically
+  const getPlayoffTeams = () => {
+    // Get completed league matches to calculate standings
+    const leagueMatches = matches.filter(m => m.stage === "LEAGUE" && (m.state === "COMPLETED" || m.state === "LOCKED"));
+
+    // Calculate standings
+    const standingsMap = new Map<string, { teamId: string; points: number; totalRuns: number; rank: number }>();
+
+    teams.forEach(team => {
+      standingsMap.set(team.id, { teamId: team.id, points: 0, totalRuns: 0, rank: 0 });
+    });
+
+    leagueMatches.forEach(match => {
+      match.rankings?.forEach(ranking => {
+        const entry = standingsMap.get(ranking.teamId);
+        if (entry) {
+          entry.points += ranking.points || 0;
+          entry.totalRuns += ranking.totalScore || ranking.totalRuns || 0;
+        }
+      });
+    });
+
+    const sorted = Array.from(standingsMap.values())
+      .filter(entry => entry.points > 0)
+      .sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        return b.totalRuns - a.totalRuns;
+      });
+
+    sorted.forEach((entry, index) => {
+      entry.rank = index + 1;
+    });
+
+    // Get playoff match results
+    const qf1Match = matches.find(m => m.matchNumber === 26);
+    const qf2Match = matches.find(m => m.matchNumber === 27);
+    const sf1Match = matches.find(m => m.matchNumber === 28);
+    const sf2Match = matches.find(m => m.matchNumber === 29);
+
+    // QF1 teams: League positions 5, 6, 11, 12
+    const qf1Teams = [5, 6, 11, 12].map(rank => sorted.find(t => t.rank === rank)?.teamId).filter(Boolean);
+
+    // QF2 teams: League positions 7, 8, 9, 10
+    const qf2Teams = [7, 8, 9, 10].map(rank => sorted.find(t => t.rank === rank)?.teamId).filter(Boolean);
+
+    // SF1 teams: QF2 top 2 + League 1st & 2nd
+    let sf1Teams: string[] = [];
+    if (qf2Match && (qf2Match.state === "COMPLETED" || qf2Match.state === "LOCKED") && qf2Match.rankings) {
+      const qf2Top2 = qf2Match.rankings.filter(r => r.rank <= 2).map(r => r.teamId);
+      const leagueTop2 = [1, 2].map(rank => sorted.find(t => t.rank === rank)?.teamId).filter(Boolean);
+      sf1Teams = [...qf2Top2, ...leagueTop2];
+    }
+
+    // SF2 teams: QF1 top 2 + League 3rd & 4th
+    let sf2Teams: string[] = [];
+    if (qf1Match && (qf1Match.state === "COMPLETED" || qf1Match.state === "LOCKED") && qf1Match.rankings) {
+      const qf1Top2 = qf1Match.rankings.filter(r => r.rank <= 2).map(r => r.teamId);
+      const league3rd4th = [3, 4].map(rank => sorted.find(t => t.rank === rank)?.teamId).filter(Boolean);
+      sf2Teams = [...qf1Top2, ...league3rd4th];
+    }
+
+    // Final teams: SF1 top 2 + SF2 top 2
+    let finalTeams: string[] = [];
+    if (sf1Match && (sf1Match.state === "COMPLETED" || sf1Match.state === "LOCKED") && sf1Match.rankings &&
+        sf2Match && (sf2Match.state === "COMPLETED" || sf2Match.state === "LOCKED") && sf2Match.rankings) {
+      const sf1Top2 = sf1Match.rankings.filter(r => r.rank <= 2).map(r => r.teamId);
+      const sf2Top2 = sf2Match.rankings.filter(r => r.rank <= 2).map(r => r.teamId);
+      finalTeams = [...sf1Top2, ...sf2Top2];
+    }
+
+    return { qf1Teams, qf2Teams, sf1Teams, sf2Teams, finalTeams, sorted };
+  };
+
   const renderPlayoffSchedule = (includeHeader: boolean = false) => {
+    const { qf1Teams, qf2Teams, sf1Teams, sf2Teams, finalTeams, sorted } = getPlayoffTeams();
+
     const playoffMatches = [
       {
         matchNumber: 26,
@@ -593,8 +668,9 @@ export default function FixturesExportPage() {
         stageName: 'Qualifier 1',
         time: '8:00 PM - 8:40 PM',
         court: 'Court 1',
-        teams: '🎯 The Wildcards',
-        subtitle: 'League Positions: 5th • 6th • 11th • 12th'
+        teamIds: qf1Teams,
+        dynamicTeams: true,
+        ranks: [5, 6, 11, 12]
       },
       {
         matchNumber: 27,
@@ -602,8 +678,9 @@ export default function FixturesExportPage() {
         stageName: 'Qualifier 2',
         time: '8:00 PM - 8:40 PM',
         court: 'Court 2',
-        teams: '🎯 Core Contenders',
-        subtitle: 'League Positions: 7th • 8th • 9th • 10th'
+        teamIds: qf2Teams,
+        dynamicTeams: true,
+        ranks: [7, 8, 9, 10]
       },
       {
         matchNumber: 28,
@@ -611,8 +688,9 @@ export default function FixturesExportPage() {
         stageName: 'Semi-Final 1',
         time: '8:45 PM - 9:25 PM',
         court: 'Court 1',
-        teams: '⚡ Elite Quartet',
-        subtitle: 'Q2 Champions (Top 2) + League Leaders (Overall 1st & 2nd)'
+        teamIds: sf1Teams,
+        dynamicTeams: true,
+        subtitle: 'Q2 Winners + League 1st & 2nd'
       },
       {
         matchNumber: 29,
@@ -620,8 +698,9 @@ export default function FixturesExportPage() {
         stageName: 'Semi-Final 2',
         time: '8:45 PM - 9:25 PM',
         court: 'Court 2',
-        teams: '⚡ Power Pack',
-        subtitle: 'Q1 Champions (Top 2) + League Bronze Medalists (Overall 3rd & 4th)'
+        teamIds: sf2Teams,
+        dynamicTeams: true,
+        subtitle: 'Q1 Winners + League 3rd & 4th'
       },
       {
         matchNumber: 30,
@@ -629,8 +708,9 @@ export default function FixturesExportPage() {
         stageName: 'Grand Finale',
         time: '9:40 PM - 10:20 PM',
         court: 'Court 1',
-        teams: '🏆 Ultimate Showdown',
-        subtitle: 'Semi-Final 1 Champions (Top 2) vs Semi-Final 2 Champions (Top 2)'
+        teamIds: finalTeams,
+        dynamicTeams: true,
+        subtitle: 'SF1 Winners vs SF2 Winners'
       }
     ];
 
@@ -692,6 +772,11 @@ export default function FixturesExportPage() {
               <tbody style={{ backgroundColor: 'transparent' }}>
                 {playoffMatches.map((match, idx) => {
                   const isEven = idx % 2 === 0;
+                  const isFinal = match.stage === 'FINAL';
+                  const teamNames = match.teamIds?.map(id => getTeamName(id)) || [];
+                  const teamColors = match.teamIds?.map(id => getTeamColor(id)) || [];
+                  const hasTBD = teamNames.length === 0 || teamNames.some(name => name === "TBD");
+
                   return (
                     <tr
                       key={match.matchNumber}
@@ -705,9 +790,10 @@ export default function FixturesExportPage() {
                           <span
                             className="text-xl font-black w-10 h-10 rounded-full flex items-center justify-center"
                             style={{
-                              color: '#f59e0b',
-                              backgroundColor: '#fef3c7',
-                              border: '2px solid #fbbf24'
+                              color: isFinal ? '#ef4444' : '#f59e0b',
+                              backgroundColor: isFinal ? '#fee2e2' : '#fef3c7',
+                              border: `2px solid ${isFinal ? '#fca5a5' : '#fbbf24'}`,
+                              boxShadow: isFinal ? '0 0 15px rgba(239, 68, 68, 0.5)' : '0 0 10px rgba(245, 158, 11, 0.3)'
                             }}
                           >
                             {match.matchNumber}
@@ -718,11 +804,14 @@ export default function FixturesExportPage() {
                         <span
                           className="inline-block px-2 py-1 rounded-full text-xs font-black"
                           style={{
-                            backgroundColor: match.stage === 'FINAL' ? '#ef4444' : '#f59e0b',
-                            color: '#ffffff'
+                            background: isFinal
+                              ? 'linear-gradient(to right, #ef4444, #dc2626)'
+                              : 'linear-gradient(to right, #f59e0b, #d97706)',
+                            color: '#ffffff',
+                            boxShadow: isFinal ? '0 4px 10px rgba(239, 68, 68, 0.4)' : '0 4px 10px rgba(245, 158, 11, 0.3)'
                           }}
                         >
-                          {match.stageName}
+                          {isFinal && '🏆 '}{match.stageName}
                         </span>
                       </td>
                       <td className="p-3 text-center" style={{ borderRight: '2px solid #e5e7eb', width: '140px', verticalAlign: 'middle' }}>
@@ -734,10 +823,58 @@ export default function FixturesExportPage() {
                         </div>
                       </td>
                       <td className="p-3" style={{ verticalAlign: 'middle' }}>
-                        <div className="text-center">
-                          <p className="text-base font-black mb-1" style={{ color: '#111827' }}>{match.teams}</p>
-                          <p className="text-xs font-semibold" style={{ color: '#6b7280' }}>{match.subtitle}</p>
-                        </div>
+                        {hasTBD ? (
+                          <div className="text-center py-2">
+                            <p className="text-sm font-bold mb-1" style={{
+                              color: '#9ca3af',
+                              opacity: 0.7
+                            }}>
+                              ⏳ Teams To Be Determined
+                            </p>
+                            <p className="text-xs font-semibold" style={{ color: '#6b7280' }}>
+                              {match.subtitle || (match.ranks ? `League Ranks: ${match.ranks.join(' • ')}` : '')}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2">
+                            {teamNames.map((teamName, teamIdx) => {
+                              const leagueRank = sorted.find(t => t.teamId === match.teamIds![teamIdx])?.rank;
+                              return (
+                                <div
+                                  key={teamIdx}
+                                  className="flex items-center gap-2 p-1.5 rounded-lg"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${teamColors[teamIdx]}15, ${teamColors[teamIdx]}25)`,
+                                    border: `2px solid ${teamColors[teamIdx]}`,
+                                    boxShadow: `0 0 8px ${teamColors[teamIdx]}40`
+                                  }}
+                                >
+                                  <div
+                                    className="w-6 h-6 rounded-full flex-shrink-0"
+                                    style={{
+                                      backgroundColor: teamColors[teamIdx],
+                                      border: '2px solid #ffffff',
+                                      boxShadow: `0 0 6px ${teamColors[teamIdx]}60`
+                                    }}
+                                  ></div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-black truncate" style={{ color: '#111827' }}>
+                                      {teamName}
+                                    </p>
+                                    {leagueRank && match.ranks && (
+                                      <p className="text-[10px] font-bold" style={{
+                                        color: teamColors[teamIdx],
+                                        opacity: 0.8
+                                      }}>
+                                        League #{leagueRank}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
