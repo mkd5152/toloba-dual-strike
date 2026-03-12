@@ -305,31 +305,31 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="relative">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
                         <div
-                          className="w-14 h-14 rounded-full flex-shrink-0 transition-transform duration-300"
+                          className="w-12 h-12 rounded-full transition-transform duration-300"
                           style={{
                             backgroundColor: team?.color,
                             boxShadow: `0 0 20px ${team?.color}80, inset 0 0 10px rgba(255,255,255,0.3)`,
-                            border: '4px solid white',
+                            border: '3px solid white',
                             transform: isBatting ? 'scale(1.1)' : 'scale(1)',
                           }}
                         />
                         {isBatting && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
+                          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
                         )}
                         {isBowling && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
+                          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-orange-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <span className="font-black text-white text-xl drop-shadow-lg block truncate">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <span className="font-black text-white text-lg drop-shadow-lg block truncate">
                           {team?.name || 'TBD'}
                         </span>
                         {team?.players && team.players.length > 0 && (
-                          <p className="text-xs text-white/70 font-semibold mt-0.5 truncate">
+                          <p className="text-[10px] text-white/70 font-semibold mt-0.5 truncate">
                             {team.players.map((p) => p.name).join(" • ")}
                           </p>
                         )}
@@ -337,14 +337,14 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                     </div>
 
                     {innings ? (
-                      <div className="text-right">
-                        <div className="text-3xl font-black text-white drop-shadow-lg">
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-2xl font-black text-white drop-shadow-lg whitespace-nowrap">
                           {ranking?.totalScore ?? innings.totalRuns ?? 0}
-                          <span className="text-lg text-white/70 ml-1 font-bold">
+                          <span className="text-base text-white/70 ml-1 font-bold">
                             /{innings.totalWickets || 0}
                           </span>
                         </div>
-                        <div className="text-xs text-white/80 font-bold mt-1">
+                        <div className="text-[10px] text-white/80 font-bold mt-0.5 whitespace-nowrap">
                           {(() => {
                             if (!innings.overs || innings.overs.length === 0) {
                               return '0.0 ov';
@@ -377,7 +377,7 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                         </div>
                       </div>
                     ) : (
-                      <span className="text-white/50 font-bold text-sm">Waiting…</span>
+                      <span className="text-white/50 font-bold text-sm flex-shrink-0">Waiting…</span>
                     )}
                   </div>
                 </div>
