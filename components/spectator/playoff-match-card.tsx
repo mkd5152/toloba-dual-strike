@@ -59,11 +59,11 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
   const { getTeam } = useTournamentStore();
   const [, setTick] = useState(0);
 
-  // Force re-render every 5 seconds to update banner visibility
+  // Force re-render every 1 second to update banner visibility (for smooth disappear after 20 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(prev => prev + 1);
-    }, 5000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -87,8 +87,9 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
       innings.overs.forEach(over => {
         if (!over.balls) return;
         over.balls.forEach(ball => {
-          if (!lastBallTimestamp || ball.timestamp > lastBallTimestamp) {
-            lastBallTimestamp = ball.timestamp;
+          const ballTime = ball.timestamp instanceof Date ? ball.timestamp : new Date(ball.timestamp);
+          if (!lastBallTimestamp || ballTime > lastBallTimestamp) {
+            lastBallTimestamp = ballTime;
             lastBall = { ...ball, bowlingTeamId: over.bowlingTeamId };
           }
         });
@@ -100,7 +101,21 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
     }
 
     // Check if last ball was within 20 seconds
-    const isRecent = (Date.now() - lastBallTimestamp.getTime()) < 20000;
+    const timeDiff = Date.now() - lastBallTimestamp.getTime();
+    const isRecent = timeDiff < 20000;
+
+    // Debug logging (remove after testing)
+    if (lastBall.runs === 4 || lastBall.runs === 6 || lastBall.isWicket) {
+      console.log('🎯 Banner check:', {
+        matchNumber: match.matchNumber,
+        runs: lastBall.runs,
+        isWicket: lastBall.isWicket,
+        timestamp: lastBallTimestamp,
+        timeDiff: `${Math.round(timeDiff / 1000)}s ago`,
+        isRecent,
+        willShow: isRecent
+      });
+    }
 
     // Check what type of ball it was
     const isFour = !lastBall.isWide && !lastBall.isNoball && lastBall.runs === 4;
