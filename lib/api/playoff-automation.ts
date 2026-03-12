@@ -142,9 +142,8 @@ export async function generateQuarterFinals(tournamentId: string): Promise<{ qf1
       throw new Error("No league matches found. Cannot determine QF start time.")
     }
 
-    // Schedule BOTH QFs at the same time, 40 minutes after the last league match
-    const lastMatchTime = new Date((lastLeagueMatch as any).start_time)
-    const qfStartTime = new Date(lastMatchTime.getTime() + 40 * 60 * 1000) // +40 minutes
+    // Schedule BOTH QFs at the same time on Saturday, March 14, 2026 at 8:00 PM
+    const qfStartTime = new Date('2026-03-14T20:00:00') // March 14, 2026, 8:00 PM
 
     // QF1: Teams 5, 6, 11, 12 (ranks 5, 6, 11, 12)
     const qf1Teams = [
@@ -256,8 +255,8 @@ export async function generateSemiFinals(tournamentId: string): Promise<{ semi1:
     const anyQFMatch = qfMatches[0] // Use first QF
     const qfTime = new Date(anyQFMatch.start_time)
 
-    // Schedule BOTH SFs at the same time, 40 minutes after the QFs
-    const semiStartTime = new Date(qfTime.getTime() + 40 * 60 * 1000) // +40 minutes
+    // Schedule BOTH SFs at the same time on Saturday, March 14, 2026 at 8:50 PM
+    const semiStartTime = new Date('2026-03-14T20:50:00') // March 14, 2026, 8:50 PM
 
     // SF1: QF2 top 2 + Overall 1, 2
     const semi1Teams = [
@@ -355,9 +354,8 @@ export async function generateFinal(tournamentId: string): Promise<Match> {
       throw new Error("No semi-finals found. Cannot determine final start time.")
     }
 
-    // Schedule final 40 minutes after the semis
-    const semiTime = new Date((semiMatches as any).start_time)
-    const finalStartTime = new Date(semiTime.getTime() + 40 * 60 * 1000) // +40 minutes
+    // Schedule final on Saturday, March 14, 2026 at 9:40 PM
+    const finalStartTime = new Date('2026-03-14T21:40:00') // March 14, 2026, 9:40 PM
 
     // Final: Semi1-1st, Semi1-2nd, Semi2-1st, Semi2-2nd
     const finalTeams = [

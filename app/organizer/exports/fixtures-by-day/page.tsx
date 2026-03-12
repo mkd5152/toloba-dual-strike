@@ -248,7 +248,7 @@ export default function FixturesExportPage() {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // Generate separate PDF for Sunday Playoffs
+    // Generate separate PDF for Saturday Playoffs
     const allPageDivs = Array.from(contentRef.current.querySelectorAll('.pdf-page')) as HTMLElement[];
     const playoffPageDiv = allPageDivs[allPageDivs.length - 1]; // Last page is playoffs
 
@@ -312,7 +312,7 @@ export default function FixturesExportPage() {
       // Generate PDF for playoffs
       const elements = Array.from(tempContainer.querySelectorAll('.pdf-page')) as HTMLElement[];
       const pdf = await generatePDFFromElements(elements, html2canvas, jsPDF);
-      pdf.save(`${tournament.name.replace(/\s+/g, '_')}_Sunday_Playoffs.pdf`);
+      pdf.save(`${tournament.name.replace(/\s+/g, '_')}_Saturday_Playoffs.pdf`);
 
       // Cleanup
       document.body.removeChild(tempContainer);
@@ -686,7 +686,7 @@ export default function FixturesExportPage() {
         matchNumber: 28,
         stage: 'SF1',
         stageName: 'Semi-Final 1',
-        time: '8:45 PM - 9:25 PM',
+        time: '8:50 PM - 9:30 PM',
         court: 'Court 1',
         teamIds: sf1Teams,
         hybridTeams: true,
@@ -698,7 +698,7 @@ export default function FixturesExportPage() {
         matchNumber: 29,
         stage: 'SF2',
         stageName: 'Semi-Final 2',
-        time: '8:45 PM - 9:25 PM',
+        time: '8:50 PM - 9:30 PM',
         court: 'Court 2',
         teamIds: sf2Teams,
         hybridTeams: true,
@@ -748,7 +748,7 @@ export default function FixturesExportPage() {
           <div className="p-2 rounded-t-2xl" style={{ background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: '#ffffff' }}>
             <h2 className="text-xl font-black tracking-wide flex items-center gap-2">
               <CalendarIcon className="w-5 h-5" />
-              Sunday, March 1, 2026 - PLAYOFFS
+              Saturday, March 14, 2026 - PLAYOFFS
             </h2>
           </div>
           <div className="rounded-b-2xl overflow-hidden" style={{ border: '4px solid #f59e0b', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
@@ -1031,7 +1031,7 @@ export default function FixturesExportPage() {
           </div>
           <div className="mt-2 p-2 rounded-xl" style={{ backgroundColor: 'rgba(254, 243, 199, 0.95)', border: '2px solid #fbbf24' }}>
             <p className="text-xs font-bold text-center" style={{ color: '#92400e' }}>
-              🏆 Closing Ceremony: 10:25 PM - 10:45 PM 🏆
+              🏆 Closing Ceremony: 10:30 PM - 10:50 PM 🏆
             </p>
           </div>
         </div>
@@ -1108,7 +1108,7 @@ export default function FixturesExportPage() {
             })
           )}
 
-          {/* Playoff Schedule - Sunday (Separate Page) */}
+          {/* Playoff Schedule - Saturday (Separate Page) */}
           <div
             className="pdf-page"
             style={{
