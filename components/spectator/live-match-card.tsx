@@ -242,26 +242,26 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                           return '3.0 ov';
                         }
 
-                        // Find the first incomplete over (less than 6 LEGAL balls)
-                        const currentOverIndex = innings.overs.findIndex((over) => {
+                        // Sort overs by overNumber to ensure correct order
+                        const sortedOvers = [...innings.overs].sort((a, b) => a.overNumber - b.overNumber);
+
+                        // Find the first incomplete over (less than 6 LEGAL balls) by overNumber
+                        const currentOver = sortedOvers.find((over) => {
                           if (!over.balls || over.balls.length === 0) return true;
                           const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
                           return legalBallCount < 6;
                         });
 
                         // If no incomplete over found, all overs are complete
-                        if (currentOverIndex < 0) {
+                        if (!currentOver) {
                           return '3.0 ov';
                         }
-
-                        // Use current over for in-progress innings
-                        const currentOver = innings.overs[currentOverIndex];
 
                         // Count legal balls in current over for display
                         const legalBalls = currentOver.balls ? currentOver.balls.filter(b => !b.isWide && !b.isNoball).length : 0;
 
-                        // Calculate completed overs (all overs before current)
-                        const completedOvers = currentOverIndex;
+                        // Use overNumber (0-2) as the completed overs count
+                        const completedOvers = currentOver.overNumber;
 
                         // Display as completedOvers.ballsInCurrentOver
                         return `${completedOvers}.${legalBalls} ov`;
