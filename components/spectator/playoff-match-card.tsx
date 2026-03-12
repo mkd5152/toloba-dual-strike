@@ -369,22 +369,20 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                               return '3.0 ov';
                             }
 
+                            // Find the first incomplete over (less than 6 LEGAL balls)
                             const currentOverIndex = innings.overs.findIndex((over) => {
-                              const isPowerplayOver = over.isPowerplay;
-                              if (isPowerplayOver) {
-                                const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
-                                return legalBallCount < 6;
-                              } else {
-                                return over.balls.length < 6;
-                              }
+                              if (!over.balls || over.balls.length === 0) return true;
+                              const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+                              return legalBallCount < 6;
                             });
 
                             if (currentOverIndex < 0) {
+                              // All overs complete
                               return '3.0 ov';
                             }
 
                             const currentOver = innings.overs[currentOverIndex];
-                            const legalBalls = currentOver.balls.filter(b => !b.isWide && !b.isNoball).length;
+                            const legalBalls = currentOver.balls ? currentOver.balls.filter(b => !b.isWide && !b.isNoball).length : 0;
                             const completedOvers = currentOverIndex;
 
                             return `${completedOvers}.${legalBalls} ov`;
