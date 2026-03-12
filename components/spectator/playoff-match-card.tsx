@@ -372,22 +372,27 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                             // Sort overs by overNumber to ensure correct order
                             const sortedOvers = [...innings.overs].sort((a, b) => a.overNumber - b.overNumber);
 
-                            // Find the first incomplete over (less than 6 LEGAL balls) by overNumber
-                            const currentOver = sortedOvers.find((over) => {
-                              if (!over.balls || over.balls.length === 0) return true;
-                              const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
-                              return legalBallCount < 6;
-                            });
+                            // Count complete overs (6 legal balls)
+                            let completeOversCount = 0;
+                            let currentOverBalls = 0;
 
-                            if (!currentOver) {
-                              // All overs complete
-                              return '3.0 ov';
+                            for (const over of sortedOvers) {
+                              if (!over.balls || over.balls.length === 0) {
+                                // Empty over, this is the current over
+                                break;
+                              }
+                              const legalBalls = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+                              if (legalBalls >= 6) {
+                                // Complete over
+                                completeOversCount++;
+                              } else {
+                                // Incomplete over - this is the current one
+                                currentOverBalls = legalBalls;
+                                break;
+                              }
                             }
 
-                            const legalBalls = currentOver.balls ? currentOver.balls.filter(b => !b.isWide && !b.isNoball).length : 0;
-                            const completedOvers = currentOver.overNumber;
-
-                            return `${completedOvers}.${legalBalls} ov`;
+                            return `${completeOversCount}.${currentOverBalls} ov`;
                           })()}
                         </div>
                       </div>

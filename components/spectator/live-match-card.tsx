@@ -245,26 +245,28 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                         // Sort overs by overNumber to ensure correct order
                         const sortedOvers = [...innings.overs].sort((a, b) => a.overNumber - b.overNumber);
 
-                        // Find the first incomplete over (less than 6 LEGAL balls) by overNumber
-                        const currentOver = sortedOvers.find((over) => {
-                          if (!over.balls || over.balls.length === 0) return true;
-                          const legalBallCount = over.balls.filter(b => !b.isWide && !b.isNoball).length;
-                          return legalBallCount < 6;
-                        });
+                        // Count complete overs (6 legal balls)
+                        let completeOversCount = 0;
+                        let currentOverBalls = 0;
 
-                        // If no incomplete over found, all overs are complete
-                        if (!currentOver) {
-                          return '3.0 ov';
+                        for (const over of sortedOvers) {
+                          if (!over.balls || over.balls.length === 0) {
+                            // Empty over, this is the current over
+                            break;
+                          }
+                          const legalBalls = over.balls.filter(b => !b.isWide && !b.isNoball).length;
+                          if (legalBalls >= 6) {
+                            // Complete over
+                            completeOversCount++;
+                          } else {
+                            // Incomplete over - this is the current one
+                            currentOverBalls = legalBalls;
+                            break;
+                          }
                         }
 
-                        // Count legal balls in current over for display
-                        const legalBalls = currentOver.balls ? currentOver.balls.filter(b => !b.isWide && !b.isNoball).length : 0;
-
-                        // Use overNumber (0-2) as the completed overs count
-                        const completedOvers = currentOver.overNumber;
-
                         // Display as completedOvers.ballsInCurrentOver
-                        return `${completedOvers}.${legalBalls} ov`;
+                        return `${completeOversCount}.${currentOverBalls} ov`;
                       })()}
                     </div>
                   </>
