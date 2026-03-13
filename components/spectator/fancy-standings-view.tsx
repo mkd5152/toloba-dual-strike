@@ -26,17 +26,23 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadAllData()
+    const abortController = new AbortController()
+    loadAllData(abortController.signal)
+
+    return () => {
+      abortController.abort()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const loadAllData = async () => {
+  const loadAllData = async (signal?: AbortSignal) => {
     try {
       setLoading(true)
       setError(null)
 
       // Load overall standings
-      const standings = await getOverallStandingsForPlayoffs(tournamentId)
+      const standings = await getOverallStandingsForPlayoffs(tournamentId, signal)
+      if (signal?.aborted) return
       setLeagueStandings(standings)
 
       // Load teams with players
@@ -44,7 +50,9 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
         .from("teams")
         .select("*, players(*)")
         .eq("tournament_id", tournamentId)
+        .abortSignal(signal)
 
+      if (signal?.aborted) return
       if (teamsError) throw teamsError
       setTeams(teamsData || [])
 
@@ -55,7 +63,9 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
         .eq("tournament_id", tournamentId)
         .eq("stage", "LEAGUE")
         .in("state", ["COMPLETED", "LOCKED"])
+        .abortSignal(signal)
 
+      if (signal?.aborted) return
       if (leagueError) throw leagueError
       setLeagueMatchesCompleted(leagueMatchesData?.length || 0)
 
@@ -66,7 +76,9 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
         .eq("tournament_id", tournamentId)
         .eq("stage", "QF")
         .order("match_number")
+        .abortSignal(signal)
 
+      if (signal?.aborted) return
       if (qfError) throw qfError
       setQfMatches(qfData || [])
 
@@ -77,7 +89,9 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
         .eq("tournament_id", tournamentId)
         .eq("stage", "SEMI")
         .order("match_number")
+        .abortSignal(signal)
 
+      if (signal?.aborted) return
       if (semiError) throw semiError
       setSemiMatches(semiData || [])
 
@@ -88,15 +102,23 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
         .eq("tournament_id", tournamentId)
         .eq("stage", "FINAL")
         .single()
+        .abortSignal(signal)
 
+      if (signal?.aborted) return
       if (!finalError && finalData) {
         setFinalMatch(finalData)
       }
     } catch (err) {
+      // Silently ignore abort errors
+      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
+        return
+      }
       console.error("Error loading standings data:", err)
       setError(err instanceof Error ? err.message : "Failed to load standings")
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }
 
@@ -116,7 +138,7 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
       <div className="text-center text-white/70 py-12">
         <p className="mb-4">Unable to load standings</p>
         <button
-          onClick={loadAllData}
+          onClick={() => loadAllData()}
           className="text-sm text-[#ff9800] hover:text-[#ffb300] underline"
         >
           Try again

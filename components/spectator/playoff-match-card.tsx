@@ -104,19 +104,6 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
     const timeDiff = Date.now() - lastBallTimestamp.getTime();
     const isRecent = timeDiff < 20000;
 
-    // Debug logging (remove after testing)
-    if (lastBall.runs === 4 || lastBall.runs === 6 || lastBall.isWicket) {
-      console.log('🎯 Banner check:', {
-        matchNumber: match.matchNumber,
-        runs: lastBall.runs,
-        isWicket: lastBall.isWicket,
-        timestamp: lastBallTimestamp,
-        timeDiff: `${Math.round(timeDiff / 1000)}s ago`,
-        isRecent,
-        willShow: isRecent
-      });
-    }
-
     // Check what type of ball it was
     const isFour = !lastBall.isWide && !lastBall.isNoball && lastBall.runs === 4;
     const isSix = !lastBall.isWide && !lastBall.isNoball && lastBall.runs === 6;
@@ -359,40 +346,60 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                             /{innings.totalWickets || 0}
                           </span>
                         </div>
-                        <div className="text-[10px] text-white/80 font-bold mt-0.5 whitespace-nowrap">
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <div className="text-[10px] text-white/80 font-bold whitespace-nowrap">
+                            {(() => {
+                              if (!innings.overs || innings.overs.length === 0) {
+                                return '0.0 ov';
+                              }
+
+                              if (innings.state === "COMPLETED") {
+                                return '3.0 ov';
+                              }
+
+                              // Count balls per over based on over type
+                              // NORMAL over: ALL balls count (including wides/no-balls)
+                              // POWERPLAY over: Only LEGAL balls count (exclude wides/no-balls)
+                              const totalBalls = innings.overs.reduce((sum, over) => {
+                                if (!over.balls) return sum;
+
+                                if (over.isPowerplay) {
+                                  // Powerplay: only count legal balls
+                                  return sum + over.balls.filter(b => !b.isWide && !b.isNoball).length;
+                                } else {
+                                  // Normal over: count ALL balls
+                                  return sum + over.balls.length;
+                                }
+                              }, 0);
+
+                              const completeOvers = Math.floor(totalBalls / 6);
+                              const remainingBalls = totalBalls % 6;
+
+                              return `${completeOvers}.${remainingBalls} ov`;
+                            })()}
+                          </div>
                           {(() => {
-                            if (!innings.overs || innings.overs.length === 0) {
-                              return '0.0 ov';
-                            }
-
-                            if (innings.state === "COMPLETED") {
-                              return '3.0 ov';
-                            }
-
-                            // Sort overs by overNumber to ensure correct order
-                            const sortedOvers = [...innings.overs].sort((a, b) => a.overNumber - b.overNumber);
-
-                            // Count complete overs (6 legal balls)
-                            let completeOversCount = 0;
-                            let currentOverBalls = 0;
-
-                            for (const over of sortedOvers) {
-                              if (!over.balls || over.balls.length === 0) {
-                                // Empty over, this is the current over
-                                break;
-                              }
-                              const legalBalls = over.balls.filter(b => !b.isWide && !b.isNoball).length;
-                              if (legalBalls >= 6) {
-                                // Complete over
-                                completeOversCount++;
+                            // Show POWERPLAY indicator if current over is powerplay
+                            const totalBalls = innings.overs?.reduce((sum, over) => {
+                              if (!over.balls) return sum;
+                              if (over.isPowerplay) {
+                                return sum + over.balls.filter(b => !b.isWide && !b.isNoball).length;
                               } else {
-                                // Incomplete over - this is the current one
-                                currentOverBalls = legalBalls;
-                                break;
+                                return sum + over.balls.length;
                               }
-                            }
+                            }, 0) || 0;
 
-                            return `${completeOversCount}.${currentOverBalls} ov`;
+                            const currentOverIndex = Math.floor(totalBalls / 6);
+                            const currentOver = innings.overs?.[currentOverIndex];
+
+                            if (currentOver?.isPowerplay && innings.state === "IN_PROGRESS") {
+                              return (
+                                <span className="px-1.5 py-0.5 bg-yellow-500 text-black text-[8px] font-black rounded whitespace-nowrap animate-pulse">
+                                  ⚡ POWERPLAY
+                                </span>
+                              );
+                            }
+                            return null;
                           })()}
                         </div>
                       </div>

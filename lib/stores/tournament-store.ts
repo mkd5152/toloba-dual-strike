@@ -71,11 +71,25 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
 
       set({ teams, loadingTeams: false, loading: false });
     } catch (err) {
-      // Silently ignore abort errors (React Strict Mode unmounting)
-      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
-        set({ loadingTeams: false, loading: false });
-        return;
+      // Silently ignore abort errors - check multiple ways since errors may be wrapped
+      if (err instanceof Error) {
+        if (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort')) {
+          set({ loadingTeams: false, loading: false });
+          return;
+        }
+        if (err.name === 'DOMException' && err.message?.includes('abort')) {
+          set({ loadingTeams: false, loading: false });
+          return;
+        }
       }
+      if (typeof err === 'object' && err !== null) {
+        const errObj = err as any
+        if (errObj.message?.toLowerCase().includes('abort') || errObj.code === 'ABORT_ERR' || errObj.name === 'AbortError') {
+          set({ loadingTeams: false, loading: false });
+          return;
+        }
+      }
+
       console.error("Error loading teams:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load teams",
@@ -94,11 +108,25 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
       const matches = await matchesAPI.fetchMatches(tournament.id);
       set({ matches, loadingMatches: false, loading: false });
     } catch (err) {
-      // Silently ignore abort errors (React Strict Mode unmounting)
-      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
-        set({ loadingMatches: false, loading: false });
-        return;
+      // Silently ignore abort errors - check multiple ways since errors may be wrapped
+      if (err instanceof Error) {
+        if (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort')) {
+          set({ loadingMatches: false, loading: false });
+          return;
+        }
+        if (err.name === 'DOMException' && err.message?.includes('abort')) {
+          set({ loadingMatches: false, loading: false });
+          return;
+        }
       }
+      if (typeof err === 'object' && err !== null) {
+        const errObj = err as any
+        if (errObj.message?.toLowerCase().includes('abort') || errObj.code === 'ABORT_ERR' || errObj.name === 'AbortError') {
+          set({ loadingMatches: false, loading: false });
+          return;
+        }
+      }
+
       console.error("Error loading matches:", err);
       set({
         error: err instanceof Error ? err.message : "Failed to load matches",

@@ -33,6 +33,7 @@ export default function SpectatorLivePage() {
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
   const [detailedMatches, setDetailedMatches] = useState<Match[]>([]);
   const detailedMatchesRef = useRef<Match[]>([]);
+  const soundEnabledRef = useRef(false);
   const [showVictory, setShowVictory] = useState(false);
   const [championTeamId, setChampionTeamId] = useState<string | null>(null);
 
@@ -41,10 +42,14 @@ export default function SpectatorLivePage() {
     enabled: false, // Default disabled, user can toggle
   });
 
-  // Keep ref in sync with state
+  // Keep refs in sync with state
   useEffect(() => {
     detailedMatchesRef.current = detailedMatches;
   }, [detailedMatches]);
+
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
 
   // Check if tournament is complete (Grand Finale completed)
   useEffect(() => {
@@ -98,77 +103,68 @@ export default function SpectatorLivePage() {
         async (payload) => {
           try {
             console.log('🏏 Live ball recorded:', payload);
+            const newBall = payload.new as any;
 
-            // Get the ball data
-            const ball = payload.new as any;
-
-            // Fetch innings to get match and team info
-            const { data: inningsData } = await supabase
-              .from('innings')
-              .select('match_id, team_id')
-              .eq('id', ball.innings_id)
-              .single() as any;
-
-            if (!inningsData) return;
-
-            // Get current matches and teams from store
-            const { getTeam: getCurrentTeam } = useTournamentStore.getState();
-
-            // Find the match from latest detailedMatches ref
-            const match = detailedMatchesRef.current.find((m: any) => m.id === inningsData.match_id);
-            if (!match || match.state !== 'IN_PROGRESS') return;
-
-            // Get the team
-            const team = getCurrentTeam(inningsData.team_id);
-            if (!team) return;
-
-            // Determine event type and icon
-            let eventText = '';
-            let icon = '';
-
-            if (ball.is_wicket) {
-              eventText = 'WICKET!';
-              icon = '🎯';
-              // Play wicket sound
-              if (soundEnabled) playWicket();
-            } else if (ball.runs === 6) {
-              eventText = 'SIX!';
-              icon = '🚀';
-              // Play six sound
-              if (soundEnabled) playSix();
-            } else if (ball.runs === 4) {
-              eventText = 'FOUR!';
-              icon = '🏏';
-              // Play four sound
-              if (soundEnabled) playFour();
-            } else if (ball.is_wide) {
-              eventText = 'Wide';
-              icon = '↔️';
-            } else if (ball.is_no_ball) {
-              eventText = 'No Ball';
-              icon = '🚫';
-            } else if (ball.runs === 0) {
-              eventText = 'Dot Ball';
-              icon = '⚫';
+            // Play sounds for significant events (use ref to get current value)
+            if (soundEnabledRef.current) {
+              console.log('   🔊 Playing sound for ball...');
+              if (newBall.is_wicket) {
+                console.log('   🎯 Playing wicket sound');
+                playWicket();
+              } else if (newBall.runs === 6 && !newBall.is_wide && !newBall.is_noball) {
+                console.log('   🚀 Playing six sound');
+                playSix();
+              } else if (newBall.runs === 4 && !newBall.is_wide && !newBall.is_noball) {
+                console.log('   🏏 Playing four sound');
+                playFour();
+              }
             } else {
-              eventText = `${ball.runs} Run${ball.runs > 1 ? 's' : ''}`;
-              icon = '🏃';
+              console.log('   🔇 Sounds are disabled');
             }
 
-            // Add to live events
-            const newEvent: LiveEvent = {
-              id: ball.id,
-              matchNumber: match.matchNumber,
-              teamName: team.name,
-              event: eventText,
-              icon: icon,
-              time: new Date(ball.created_at),
-              runs: ball.runs,
-            };
+            // Add ball to local state directly - same as innings update
+            setDetailedMatches(prev => prev.map(match => {
+              if (match.state !== 'IN_PROGRESS') return match;
 
-            setLiveEvents(prev => [newEvent, ...prev].slice(0, 10)); // Keep latest 10
+              return {
+                ...match,
+                innings: match.innings?.map(inn => {
+                  if (inn.state !== 'IN_PROGRESS') return inn;
+
+                  return {
+                    ...inn,
+                    overs: inn.overs?.map(over => {
+                      if (over.id !== newBall.over_id) return over;
+
+                      // Add ball to this over
+                      const updatedBalls = [...(over.balls || []), {
+                        id: newBall.id,
+                        runs: newBall.runs,
+                        isWicket: newBall.is_wicket,
+                        wicketType: newBall.wicket_type,
+                        isWide: newBall.is_wide,
+                        isNoball: newBall.is_noball,
+                        isFreeHit: newBall.is_free_hit,
+                        misconduct: newBall.misconduct,
+                        effectiveRuns: newBall.effective_runs,
+                        timestamp: new Date(newBall.timestamp),
+                        ballNumber: newBall.ball_number,
+                        fieldingTeamId: newBall.fielding_team_id
+                      }];
+
+                      return {
+                        ...over,
+                        balls: updatedBalls
+                      };
+                    })
+                  };
+                })
+              };
+            }));
+
+            console.log('   ✅ Added ball to local state (ball', newBall.ball_number, 'runs:', newBall.runs, ')');
           } catch (error) {
-            console.error('❌ Error processing ball event:', error);
+            console.error('❌ Error processing ball event:', error, error?.message, error?.stack);
           }
         }
       )
@@ -185,11 +181,12 @@ export default function SpectatorLivePage() {
             console.log('🆕 Live: New innings created', payload);
             console.log('   Fetching updated matches for tournament:', tournament.id);
             const matches = await fetchMatchesWithDetails(tournament.id);
-            console.log('   Fetched', matches.length, 'matches, updating state');
+            console.log('   Fetched', matches.length, 'matches');
             setDetailedMatches(matches);
-            console.log('   ✅ Match Center updated after innings creation');
+            detailedMatchesRef.current = matches;
+            console.log('   ✅ State updated');
           } catch (error) {
-            console.error('❌ Error handling innings INSERT:', error);
+            console.error('❌ Error handling innings INSERT:', error, error?.message, error?.stack);
           }
         }
       )
@@ -204,10 +201,68 @@ export default function SpectatorLivePage() {
         async (payload) => {
           try {
             console.log('📊 Live: Innings updated', payload);
-            const matches = await fetchMatchesWithDetails(tournament.id);
-            setDetailedMatches(matches);
+            const oldInnings = payload.old as any;
+            const newInnings = payload.new as any;
+
+            // Check if powerplay_over changed - update isPowerplay flags locally (DON'T refetch to avoid losing balls)
+            if (oldInnings.powerplay_over !== newInnings.powerplay_over) {
+              console.log('   ⚡ Powerplay changed from', oldInnings.powerplay_over, 'to', newInnings.powerplay_over);
+
+              // Update isPowerplay flags in local state
+              setDetailedMatches(prev => prev.map(match => {
+                if (match.state !== 'IN_PROGRESS') return match;
+
+                return {
+                  ...match,
+                  innings: match.innings?.map(inn => {
+                    if (inn.id === newInnings.id) {
+                      return {
+                        ...inn,
+                        powerplayOver: newInnings.powerplay_over,
+                        totalRuns: newInnings.total_runs,
+                        totalWickets: newInnings.total_wickets,
+                        finalScore: newInnings.final_score,
+                        overs: inn.overs?.map(over => ({
+                          ...over,
+                          isPowerplay: over.overNumber === newInnings.powerplay_over
+                        }))
+                      };
+                    }
+                    return inn;
+                  })
+                };
+              }));
+
+              console.log('   ✅ Updated powerplay flags locally (over', newInnings.powerplay_over, 'is now powerplay)');
+              return;
+            }
+
+            // Otherwise just update totals locally (no refetch)
+            setDetailedMatches(prev => prev.map(match => {
+              if (match.state !== 'IN_PROGRESS') return match;
+
+              return {
+                ...match,
+                innings: match.innings?.map(inn => {
+                  if (inn.id === newInnings.id) {
+                    return {
+                      ...inn,
+                      state: newInnings.state,
+                      totalRuns: newInnings.total_runs,
+                      totalWickets: newInnings.total_wickets,
+                      finalScore: newInnings.final_score,
+                      powerplayOver: newInnings.powerplay_over,
+                      noWicketBonus: newInnings.no_wicket_bonus
+                    };
+                  }
+                  return inn;
+                })
+              };
+            }));
+
+            console.log('   ✅ Updated innings locally (state:', newInnings.state, 'runs:', newInnings.total_runs, 'wickets:', newInnings.total_wickets, ')');
           } catch (error) {
-            console.error('❌ Error handling innings UPDATE:', error);
+            console.error('❌ Error handling innings UPDATE:', error, error?.message, error?.stack);
           }
         }
       )
@@ -226,11 +281,12 @@ export default function SpectatorLivePage() {
             console.log('   New state:', (payload.new as any)?.state);
             console.log('   Fetching updated matches for tournament:', tournament.id);
             const matches = await fetchMatchesWithDetails(tournament.id);
-            console.log('   Fetched', matches.length, 'matches, updating state');
+            console.log('   Fetched', matches.length, 'matches');
             setDetailedMatches(matches);
-            console.log('   ✅ Match Center updated after match state change');
+            detailedMatchesRef.current = matches;
+            console.log('   ✅ State updated');
           } catch (error) {
-            console.error('❌ Error handling matches UPDATE:', error);
+            console.error('❌ Error handling matches UPDATE:', error, error?.message, error?.stack);
           }
         }
       )

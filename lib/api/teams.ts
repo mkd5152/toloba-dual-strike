@@ -27,14 +27,21 @@ export async function fetchTeams(tournamentId: string): Promise<Team[]> {
     // Transform database rows to Team type
     return (data || []).map(transformTeamRow)
   } catch (err) {
-    // Silently ignore abort errors (React Strict Mode unmounting)
-    if (err instanceof Error && err.name === 'AbortError') {
-      return []
+    // Silently ignore abort errors - check multiple ways since Supabase may wrap the error
+    if (err instanceof Error) {
+      if (err.name === 'AbortError') return []
+      if (err.message?.toLowerCase().includes('abort')) return []
+      // Check for DOMException AbortError
+      if (err.name === 'DOMException' && err.message?.includes('abort')) return []
     }
-    // Silently ignore errors with "aborted" message
-    if (err instanceof Error && err.message.toLowerCase().includes('abort')) {
-      return []
+    // Check if error has nested abort information
+    if (typeof err === 'object' && err !== null) {
+      const errObj = err as any
+      if (errObj.message?.toLowerCase().includes('abort')) return []
+      if (errObj.code === 'ABORT_ERR') return []
+      if (errObj.name === 'AbortError') return []
     }
+
     console.error("Error fetching teams:", err)
     throw new Error(`Failed to fetch teams: ${err instanceof Error ? err.message : "Unknown error"}`)
   }
@@ -59,10 +66,21 @@ export async function fetchTeam(teamId: string): Promise<Team | null> {
 
     return data ? transformTeamRow(data) : null
   } catch (err) {
-    // Silently ignore abort errors (React Strict Mode unmounting)
-    if (err instanceof Error && (err.name === 'AbortError' || err.message.toLowerCase().includes('abort'))) {
-      return null
+    // Silently ignore abort errors - check multiple ways since Supabase may wrap the error
+    if (err instanceof Error) {
+      if (err.name === 'AbortError') return null
+      if (err.message?.toLowerCase().includes('abort')) return null
+      // Check for DOMException AbortError
+      if (err.name === 'DOMException' && err.message?.includes('abort')) return null
     }
+    // Check if error has nested abort information
+    if (typeof err === 'object' && err !== null) {
+      const errObj = err as any
+      if (errObj.message?.toLowerCase().includes('abort')) return null
+      if (errObj.code === 'ABORT_ERR') return null
+      if (errObj.name === 'AbortError') return null
+    }
+
     console.error("Error fetching team:", err)
     throw new Error(`Failed to fetch team: ${err instanceof Error ? err.message : "Unknown error"}`)
   }

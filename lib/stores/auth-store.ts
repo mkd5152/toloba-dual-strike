@@ -76,6 +76,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         }
       })
     } catch (error: any) {
+      // Silently ignore abort errors - check multiple ways since errors may be wrapped
+      if (error.name === 'AbortError') {
+        set({ loading: false })
+        return
+      }
+      if (error.message?.toLowerCase().includes('abort')) {
+        set({ loading: false })
+        return
+      }
+      if (error.name === 'DOMException' && error.message?.includes('abort')) {
+        set({ loading: false })
+        return
+      }
+      if (error.code === 'ABORT_ERR') {
+        set({ loading: false })
+        return
+      }
+
       console.error('Error initializing auth:', error)
       set({ loading: false, error: error.message })
     }

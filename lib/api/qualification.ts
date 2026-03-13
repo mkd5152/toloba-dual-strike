@@ -10,8 +10,11 @@ import type { StandingsEntry } from "@/lib/types"
  * Get overall standings for all teams (ignoring groups)
  * Used for new playoff qualification system
  */
-export async function getOverallStandingsForPlayoffs(tournamentId: string): Promise<StandingsEntry[]> {
+export async function getOverallStandingsForPlayoffs(tournamentId: string, signal?: AbortSignal): Promise<StandingsEntry[]> {
   try {
+    // Check if already aborted
+    if (signal?.aborted) return []
+
     // Fetch all completed league matches
     const { data: matchesData, error: matchesError } = await supabase
       .from("matches")
@@ -19,7 +22,9 @@ export async function getOverallStandingsForPlayoffs(tournamentId: string): Prom
       .eq("tournament_id", tournamentId)
       .eq("stage", "LEAGUE")
       .in("state", ["COMPLETED", "LOCKED"])
+      .abortSignal(signal)
 
+    if (signal?.aborted) return []
     if (matchesError) throw matchesError
 
     // Fetch all teams
@@ -27,7 +32,9 @@ export async function getOverallStandingsForPlayoffs(tournamentId: string): Prom
       .from("teams")
       .select("id, name")
       .eq("tournament_id", tournamentId)
+      .abortSignal(signal)
 
+    if (signal?.aborted) return []
     if (teamsError) throw teamsError
 
     const standingsMap = new Map<string, StandingsEntry>()
@@ -80,10 +87,22 @@ export async function getOverallStandingsForPlayoffs(tournamentId: string): Prom
         rank: index + 1,
       }))
   } catch (err) {
-    // Silently ignore abort errors
-    if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('abort'))) {
-      return []
+    // Silently ignore abort errors - check multiple ways since Supabase may wrap the error
+    if (signal?.aborted) return []
+    if (err instanceof Error) {
+      if (err.name === 'AbortError') return []
+      if (err.message?.toLowerCase().includes('abort')) return []
+      // Check for DOMException AbortError
+      if (err.name === 'DOMException' && err.message?.includes('abort')) return []
     }
+    // Check if error has nested abort information
+    if (typeof err === 'object' && err !== null) {
+      const errObj = err as any
+      if (errObj.message?.toLowerCase().includes('abort')) return []
+      if (errObj.code === 'ABORT_ERR') return []
+      if (errObj.name === 'AbortError') return []
+    }
+
     console.error("Error calculating overall standings:", err)
     throw new Error(`Failed to get overall standings: ${err instanceof Error ? err.message : String(err)}`)
   }

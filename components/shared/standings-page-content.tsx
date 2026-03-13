@@ -29,11 +29,25 @@ export function StandingsPageContent({
 
   // Fetch data every time component mounts
   useEffect(() => {
+    const abortController = new AbortController();
+
     const loadData = async () => {
+      // Check if aborted before starting
+      if (abortController.signal.aborted) return;
+
       await loadTeams();
+
+      // Check if aborted between operations
+      if (abortController.signal.aborted) return;
+
       await loadMatches();
     };
+
     loadData();
+
+    return () => {
+      abortController.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
