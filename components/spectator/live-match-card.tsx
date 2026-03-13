@@ -238,8 +238,9 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                             return '0.0 ov';
                           }
 
-                          // Check if innings is completed (all 3 overs bowled)
-                          if (innings.state === "COMPLETED") {
+                          // Check if innings or match is completed (all 3 overs bowled)
+                          // Always show 3.0 for completed/locked matches to avoid corrupted data display
+                          if (innings.state === "COMPLETED" || match.state === "COMPLETED" || match.state === "LOCKED") {
                             return '3.0 ov';
                           }
 
@@ -265,7 +266,12 @@ export function LiveMatchCard({ match }: LiveMatchCardProps) {
                         })()}
                       </div>
                       {(() => {
-                        // Show POWERPLAY indicator if current over is powerplay
+                        // Show POWERPLAY indicator only for in-progress matches and innings
+                        // Don't show for completed/locked matches to avoid misleading displays
+                        if (match.state === "COMPLETED" || match.state === "LOCKED" || innings.state === "COMPLETED") {
+                          return null;
+                        }
+
                         const totalBalls = innings.overs?.reduce((sum, over) => {
                           if (!over.balls) return sum;
                           if (over.isPowerplay) {
