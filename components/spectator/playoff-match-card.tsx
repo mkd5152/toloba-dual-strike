@@ -276,7 +276,7 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
               return (
                 <div
                   key={teamId}
-                  className="relative rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 w-full overflow-hidden"
+                  className="relative rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 w-full"
                   style={{
                     background: isBatting
                       ? `linear-gradient(135deg, ${team?.color}60, ${team?.color}30)`

@@ -35,6 +35,7 @@ export default function SpectatorLivePage() {
   const detailedMatchesRef = useRef<Match[]>([]);
   const soundEnabledRef = useRef(false);
   const [showVictory, setShowVictory] = useState(false);
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   const [championTeamId, setChampionTeamId] = useState<string | null>(null);
 
   // Initialize sound effects
@@ -56,7 +57,7 @@ export default function SpectatorLivePage() {
     const finalMatch = detailedMatches.find(m => m.stage === "FINAL");
     if (finalMatch && (finalMatch.state === "COMPLETED" || finalMatch.state === "LOCKED") && finalMatch.rankings) {
       const champion = finalMatch.rankings.find(r => r.rank === 1);
-      if (champion && !showVictory) {
+      if (champion && !showVictory && !celebrationDismissed) {
         setChampionTeamId(champion.teamId);
         setShowVictory(true);
         if (soundEnabled) {
@@ -64,7 +65,7 @@ export default function SpectatorLivePage() {
         }
       }
     }
-  }, [detailedMatches, showVictory, soundEnabled, playVictory]);
+  }, [detailedMatches, showVictory, celebrationDismissed, soundEnabled, playVictory]);
 
   // Fetch data every time component mounts
   useEffect(() => {
@@ -165,6 +166,54 @@ export default function SpectatorLivePage() {
             console.log('   ✅ Added ball to local state (ball', newBall.ball_number, 'runs:', newBall.runs, ')');
           } catch (error) {
             console.error('❌ Error processing ball event:', error, error?.message, error?.stack);
+          }
+        }
+      )
+      // Listen to ball DELETE (when undo ball or re-ball is triggered)
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'balls',
+        },
+        async (payload) => {
+          try {
+            console.log('🗑️ Ball deleted (undo/re-ball):', payload);
+            const deletedBall = payload.old as any;
+
+            // Remove ball from local state by ball_number and over_id
+            setDetailedMatches(prev => prev.map(match => {
+              if (match.state !== 'IN_PROGRESS') return match;
+
+              return {
+                ...match,
+                innings: match.innings?.map(inn => {
+                  if (inn.state !== 'IN_PROGRESS') return inn;
+
+                  return {
+                    ...inn,
+                    overs: inn.overs?.map(over => {
+                      if (over.id !== deletedBall.over_id) return over;
+
+                      // Remove the specific ball by its database ID (more precise than ballNumber)
+                      const updatedBalls = (over.balls || []).filter(
+                        (ball: any) => ball.id !== deletedBall.id
+                      );
+
+                      return {
+                        ...over,
+                        balls: updatedBalls
+                      };
+                    })
+                  };
+                })
+              };
+            }));
+
+            console.log('   ✅ Removed ball from local state (ball #', deletedBall.ball_number, 'from over', deletedBall.over_id, ')');
+          } catch (error) {
+            console.error('❌ Error processing ball DELETE event:', error, error?.message, error?.stack);
           }
         }
       )
@@ -297,7 +346,7 @@ export default function SpectatorLivePage() {
         }
         if (status === 'SUBSCRIBED') {
           console.log('✅ Successfully subscribed to real-time events:');
-          console.log('   - balls (INSERT)');
+          console.log('   - balls (INSERT, DELETE)');
           console.log('   - innings (INSERT, UPDATE)');
           console.log('   - matches (UPDATE)');
           console.log('   Channel:', channel);
@@ -352,7 +401,11 @@ export default function SpectatorLivePage() {
             match={finalMatch}
             championTeamName={championTeam.name}
             championTeamColor={championTeam.color}
-            onClose={() => setShowVictory(false)}
+            teams={teams}
+            onClose={() => {
+              setShowVictory(false);
+              setCelebrationDismissed(true);
+            }}
           />
         );
       })()}
@@ -368,19 +421,37 @@ export default function SpectatorLivePage() {
             <p className="text-white/70 mt-2">Complete tournament coverage in one place</p>
           </div>
 
-          {/* Sound Toggle Button */}
-          <Button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            variant="outline"
-            size="icon"
-            className="w-12 h-12 rounded-full border-2 border-[#ffb300] bg-[#0d3944] hover:bg-[#1a4a57]"
-          >
-            {soundEnabled ? (
-              <Volume2 className="w-6 h-6 text-[#ffb300]" />
-            ) : (
-              <VolumeX className="w-6 h-6 text-white/50" />
+          <div className="flex items-center gap-3">
+            {/* Championship Celebration Button - Shows when final is complete */}
+            {championTeamId && (
+              <Button
+                onClick={() => setShowVictory(true)}
+                className="px-4 py-2 rounded-full font-black text-sm uppercase tracking-wide transition-all hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, #ffd700, #ffed4e)',
+                  color: '#0d3944',
+                  boxShadow: '0 0 20px rgba(255, 215, 0, 0.6)',
+                }}
+              >
+                <Trophy className="w-5 h-5 mr-2" />
+                View Championship
+              </Button>
             )}
-          </Button>
+
+            {/* Sound Toggle Button */}
+            <Button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              variant="outline"
+              size="icon"
+              className="w-12 h-12 rounded-full border-2 border-[#ffb300] bg-[#0d3944] hover:bg-[#1a4a57]"
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-6 h-6 text-[#ffb300]" />
+              ) : (
+                <VolumeX className="w-6 h-6 text-white/50" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
