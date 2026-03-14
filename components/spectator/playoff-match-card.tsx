@@ -148,7 +148,7 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
 
   return (
     <Card
-      className="relative overflow-hidden border-0"
+      className="relative overflow-hidden border-0 w-full"
       style={{
         background: `linear-gradient(135deg, ${style.gradientFrom}15, ${style.gradientTo}25)`,
         boxShadow: isLive
@@ -162,7 +162,7 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
       {/* Cricket Stats Banner - Shows ONLY the most recent ball */}
       {showBanner && lastBallStats && (
         <div
-          className="absolute top-0 left-0 right-0 h-16 flex items-center justify-center gap-4 shadow-2xl z-20"
+          className="absolute top-0 left-0 right-0 h-14 flex items-center justify-center gap-2 md:gap-4 shadow-2xl z-20 px-2"
           style={{
             background: `linear-gradient(135deg, ${style.gradientFrom}, ${style.gradientTo})`,
             animation: 'slide-in-from-top 0.5s ease-out',
@@ -170,30 +170,28 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
         >
           {/* Four */}
           {lastBallStats.isFour && (
-            <div className="flex items-center gap-3 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full border-3 border-white shadow-2xl animate-bounce-in">
-              <Zap className="w-8 h-8 text-white animate-pulse" />
-              <span className="text-white font-black text-3xl tabular-nums drop-shadow-2xl">4</span>
-              <span className="text-white/90 text-lg font-black tracking-wider">FOUR!</span>
+            <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full border-2 border-white shadow-2xl animate-bounce-in">
+              <span className="text-white font-black text-xl md:text-2xl tabular-nums drop-shadow-2xl">4</span>
+              <span className="text-white/90 text-xs md:text-sm font-black tracking-wider">FOUR!</span>
             </div>
           )}
 
           {/* Six */}
           {lastBallStats.isSix && (
-            <div className="flex items-center gap-3 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full border-3 border-white shadow-2xl animate-bounce-in">
-              <Trophy className="w-8 h-8 text-white animate-pulse" />
-              <span className="text-white font-black text-3xl tabular-nums drop-shadow-2xl">6</span>
-              <span className="text-white/90 text-lg font-black tracking-wider">MAXIMUM!</span>
+            <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full border-2 border-white shadow-2xl animate-bounce-in">
+              <span className="text-white font-black text-xl md:text-2xl tabular-nums drop-shadow-2xl">6</span>
+              <span className="text-white/90 text-xs md:text-sm font-black tracking-wider">SIX!</span>
             </div>
           )}
 
           {/* Wicket */}
           {lastBallStats.isWicket && (
-            <div className="flex items-center gap-3 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full border-3 border-white shadow-2xl animate-bounce-in">
-              <Target className="w-8 h-8 text-white animate-spin-slow" />
+            <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full border-2 border-white shadow-2xl animate-bounce-in">
+              <span className="text-white font-black text-lg md:text-xl">🏏</span>
               <div className="flex flex-col">
-                <span className="text-white text-lg font-black leading-tight tracking-wider">WICKET!</span>
+                <span className="text-white text-xs md:text-sm font-black leading-tight tracking-wider">WICKET!</span>
                 {lastBallStats.wicketType && lastBallStats.wicketType !== "BOWLING_TEAM" && (
-                  <span className="text-white/80 text-xs font-bold leading-tight uppercase tracking-wide">
+                  <span className="text-white/80 text-[10px] font-bold leading-tight uppercase tracking-wide">
                     {lastBallStats.wicketType.replace('_', ' ')}
                   </span>
                 )}
@@ -212,56 +210,56 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
         }}
       />
 
-      <div className={`relative ${showBanner ? 'pt-16' : ''}`}>
-        <div className="p-6">
+      <div className={`relative w-full ${showBanner ? 'pt-14' : ''}`}>
+        <div className="p-4 md:p-6 w-full">
           {/* Stage Badge & Live Indicator */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
             <div
-              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              className="flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm"
               style={{
                 background: style.badgeBg,
                 boxShadow: `0 4px 20px ${style.glowColor}`,
               }}
             >
-              <StageIcon className="w-5 h-5 text-white" />
-              <span className="text-white font-black text-sm tracking-wider">
+              <StageIcon className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" />
+              <span className="text-white font-black tracking-wider">
                 {style.stageName}
               </span>
             </div>
 
             {isLive && (
               <div
-                className="flex items-center gap-2 px-4 py-2 rounded-full animate-pulse"
+                className="flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-full animate-pulse"
                 style={{
                   background: 'linear-gradient(135deg, #dc2626, #ef4444)',
                   boxShadow: '0 0 20px rgba(220, 38, 38, 0.8)',
                 }}
               >
-                <div className="w-2.5 h-2.5 bg-white rounded-full animate-ping" />
+                <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-white rounded-full animate-ping" />
                 <span className="text-white font-black text-xs tracking-wide">LIVE</span>
               </div>
             )}
           </div>
 
           {/* Match Number Badge */}
-          <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center justify-center mb-4 md:mb-6">
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center relative"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center relative"
               style={{
                 background: style.badgeBg,
                 boxShadow: `0 0 30px ${style.glowColor}, inset 0 0 20px rgba(255,255,255,0.2)`,
-                border: `4px solid ${style.borderColor}`,
+                border: `3px solid ${style.borderColor}`,
               }}
             >
-              <span className="text-white font-black text-3xl drop-shadow-lg">{match.matchNumber}</span>
+              <span className="text-white font-black text-2xl md:text-3xl drop-shadow-lg">{match.matchNumber}</span>
               {isLive && (
-                <div className="absolute inset-0 rounded-full border-4 border-white/30 animate-ping" />
+                <div className="absolute inset-0 rounded-full border-3 md:border-4 border-white/30 animate-ping" />
               )}
             </div>
           </div>
 
           {/* Teams Section - Display in batting order */}
-          <div className="space-y-4 mb-4">
+          <div className="space-y-3 mb-3 md:mb-4 w-full">
             {(match.battingOrder && match.battingOrder.length > 0 ? match.battingOrder : match.teamIds || []).map((teamId) => {
               const team = getTeam(teamId);
               const innings = match.innings?.find(i => i.teamId === teamId);
@@ -278,7 +276,7 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
               return (
                 <div
                   key={teamId}
-                  className="relative rounded-2xl p-4 transition-all duration-300"
+                  className="relative rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 w-full overflow-hidden"
                   style={{
                     background: isBatting
                       ? `linear-gradient(135deg, ${team?.color}60, ${team?.color}30)`
@@ -286,48 +284,48 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
                       ? `linear-gradient(135deg, ${team?.color}40, ${team?.color}20)`
                       : `linear-gradient(90deg, ${team?.color}25, ${team?.color}10)`,
                     border: isBatting || isBowling
-                      ? `3px solid ${team?.color}`
+                      ? `2px solid ${team?.color}`
                       : `2px solid ${team?.color}80`,
                     boxShadow: isBatting
-                      ? `0 0 30px ${team?.color}80, inset 0 0 20px ${team?.color}40`
+                      ? `0 0 20px ${team?.color}80, inset 0 0 15px ${team?.color}40`
                       : isBowling
-                      ? `0 0 20px ${team?.color}60, inset 0 0 15px ${team?.color}30`
-                      : `0 0 15px ${team?.color}40`,
+                      ? `0 0 15px ${team?.color}60, inset 0 0 10px ${team?.color}30`
+                      : `0 0 10px ${team?.color}40`,
                   }}
                 >
                   {/* Batting/Bowling Badge */}
                   {isBatting && (
-                    <div className="absolute -top-2 left-4 px-3 py-1 bg-green-600 text-white text-xs font-black rounded-full shadow-lg border-2 border-white">
-                      🏏 BATTING
+                    <div className="absolute -top-2 left-2 md:left-4 px-2 md:px-3 py-0.5 md:py-1 bg-green-600 text-white text-[10px] md:text-xs font-black rounded-full shadow-lg border-2 border-white">
+                      BATTING
                     </div>
                   )}
                   {isBowling && (
-                    <div className="absolute -top-2 left-4 px-3 py-1 bg-orange-600 text-white text-xs font-black rounded-full shadow-lg border-2 border-white">
-                      ⚡ BOWLING
+                    <div className="absolute -top-2 left-2 md:left-4 px-2 md:px-3 py-0.5 md:py-1 bg-orange-600 text-white text-[10px] md:text-xs font-black rounded-full shadow-lg border-2 border-white">
+                      BOWLING
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 md:gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                       <div className="relative flex-shrink-0">
                         <div
-                          className="w-12 h-12 rounded-full transition-transform duration-300"
+                          className="w-8 h-8 md:w-10 md:h-10 rounded-full transition-transform duration-300"
                           style={{
                             backgroundColor: team?.color,
-                            boxShadow: `0 0 20px ${team?.color}80, inset 0 0 10px rgba(255,255,255,0.3)`,
-                            border: '3px solid white',
+                            boxShadow: `0 0 15px ${team?.color}80, inset 0 0 8px rgba(255,255,255,0.3)`,
+                            border: '2px solid white',
                             transform: isBatting ? 'scale(1.1)' : 'scale(1)',
                           }}
                         />
                         {isBatting && (
-                          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
                         )}
                         {isBowling && (
-                          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-orange-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse border-2 border-white shadow-lg" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <span className="font-black text-white text-lg drop-shadow-lg block truncate">
+                        <span className="font-black text-white text-sm md:text-base drop-shadow-lg block truncate">
                           {team?.name || 'TBD'}
                         </span>
                         {team?.players && team.players.length > 0 && (
@@ -340,14 +338,14 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
 
                     {innings ? (
                       <div className="text-right flex-shrink-0">
-                        <div className="text-2xl font-black text-white drop-shadow-lg whitespace-nowrap">
+                        <div className="text-xl md:text-2xl font-black text-white drop-shadow-lg whitespace-nowrap">
                           {ranking?.totalScore ?? innings.totalRuns ?? 0}
-                          <span className="text-base text-white/70 ml-1 font-bold">
+                          <span className="text-sm md:text-base text-white/70 ml-1 font-bold">
                             /{innings.totalWickets || 0}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <div className="text-[10px] text-white/80 font-bold whitespace-nowrap">
+                        <div className="flex items-center gap-1 mt-0.5 justify-end">
+                          <div className="text-[10px] md:text-xs text-white/80 font-bold whitespace-nowrap">
                             {(() => {
                               if (!innings.overs || innings.overs.length === 0) {
                                 return '0.0 ov';
@@ -420,19 +418,19 @@ export function PlayoffMatchCard({ match }: PlayoffMatchCardProps) {
           </div>
 
           {/* Match Status/Time */}
-          <div className="text-center pt-4 border-t-2" style={{ borderColor: `${style.borderColor}40` }}>
+          <div className="text-center pt-3 md:pt-4 border-t-2" style={{ borderColor: `${style.borderColor}40` }}>
             {isCompleted && match.rankings && match.rankings.length > 0 && (
-              <div className="flex items-center justify-center gap-2">
-                <Trophy className="w-6 h-6 text-yellow-400 animate-pulse" />
-                <span className="text-white font-black text-base drop-shadow-lg">
+              <div className="flex items-center justify-center gap-1.5 md:gap-2 flex-wrap">
+                <Trophy className="w-4 h-4 md:w-6 md:h-6 text-yellow-400 animate-pulse" />
+                <span className="text-white font-black text-sm md:text-base drop-shadow-lg truncate">
                   CHAMPION: {getTeam(match.rankings[0].teamId)?.name}
                 </span>
               </div>
             )}
             {!isCompleted && !isLive && (
-              <div className="flex items-center justify-center gap-2 text-white/70">
-                <Flame className="w-5 h-5" />
-                <span className="text-sm font-bold">
+              <div className="flex items-center justify-center gap-1.5 md:gap-2 text-white/70 flex-wrap">
+                <Flame className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="text-xs md:text-sm font-bold">
                   {match.court} • {new Date(match.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                 </span>
               </div>

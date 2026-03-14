@@ -69,48 +69,40 @@ export function PlayoffBracket({ matches, teams }: PlayoffBracketProps) {
 
       <Card className="relative border-0 bg-gradient-to-br from-[#0d3944]/95 to-[#1a4a57]/95 backdrop-blur-sm shadow-2xl p-6 md:p-8">
         {/* Header */}
-        <div className="mb-8 text-center relative">
+        <div className="mb-6 md:mb-8 text-center relative">
           <div className="absolute inset-0 flex items-center justify-center opacity-10">
-            <Trophy className="w-32 h-32 text-[#ffb300]" />
+            <Trophy className="w-24 h-24 md:w-32 md:h-32 text-[#ffb300]" />
           </div>
-          <div className="relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-[#ff9800] via-[#ffb300] to-[#ff9800] text-[#0d3944] shadow-2xl shadow-[#ffb300]/50 animate-pulse-glow mb-3">
-            <Trophy className="w-6 h-6 animate-bounce" />
-            <span className="text-xl font-black uppercase tracking-widest">Playoff Bracket</span>
-            <Trophy className="w-6 h-6 animate-bounce" style={{ animationDelay: '0.5s' }} />
+          <div className="relative inline-flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2 md:py-3 rounded-full bg-gradient-to-r from-[#ff9800] via-[#ffb300] to-[#ff9800] text-[#0d3944] shadow-2xl shadow-[#ffb300]/50 animate-pulse-glow mb-2 md:mb-3">
+            <Trophy className="w-4 h-4 md:w-6 md:h-6 animate-bounce" />
+            <span className="text-sm md:text-xl font-black uppercase tracking-wider md:tracking-widest">Playoff Bracket</span>
+            <Trophy className="w-4 h-4 md:w-6 md:h-6 animate-bounce" style={{ animationDelay: '0.5s' }} />
           </div>
-          <p className="text-white/80 text-base font-bold tracking-wide">🏆 Road to Championship 🏆</p>
+          <p className="text-white/80 text-xs md:text-base font-bold tracking-wide">🏆 Road to Championship 🏆</p>
         </div>
 
         {/* Bracket Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-4 items-center">
 
           {/* QUALIFIERS - Column 1 */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="flex items-center justify-center gap-3 mb-6 relative">
+          <div className="lg:col-span-1 space-y-6 md:space-y-8">
+            <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-6 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/20 to-transparent blur-xl" />
-              <Swords className="w-6 h-6 text-purple-400 animate-pulse relative z-10" />
-              <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-wide relative z-10 drop-shadow-lg">
+              <Swords className="w-4 h-4 md:w-6 md:h-6 text-purple-400 animate-pulse relative z-10" />
+              <h3 className="text-lg md:text-xl lg:text-2xl font-black text-white uppercase tracking-wide relative z-10 drop-shadow-lg">
                 Qualifiers
               </h3>
-              <Swords className="w-6 h-6 text-purple-400 animate-pulse relative z-10" />
+              <Swords className="w-4 h-4 md:w-6 md:h-6 text-purple-400 animate-pulse relative z-10" />
             </div>
 
             {/* Q1 */}
             <div className="relative group">
-              {/* Connection line - only show if Q1 has winners */}
-              {qf1Winners.length >= 2 && (
-                <>
-                  <div className="absolute -right-4 top-1/2 w-8 h-0.5 bg-gradient-to-r from-purple-400/50 via-purple-400 to-transparent hidden lg:block group-hover:shadow-lg group-hover:shadow-purple-400/50 transition-all" />
-                  <div className="absolute -right-4 top-1/2 w-2 h-2 bg-purple-400 rounded-full hidden lg:block animate-pulse" />
-                </>
-              )}
-
-              <div className="relative rounded-xl overflow-hidden border-2 border-purple-400 bg-gradient-to-br from-purple-600/30 via-purple-500/20 to-fuchsia-600/30 p-4 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 transition-all">
+              <div className="relative rounded-lg md:rounded-xl overflow-hidden border-2 border-purple-400 bg-gradient-to-br from-purple-600/30 via-purple-500/20 to-fuchsia-600/30 p-3 md:p-4 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 transition-all">
                 {/* Stadium light effect */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-300 to-transparent opacity-50" />
 
-                <div className="text-center mb-3 relative">
-                  <span className="inline-block px-3 py-1 bg-purple-500/50 rounded-full text-sm font-black text-purple-200 uppercase tracking-wider border border-purple-300/50">
+                <div className="text-center mb-2 md:mb-3 relative">
+                  <span className="inline-block px-2 md:px-3 py-0.5 md:py-1 bg-purple-500/50 rounded-full text-xs md:text-sm font-black text-purple-200 uppercase tracking-wider border border-purple-300/50">
                     Q1 - Match #26
                   </span>
                 </div>
@@ -173,19 +165,11 @@ export function PlayoffBracket({ matches, teams }: PlayoffBracketProps) {
 
             {/* Q2 */}
             <div className="relative group">
-              {/* Connection line - only show if Q2 has winners */}
-              {qf2Winners.length >= 2 && (
-                <>
-                  <div className="absolute -right-4 top-1/2 w-8 h-0.5 bg-gradient-to-r from-purple-400/50 via-purple-400 to-transparent hidden lg:block group-hover:shadow-lg group-hover:shadow-purple-400/50 transition-all" />
-                  <div className="absolute -right-4 top-1/2 w-2 h-2 bg-purple-400 rounded-full hidden lg:block animate-pulse" />
-                </>
-              )}
-
-              <div className="relative rounded-xl overflow-hidden border-2 border-purple-400 bg-gradient-to-br from-purple-600/30 via-purple-500/20 to-fuchsia-600/30 p-4 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 transition-all">
+              <div className="relative rounded-lg md:rounded-xl overflow-hidden border-2 border-purple-400 bg-gradient-to-br from-purple-600/30 via-purple-500/20 to-fuchsia-600/30 p-3 md:p-4 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 transition-all">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-300 to-transparent opacity-50" />
 
-                <div className="text-center mb-3">
-                  <span className="inline-block px-3 py-1 bg-purple-500/50 rounded-full text-sm font-black text-purple-200 uppercase tracking-wider border border-purple-300/50">
+                <div className="text-center mb-2 md:mb-3">
+                  <span className="inline-block px-2 md:px-3 py-0.5 md:py-1 bg-purple-500/50 rounded-full text-xs md:text-sm font-black text-purple-200 uppercase tracking-wider border border-purple-300/50">
                     Q2 - Match #27
                   </span>
                 </div>
@@ -266,31 +250,23 @@ export function PlayoffBracket({ matches, teams }: PlayoffBracketProps) {
           </div>
 
           {/* SEMI FINALS - Column 3 */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="flex items-center justify-center gap-3 mb-6 relative">
+          <div className="lg:col-span-1 space-y-6 md:space-y-8">
+            <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-6 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent blur-xl" />
-              <Crown className="w-7 h-7 text-amber-400 animate-bounce relative z-10" />
-              <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-wide relative z-10 drop-shadow-lg">
+              <Crown className="w-5 h-5 md:w-7 md:h-7 text-amber-400 animate-bounce relative z-10" />
+              <h3 className="text-lg md:text-xl lg:text-2xl font-black text-white uppercase tracking-wide relative z-10 drop-shadow-lg">
                 Semi Finals
               </h3>
-              <Crown className="w-7 h-7 text-amber-400 animate-bounce relative z-10" style={{ animationDelay: '0.3s' }} />
+              <Crown className="w-5 h-5 md:w-7 md:h-7 text-amber-400 animate-bounce relative z-10" style={{ animationDelay: '0.3s' }} />
             </div>
 
             {/* SF1: Q2 Top 2 + League 1st & 2nd */}
             <div className="relative group">
-              {/* Connection line - only show if SF1 has winners */}
-              {sf1Winners.length >= 2 && (
-                <>
-                  <div className="absolute -right-4 top-1/2 w-8 h-0.5 bg-gradient-to-r from-amber-400/50 via-amber-400 to-transparent hidden lg:block group-hover:shadow-lg group-hover:shadow-amber-400/50 transition-all" />
-                  <div className="absolute -right-4 top-1/2 w-2 h-2 bg-amber-400 rounded-full hidden lg:block animate-pulse" />
-                </>
-              )}
-
-              <div className="relative rounded-xl overflow-hidden border-2 border-amber-400 bg-gradient-to-br from-amber-600/30 via-yellow-500/20 to-orange-600/30 p-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/50 transition-all">
+              <div className="relative rounded-lg md:rounded-xl overflow-hidden border-2 border-amber-400 bg-gradient-to-br from-amber-600/30 via-yellow-500/20 to-orange-600/30 p-3 md:p-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/50 transition-all">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-50" />
 
-                <div className="text-center mb-3">
-                  <span className="inline-block px-3 py-1 bg-amber-500/50 rounded-full text-sm font-black text-amber-200 uppercase tracking-wider border border-amber-300/50">
+                <div className="text-center mb-2 md:mb-3">
+                  <span className="inline-block px-2 md:px-3 py-0.5 md:py-1 bg-amber-500/50 rounded-full text-xs md:text-sm font-black text-amber-200 uppercase tracking-wider border border-amber-300/50">
                     SF1 - Match #28
                   </span>
                 </div>
@@ -418,19 +394,11 @@ export function PlayoffBracket({ matches, teams }: PlayoffBracketProps) {
 
             {/* SF2: Q1 Top 2 + League 3rd & 4th */}
             <div className="relative group">
-              {/* Connection line - only show if SF2 has winners */}
-              {sf2Winners.length >= 2 && (
-                <>
-                  <div className="absolute -right-4 top-1/2 w-8 h-0.5 bg-gradient-to-r from-amber-400/50 via-amber-400 to-transparent hidden lg:block group-hover:shadow-lg group-hover:shadow-amber-400/50 transition-all" />
-                  <div className="absolute -right-4 top-1/2 w-2 h-2 bg-amber-400 rounded-full hidden lg:block animate-pulse" />
-                </>
-              )}
+              <div className="relative rounded-lg md:rounded-xl overflow-hidden border-2 border-amber-400 bg-gradient-to-br from-amber-600/30 via-yellow-500/20 to-orange-600/30 p-3 md:p-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/50 transition-all">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-50" />
 
-              <div className="relative rounded-xl overflow-hidden border-2 border-amber-400 bg-gradient-to-br from-amber-600/30 via-yellow-500/20 to-orange-600/30 p-4 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/50 transition-all">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-50" />
-
-                <div className="text-center mb-3">
-                  <span className="inline-block px-3 py-1 bg-amber-500/50 rounded-full text-sm font-black text-amber-200 uppercase tracking-wider border border-amber-300/50">
+                <div className="text-center mb-2 md:mb-3">
+                  <span className="inline-block px-2 md:px-3 py-0.5 md:py-1 bg-amber-500/50 rounded-full text-xs md:text-sm font-black text-amber-200 uppercase tracking-wider border border-amber-300/50">
                     SF2 - Match #29
                   </span>
                 </div>
@@ -569,23 +537,23 @@ export function PlayoffBracket({ matches, teams }: PlayoffBracketProps) {
 
           {/* GRAND FINALE - Column 5 (Centered) */}
           <div className="lg:col-span-1 flex flex-col items-center justify-center">
-            <div className="flex items-center justify-center gap-3 mb-6 relative">
+            <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-6 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/30 to-transparent blur-xl" />
-              <Trophy className="w-8 h-8 text-red-400 animate-spin-slow relative z-10" />
-              <h3 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-yellow-400 to-red-400 uppercase tracking-wide relative z-10 drop-shadow-2xl animate-pulse whitespace-nowrap">
+              <Trophy className="w-6 h-6 md:w-8 md:h-8 text-red-400 animate-spin-slow relative z-10" />
+              <h3 className="text-lg md:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-yellow-400 to-red-400 uppercase tracking-wide relative z-10 drop-shadow-2xl animate-pulse whitespace-nowrap">
                 Grand Finale
               </h3>
-              <Trophy className="w-8 h-8 text-red-400 animate-spin-slow relative z-10" />
+              <Trophy className="w-6 h-6 md:w-8 md:h-8 text-red-400 animate-spin-slow relative z-10" />
             </div>
 
-            <div className="relative rounded-xl overflow-hidden border-3 border-red-500 bg-gradient-to-br from-red-600/40 via-red-500/30 to-amber-600/40 p-6 shadow-2xl shadow-red-500/50 w-full max-w-md">
+            <div className="relative rounded-lg md:rounded-xl overflow-hidden border-2 md:border-3 border-red-500 bg-gradient-to-br from-red-600/40 via-red-500/30 to-amber-600/40 p-4 md:p-6 shadow-2xl shadow-red-500/50 w-full max-w-md">
               {/* Epic background effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-transparent to-red-600/10" />
-              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-70 animate-pulse" />
-              <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-red-400 to-transparent opacity-70 animate-pulse" style={{ animationDelay: '1s' }} />
+              <div className="absolute top-0 left-0 right-0 h-1 md:h-2 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-70 animate-pulse" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 md:h-2 bg-gradient-to-r from-transparent via-red-400 to-transparent opacity-70 animate-pulse" style={{ animationDelay: '1s' }} />
 
-              <div className="relative text-center mb-4">
-                <span className="inline-block px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 rounded-full text-sm font-black text-red-100 uppercase tracking-widest border-2 border-red-300/50 shadow-lg">
+              <div className="relative text-center mb-3 md:mb-4">
+                <span className="inline-block px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-red-600 to-red-500 rounded-full text-xs md:text-sm font-black text-red-100 uppercase tracking-wider md:tracking-widest border-2 border-red-300/50 shadow-lg">
                   🏆 Match #30 🏆
                 </span>
               </div>
@@ -732,17 +700,17 @@ export function PlayoffBracket({ matches, teams }: PlayoffBracketProps) {
         </div>
 
         {/* Legend */}
-        <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-gradient-to-r from-green-600 to-green-500" />
+        <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-white/10 flex flex-wrap items-center justify-center gap-3 md:gap-4 text-xs md:text-sm">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-gradient-to-r from-green-600 to-green-500" />
             <span className="text-white/70">Winner</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-gradient-to-r from-green-500/60 to-green-600/60" />
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-gradient-to-r from-green-500/60 to-green-600/60" />
             <span className="text-white/70">Runner-up</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-white/10 border-2 border-dashed border-white/20" />
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-white/10 border-2 border-dashed border-white/20" />
             <span className="text-white/70">To be decided</span>
           </div>
         </div>
