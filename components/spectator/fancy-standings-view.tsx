@@ -101,8 +101,8 @@ export function FancyStandingsView({ tournamentId }: FancyStandingsViewProps) {
         .select("*")
         .eq("tournament_id", tournamentId)
         .eq("stage", "FINAL")
-        .single()
         .abortSignal(signal)
+        .single()
 
       if (signal?.aborted) return
       if (!finalError && finalData) {
