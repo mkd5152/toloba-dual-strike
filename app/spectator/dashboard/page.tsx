@@ -729,65 +729,6 @@ export default function SpectatorDashboardPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Score Records */}
-        <Card className="border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600">
-            <CardTitle className="text-white font-black text-xl flex items-center gap-3">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Trophy className="w-6 h-6" />
-              </div>
-              SCORING RECORDS
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Row 1 Left: Highest Score by a Team (Overall) */}
-              <div className="p-5 bg-gradient-to-r from-yellow-500/25 to-amber-500/25 rounded-2xl border-2 border-yellow-400/50 shadow-lg shadow-yellow-500/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <Crown className="w-5 h-5 text-yellow-300" />
-                  <p className="text-yellow-300 font-black text-sm">HIGHEST OVERALL SCORE</p>
-                </div>
-                <p className="text-4xl font-black text-yellow-200 mb-2">{stats.highestOverallScore.runs}</p>
-                <p className="text-yellow-300 font-bold text-sm">{stats.highestOverallScore.team}</p>
-                <p className="text-yellow-300/80 font-bold text-xs">Total across all matches</p>
-              </div>
-
-              {/* Row 1 Right: Most Wickets Taken */}
-              <div className="p-5 bg-gradient-to-r from-red-500/25 to-rose-500/25 rounded-2xl border-2 border-red-400/50 shadow-lg shadow-red-500/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <Crosshair className="w-5 h-5 text-red-300" />
-                  <p className="text-red-300 font-black text-sm">MOST WICKETS TAKEN</p>
-                </div>
-                <p className="text-4xl font-black text-red-200 mb-2">{stats.mostWicketsTaken.wickets}</p>
-                <p className="text-red-300 font-bold text-sm">{stats.mostWicketsTaken.team}</p>
-                <p className="text-red-300/80 font-bold text-xs">By team in the tournament</p>
-              </div>
-
-              {/* Row 2 Left: Highest Match Score (Total) */}
-              <div className="p-5 bg-gradient-to-r from-emerald-500/25 to-green-500/25 rounded-2xl border-2 border-emerald-400/50 shadow-lg shadow-emerald-500/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <Trophy className="w-5 h-5 text-emerald-300" />
-                  <p className="text-emerald-300 font-black text-sm">HIGHEST MATCH SCORE</p>
-                </div>
-                <p className="text-4xl font-black text-emerald-200 mb-2">{stats.highestTotalMatchScore.runs}</p>
-                <p className="text-emerald-300 font-bold text-sm">All teams combined</p>
-                <p className="text-emerald-300/80 font-bold text-xs">Match {stats.highestTotalMatchScore.match}</p>
-              </div>
-
-              {/* Row 2 Right: Lowest Match Score (Total) */}
-              <div className="p-5 bg-gradient-to-r from-blue-500/25 to-cyan-500/25 rounded-2xl border-2 border-blue-400/50 shadow-lg shadow-blue-500/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <Activity className="w-5 h-5 text-blue-300" />
-                  <p className="text-blue-300 font-black text-sm">LOWEST MATCH SCORE</p>
-                </div>
-                <p className="text-4xl font-black text-blue-200 mb-2">{stats.lowestTotalMatchScore.runs}</p>
-                <p className="text-blue-300 font-bold text-sm">All teams combined</p>
-                <p className="text-blue-300/80 font-bold text-xs">Match {stats.lowestTotalMatchScore.match}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Championship Podium */}
